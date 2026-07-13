@@ -101,6 +101,11 @@ export function runWorker({ descriptor, steps = [] }) {
   const timer = setInterval(() => {
     console.log(JSON.stringify({ heartbeat: descriptor.name, environment: config.appEnv }));
   }, 15000);
+  timer.unref();
 
-  return { timer, output };
+  const stop = () => clearInterval(timer);
+  process.once('SIGINT', stop);
+  process.once('SIGTERM', stop);
+
+  return { timer, output, stop };
 }
