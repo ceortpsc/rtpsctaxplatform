@@ -1,0 +1,2 @@
+environment = "prod"
+service_name = "api-gateway"
