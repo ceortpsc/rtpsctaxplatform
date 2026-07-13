@@ -1,0 +1,17 @@
+name: compliance-scaffold
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-compliance-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: test -f docs/compliance-and-governance.md
+      - run: test -f docs/irm-aligned-handbook.md
+      - run: grep -R "No unauthorized access to IRS systems" docs README.md
