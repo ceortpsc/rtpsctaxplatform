@@ -6,6 +6,6 @@
   "scripts": {
     "start": "node src/index.mjs",
     "workflows": "node src/cli.mjs list",
-    "run": "node src/cli.mjs run"
+    "run-workflow": "node src/cli.mjs run"
   }
 }

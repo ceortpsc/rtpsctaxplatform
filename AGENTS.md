@@ -2,36 +2,36 @@
 
 ## Cursor Cloud specific instructions
 
-This is the **RTPSC Tax Platform Scaffold**: a Node.js (`>=22`) npm-workspaces monorepo of
+This is the **RTPSC Tax Platform Scaffold**: a Node.js (`>=22`) pnpm-workspaces monorepo of
 executable stubs (`services/*`, `workers/*`, `pipelines/*`, `engines/*`, `packages/*`). All code
-uses ES modules (`.mjs`) and only Node built-ins — there are **no external npm runtime
-dependencies**, so `npm install` just links the workspaces.
+uses ES modules (`.mjs`) and only Node built-ins — there are **no external runtime
+dependencies**, so `pnpm install` just links the workspaces.
 
 ### Running services / commands
 
 Standard commands are documented in `README.md` and wired in root `package.json` / `Makefile`.
-Use the npm scripts (`npm run lint`, `npm test`, `npm run build`, `npm run start`, `npm run worker:*`).
+Use the pnpm scripts (`pnpm run lint`, `pnpm test`, `pnpm run build`, `pnpm run start`, `pnpm run worker:*`).
 
-- `npm run start` launches only the **api-gateway** on port `3000` and blocks (long-running). Start
+- `pnpm run start` launches only the **api-gateway** on port `3000` and blocks (long-running). Start
   it in a background terminal/tmux session. Verify with `curl http://localhost:3000/health` and
   `curl http://localhost:3000/metadata`.
 - Other services are independent HTTP stubs on fixed ports: refund-status `3001`, transcript `3002`,
-  analytics `3003` (`npm run start:refund-status`, `start:transcript`, `start:analytics`).
+  analytics `3003` (`pnpm run start:refund-status`, `start:transcript`, `start:analytics`).
 - Workers run one-shot and print a JSON descriptor + planned steps, then exit
-  (`npm run worker:tds`, `worker:transcript-pull`, `worker:live-source`).
-- `npm run start:dashboard` launches the **modules-dashboard** on port `3010`: a read-only module
+  (`pnpm run worker:tds`, `worker:transcript-pull`, `worker:live-source`).
+- `pnpm run start:dashboard` launches the **modules-dashboard** on port `3010`: a read-only module
   catalog UI. It only lists modules; it does not trigger workflows. Views: Catalog, Insights,
   AI Assistant, Dependency Graph (sidebar + `Ctrl+K` command palette). APIs: `GET /api/modules`,
   `GET /api/insights`, `GET /api/graph`, `POST /api/assistant` (`{query}`).
 - The "AI Assistant"/insights come from `packages/module-advisor` — a local, dependency-free
   heuristic engine (intent detection + keyword scoring). There is **no external LLM or API key**.
-- `npm run deploy:all` starts every HTTP service (ports 3000-3003 + 3010) plus the background
+- `pnpm run deploy:all` starts every HTTP service (ports 3000-3003 + 3010) plus the background
   `workflow-runner` as child processes, health-checks them, and stays live (Ctrl+C stops all).
-  `npm run deploy:smoke` does the same but verifies health once and exits (CI smoke check). Free
+  `pnpm run deploy:smoke` does the same but verifies health once and exits (CI smoke check). Free
   those ports first — stop any single-service dev processes so `deploy:all` doesn't hit EADDRINUSE.
 - Workflows run in the **background** via the `workflow-runner` worker, not from any dashboard:
-  `npm run start:workflows` (long-running) or `npm run worker:workflows` (one-shot). A single
-  workflow can be run from the terminal with `npm run workflow:run <name> '<json>'`.
+  `pnpm run start:workflows` (long-running) or `pnpm run worker:workflows` (one-shot). A single
+  workflow can be run from the terminal with `pnpm run workflow:run <name> '<json>'`.
 
 ### Non-obvious notes
 
@@ -41,7 +41,7 @@ Use the npm scripts (`npm run lint`, `npm test`, `npm run build`, `npm run start
   the code**. Do not treat Docker as a prerequisite for running or testing.
 - No `.env` is required — `platform-core` defaults every config value to `unset`/sane defaults.
   Optionally copy `env/.env.local.example` to `.env` for placeholder values.
-- `npm run lint` only checks required files exist + JSON validity; `npm run build` imports every
+- `pnpm run lint` only checks required files exist + JSON validity; `pnpm run build` imports every
   module and writes `build/platform-manifest.json`. Neither uses ESLint/tsc/a bundler.
 - The background `workflow-runner` keeps itself alive via a non-unref'd interval timer; its
   scheduled workflow timers are unref'd. Set `WORKFLOW_CYCLE_MS` to change the background cadence.

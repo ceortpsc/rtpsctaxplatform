@@ -16,7 +16,7 @@
 ## Workflow
 
 1. Copy an environment example into a secure local `.env` file.
-2. Run `npm run lint`, `npm test`, and `npm run build` before publishing changes.
+2. Run `pnpm run lint`, `pnpm test`, and `pnpm run build` before publishing changes.
 3. Add or update documentation whenever architecture or operational responsibilities change.
 4. Record approval checkpoints for any change touching sensitive data flows.
 

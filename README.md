@@ -26,12 +26,15 @@ The repository is organized as a lightweight monorepo with executable Node.js se
 ## Quickstart
 
 ```bash
-npm run setup
-npm run lint
-npm test
-npm run build
-npm run start
+pnpm install
+ppnpm run lint
+ppnpm test
+ppnpm run build
+ppnpm run start
 ```
+
+> This project uses **pnpm** (see `packageManager` in `package.json`). Enable it with
+> `corepack enable pnpm` if you don't have it.
 
 ## Deploy all (development)
 
@@ -39,8 +42,8 @@ Bring up the whole platform — every HTTP service plus the background
 `workflow-runner` — with one command:
 
 ```bash
-npm run deploy:all     # starts all components, health-checks them, stays live
-npm run deploy:smoke   # same, but verifies health once and exits (CI smoke check)
+pnpm run deploy:all     # starts all components, health-checks them, stays live
+pnpm run deploy:smoke   # same, but verifies health once and exits (CI smoke check)
 ```
 
 Services: api-gateway `:3000`, refund-status `:3001`, transcript `:3002`,
@@ -55,9 +58,9 @@ curl http://localhost:3000/health
 Run workers in one-shot mode:
 
 ```bash
-npm run worker:tds
-npm run worker:transcript-pull
-npm run worker:live-source
+pnpm run worker:tds
+pnpm run worker:transcript-pull
+pnpm run worker:live-source
 ```
 
 ## Background Workflows
@@ -71,15 +74,15 @@ Run all workflows in the background (schedules fire automatically, event/manual
 workflows are driven on a cadence; every completed run is logged):
 
 ```bash
-npm run start:workflows        # long-running background runner
-npm run worker:workflows       # one-shot: run every workflow once and exit
+pnpm run start:workflows        # long-running background runner
+pnpm run worker:workflows       # one-shot: run every workflow once and exit
 ```
 
 Trigger a single workflow from the terminal:
 
 ```bash
-npm run workflow:list
-npm run workflow:run transcript-intake '{"requestId":"REQ-1","authorized":true}'
+pnpm run workflow:list
+pnpm run workflow:run transcript-intake '{"requestId":"REQ-1","authorized":true}'
 ```
 
 ## Modules Dashboard
@@ -89,7 +92,7 @@ platform modules only** (packages, services, workers, pipelines, engines, and
 workflow definitions). It does not trigger workflows.
 
 ```bash
-npm run start:dashboard
+pnpm run start:dashboard
 # then open http://localhost:3010
 ```
 
@@ -168,8 +171,8 @@ Key placeholders include:
 
 1. Copy the appropriate `env/.env.<environment>.example` file into a local untracked `.env` file.
 2. Run `docker compose up -d` to provision local Postgres and Redis placeholders.
-3. Run `npm run setup`, then `npm run start`.
-4. Run `npm test` and `npm run build` before opening changes.
+3. Run `pnpm run setup`, then `pnpm run start`.
+4. Run `pnpm test` and `pnpm run build` before opening changes.
 
 ## Documentation Index
 

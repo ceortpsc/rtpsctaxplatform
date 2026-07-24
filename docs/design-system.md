@@ -59,4 +59,4 @@ Original, dependency-free SVGs in `public/assets/`:
 - `guilloche.svg` — a currency-style rosette of overlapping, rotated ellipses with a radial
   gold fade; used as the decorative background and design-artwork motif.
 
-Explore it live: `npm run start:dashboard` → open `http://localhost:3010` → **Design System**.
+Explore it live: `pnpm run start:dashboard` → open `http://localhost:3010` → **Design System**.
