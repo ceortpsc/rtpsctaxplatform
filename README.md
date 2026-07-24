@@ -74,6 +74,30 @@ pnpm run worker:transcript-pull
 pnpm run worker:live-source
 ```
 
+## Deployment Assist & Development Team
+
+A virtual **deployment-assist and development team** ships as developer/deployment tooling under
+`agents/*` (with shared `packages/agent-core`). These are **not** a runtime subsystem of the
+product — they analyze the codebase and produce reports + documentation to assist development and
+deployment.
+
+| Team member | Role |
+|-------------|------|
+| `planning-agent` | Phased delivery plan, milestones, exit criteria |
+| `scoping-agent` | Inventory, complexity index, scope boundaries |
+| `testing-agent` | Validations & verifications across catalog + workflows |
+| `mapping-agent` | Dependency map & enhancement recommendations |
+| `staging-agent` | Staged rollout / promotion pipeline with gates |
+| `assessment-agent` | Environmental assessment & inspection with findings |
+| `markdown-agent` | Markdown generation engine (writes `docs/agents/*`) |
+
+```bash
+pnpm run agents        # run the team, print a JSON summary
+pnpm run agents:docs   # regenerate docs/agents/*.md
+```
+
+Generated reports live in [`docs/agents/`](./docs/agents/README.md).
+
 ## Background Workflows
 
 The platform ships a modular workflow engine (`packages/workflow-engine`) plus

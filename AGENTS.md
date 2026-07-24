@@ -45,3 +45,7 @@ Use the pnpm scripts (`pnpm run lint`, `pnpm test`, `pnpm run build`, `pnpm run 
   module and writes `build/platform-manifest.json`. Neither uses ESLint/tsc/a bundler.
 - The background `workflow-runner` keeps itself alive via a non-unref'd interval timer; its
   scheduled workflow timers are unref'd. Set `WORKFLOW_CYCLE_MS` to change the background cadence.
+- `agents/*` (+ `packages/agent-core`) are a **deployment-assist & development team** — dev/deploy
+  tooling, NOT a runtime product subsystem. Run with `pnpm run agents`; regenerate the reports in
+  `docs/agents/` with `pnpm run agents:docs`. They introspect the module catalog/workflows and are
+  intentionally not exposed in the product dashboard/API.

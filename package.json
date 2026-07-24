@@ -24,7 +24,9 @@
     "worker:live-source": "pnpm --filter @rtp/live-source-fetcher start --once",
     "worker:workflows": "pnpm --filter @rtp/workflow-runner start --once",
     "workflow:list": "pnpm --filter @rtp/workflow-runner workflows",
-    "workflow:run": "pnpm --filter @rtp/workflow-runner run-workflow"
+    "workflow:run": "pnpm --filter @rtp/workflow-runner run-workflow",
+    "agents": "node scripts/agents.mjs",
+    "agents:docs": "node scripts/agents.mjs --write"
   },
   "engines": {
     "node": ">=22",

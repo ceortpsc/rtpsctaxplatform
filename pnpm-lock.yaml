@@ -8,11 +8,27 @@ importers:
 
   .: {}
 
+  agents/assessment-agent: {}
+
+  agents/mapping-agent: {}
+
+  agents/markdown-agent: {}
+
+  agents/planning-agent: {}
+
+  agents/scoping-agent: {}
+
+  agents/staging-agent: {}
+
+  agents/testing-agent: {}
+
   engines/analytics-center: {}
 
   engines/refund-intelligence-engine: {}
 
   engines/tc-code-engine: {}
+
+  packages/agent-core: {}
 
   packages/client-config: {}
 
