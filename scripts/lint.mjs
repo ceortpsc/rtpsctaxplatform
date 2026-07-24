@@ -20,6 +20,7 @@ const requiredPaths = [
   'tools/aol/NOTICE',
   'aol.config.json',
   'RTPSC-package-lock.json',
+  'RTPSC-footprints.json',
   'tools/aol/RTPSC-package-lock.schema.json',
   'docs/rtpsc-package-lock.md',
   'packages/production-compliance/package.json',

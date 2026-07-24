@@ -3,6 +3,7 @@ import path from 'node:path';
 import { loadConfig, CONFIG_FILE_NAME } from './config.mjs';
 import { discoverWorkspaces, loadRootManifest } from './workspaces.mjs';
 import { readLockfile, lockMatches, validateLockfile, LOCKFILE_NAME } from './lockfile.mjs';
+import { listFootprints, FOOTPRINTS_FILE } from './footprints.mjs';
 import { IP } from './ip.mjs';
 import { ExitCode } from './codes.mjs';
 
@@ -73,6 +74,24 @@ export async function doctor(root = process.cwd()) {
       lock._source === LOCKFILE_NAME || lock.lockfileFormat === 'RTPSC-package-lock',
       lock._source === LOCKFILE_NAME ? LOCKFILE_NAME : `legacy ${lock._source} — re-run install`
     );
+  }
+
+  // all footprints ledger
+  try {
+    const fp = await listFootprints(root);
+    push(
+      'footprints.ledger',
+      fp.ok,
+      fp.ok ? `${fp.sealed}/${fp.count} sealed` : `drift=${fp.drift} unsealed=${fp.unsealed}`
+    );
+    try {
+      await access(path.join(root, FOOTPRINTS_FILE));
+      push('footprints.file', true, FOOTPRINTS_FILE);
+    } catch {
+      push('footprints.file', false, `missing ${FOOTPRINTS_FILE} — run aol install`);
+    }
+  } catch (err) {
+    push('footprints.ledger', false, err.message);
   }
 
   // IP assets
