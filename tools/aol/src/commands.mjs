@@ -39,6 +39,13 @@ export const COMMANDS = Object.freeze([
     usage: 'aol why <workspace>'
   },
   {
+    name: 'lock',
+    aliases: ['seal', 'rtpsc-lock'],
+    concept: 'Show or re-seal RTPSC-package-lock.json (platform lockfile)',
+    category: 'core',
+    usage: 'aol lock [--json] [--write|--seal]'
+  },
+  {
     name: 'bench',
     aliases: ['velocity', 'speed'],
     concept: 'Velocity report — AOL vs npm install wall-clock',

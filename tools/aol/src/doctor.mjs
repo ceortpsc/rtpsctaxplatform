@@ -2,7 +2,7 @@ import { access, lstat, readlink } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfig, CONFIG_FILE_NAME } from './config.mjs';
 import { discoverWorkspaces, loadRootManifest } from './workspaces.mjs';
-import { readLockfile, lockMatches } from './lockfile.mjs';
+import { readLockfile, lockMatches, validateLockfile, LOCKFILE_NAME } from './lockfile.mjs';
 import { IP } from './ip.mjs';
 import { ExitCode } from './codes.mjs';
 
@@ -53,13 +53,26 @@ export async function doctor(root = process.cwd()) {
   }
   push('workspaces.links', broken === 0 && workspaces.length > 0, broken === 0 ? 'all links healthy' : `${broken} broken`);
 
-  // lockfile
+  // lockfile (canonical RTPSC-package-lock.json)
   const lock = await readLockfile(root);
   if (!lock) {
-    push('lockfile', false, 'missing — run aol install');
+    push('lockfile', false, `missing — run aol install (${LOCKFILE_NAME})`);
   } else {
+    const validation = validateLockfile(lock);
+    push(
+      'lockfile.format',
+      validation.ok,
+      validation.ok
+        ? `${lock.lockfileFormat || 'lock'} v${lock.lockfileVersion} via ${lock._source || LOCKFILE_NAME}`
+        : validation.issues.join('; ')
+    );
     const match = lockMatches(lock, workspaces);
-    push('lockfile', match, match ? 'fingerprints sealed' : 'stale fingerprints');
+    push('lockfile.fingerprints', match, match ? 'fingerprints + integrity sealed' : 'stale fingerprints');
+    push(
+      'lockfile.canonical',
+      lock._source === LOCKFILE_NAME || lock.lockfileFormat === 'RTPSC-package-lock',
+      lock._source === LOCKFILE_NAME ? LOCKFILE_NAME : `legacy ${lock._source} — re-run install`
+    );
   }
 
   // IP assets

@@ -17,7 +17,9 @@ const requiredPaths = [
   'tools/aol/package.json',
   'tools/aol/NOTICE',
   'aol.config.json',
-  'aol.lock.json',
+  'RTPSC-package-lock.json',
+  'tools/aol/RTPSC-package-lock.schema.json',
+  'docs/rtpsc-package-lock.md',
   'infra/terraform/modules/platform-service/main.tf',
   '.github/workflows/ci.yml',
   '.github/workflows/compliance.yml'

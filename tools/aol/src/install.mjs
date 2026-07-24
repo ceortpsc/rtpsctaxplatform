@@ -1,21 +1,24 @@
 import { mkdir, rm, symlink, lstat, readlink } from 'node:fs/promises';
 import path from 'node:path';
 import { discoverWorkspaces, loadRootManifest } from './workspaces.mjs';
-import { buildLockfile, writeLockfile, readLockfile, lockMatches } from './lockfile.mjs';
+import { buildLockfile, writeLockfile, readLockfile, lockMatches, LOCKFILE_NAME } from './lockfile.mjs';
+import { loadConfig } from './config.mjs';
 import * as ui from './ui.mjs';
 
 /**
  * Parallel workspace linker — the AOL fast path.
  * Creates node_modules/<name> → workspace dir symlinks concurrently.
  * Skips network resolution when the graph is workspace-local only.
+ * Seals RTPSC-package-lock.json (v2).
  */
 export async function install(root = process.cwd(), options = {}) {
   const started = performance.now();
   const quiet = Boolean(options.quiet);
   const force = Boolean(options.force);
+  const config = options.config || (await loadConfig(root));
 
   const manifest = await loadRootManifest(root);
-  const patterns = manifest.workspaces || [];
+  const patterns = config.workspaces?.patterns || manifest.workspaces || [];
   const workspaces = await discoverWorkspaces(root, patterns);
 
   if (!quiet) {
@@ -30,10 +33,10 @@ export async function install(root = process.cwd(), options = {}) {
   if (!force && existingLock && lockMatches(existingLock, workspaces) && (await linksHealthy(nm, workspaces))) {
     const ms = performance.now() - started;
     if (!quiet) {
-      console.log(ui.handshake(4, 4, 'cache hit — signal locked'));
+      console.log(ui.handshake(4, 4, 'cache hit — RTPSC lock sealed'));
       console.log(ui.success(ms, { linked: workspaces.length, kind: 'packages', scripts: true, speedup: null }));
     }
-    return { ms, linked: workspaces.length, workspaces, cached: true };
+    return { ms, linked: workspaces.length, workspaces, cached: true, lockfile: LOCKFILE_NAME };
   }
 
   if (!quiet) console.log(ui.handshake(2, 4, 'opening parallel tunnels'));
@@ -48,17 +51,19 @@ export async function install(root = process.cwd(), options = {}) {
   const lock = buildLockfile({
     rootName: manifest.name,
     rootVersion: manifest.version,
-    workspaces
+    workspaces,
+    config
   });
-  await writeLockfile(root, lock);
+  const lockPath = await writeLockfile(root, lock, { name: LOCKFILE_NAME });
 
   const ms = performance.now() - started;
   if (!quiet) {
-    console.log(ui.handshake(4, 4, 'lockfile sealed'));
+    console.log(ui.handshake(4, 4, `sealed ${LOCKFILE_NAME}`));
     console.log(ui.buddyList(workspaces.map((w) => ({ name: w.name, location: w.location, ok: true }))));
     console.log(ui.success(ms, { linked: workspaces.length, kind: 'packages', scripts: true }));
+    console.log(ui.info(`lockfile → ${path.relative(root, lockPath) || LOCKFILE_NAME}`));
   }
-  return { ms, linked: workspaces.length, workspaces, cached: false };
+  return { ms, linked: workspaces.length, workspaces, cached: false, lockfile: LOCKFILE_NAME, lock };
 }
 
 async function linkWorkspace(nm, ws, root) {

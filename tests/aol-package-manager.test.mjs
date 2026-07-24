@@ -51,12 +51,13 @@ describe('AOL package manager', () => {
     }
   });
 
-  it('installs parallel workspace links and writes aol.lock.json', async () => {
+  it('installs parallel workspace links and writes RTPSC-package-lock.json', async () => {
     const root = await makeFixture();
     try {
       const result = await install(root, { quiet: true, force: true });
       assert.equal(result.linked, 2);
       assert.equal(result.cached, false);
+      assert.equal(result.lockfile, 'RTPSC-package-lock.json');
 
       const alphaLink = path.join(root, 'node_modules/@fix/alpha');
       const st = await lstat(alphaLink);
@@ -64,10 +65,12 @@ describe('AOL package manager', () => {
       const target = await readlink(alphaLink);
       assert.match(target, /alpha/);
 
-      const lock = JSON.parse(await readFile(path.join(root, 'aol.lock.json'), 'utf8'));
-      assert.equal(lock.lockfileVersion, 1);
-      assert.ok(lock.packages['@fix/alpha']);
+      const lock = JSON.parse(await readFile(path.join(root, 'RTPSC-package-lock.json'), 'utf8'));
+      assert.equal(lock.lockfileVersion, 2);
+      assert.equal(lock.lockfileFormat, 'RTPSC-package-lock');
+      assert.ok(lock.packages['@fix/alpha'].integrity.startsWith('sha256-'));
       assert.ok(lock.packages['@fix/beta']);
+      assert.ok(lock.sectors.packages.includes('@fix/alpha'));
     } finally {
       await rm(root, { recursive: true, force: true });
     }

@@ -45,10 +45,13 @@ workspace not found · `AOL-L002` stale lock fingerprints.
 ## Configuration
 
 File: `aol.config.json` (schema: `tools/aol/aol.config.schema.json`)
+Lockfile: `RTPSC-package-lock.json` (schema: `tools/aol/RTPSC-package-lock.schema.json`)
 
 ```bash
 ./scripts/aol config init
 ./scripts/aol config list
+./scripts/aol lock
+./scripts/aol lock --write
 ./scripts/aol config get brand.tagline
 ./scripts/aol config set ui.quiet true
 ```

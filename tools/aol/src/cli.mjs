@@ -2,7 +2,7 @@ import { install } from './install.mjs';
 import { runScript, execCommand } from './run.mjs';
 import { bench } from './bench.mjs';
 import { discoverWorkspaces, loadRootManifest, workspaceByName } from './workspaces.mjs';
-import { readLockfile } from './lockfile.mjs';
+import { readLockfile, validateLockfile, LOCKFILE_NAME, LOCKFILE_VERSION } from './lockfile.mjs';
 import {
   loadConfig,
   writeConfig,
@@ -55,6 +55,8 @@ export async function runCli(argv) {
         return await listWorkspaces(root, json);
       case 'why':
         return await why(root, rest.find((a) => !a.startsWith('-')), json);
+      case 'lock':
+        return await lockCmd(root, rest);
       case 'bench': {
         const cfg = await loadConfig(root);
         const rounds = Number(rest.find((a) => /^\d+$/.test(a)) || cfg.bench.rounds || 3);
@@ -125,7 +127,8 @@ export async function runCli(argv) {
             ui.panel('Signal Status', [
               `workspaces   ${status.workspaces}`,
               `sectors      ${status.sectors.join(', ')}`,
-              `lockfile     ${status.lockfile ? 'sealed' : 'missing'}`,
+              `lockfile     ${status.lockfile ? `${status.lockfileName || 'sealed'} v${status.lockfileVersion || '?'}` : 'missing'}`,
+              `format       ${status.lockfileFormat || '—'}`,
               `locked pkgs  ${status.lockedPackages}`,
               `generator    ${status.generator || '—'}`,
               `created      ${status.createdAt || '—'}`
@@ -237,6 +240,46 @@ async function why(root, name, json) {
     );
   }
   return ExitCode.OK;
+}
+
+async function lockCmd(root, args) {
+  const json = args.includes('--json') || args.includes('-j');
+  const write = args.includes('--write') || args.includes('--seal');
+
+  if (write) {
+    const result = await install(root, { force: true });
+    if (json) {
+      console.log(JSON.stringify({ ok: true, lockfile: LOCKFILE_NAME, linked: result.linked, lock: result.lock }, null, 2));
+    } else {
+      console.log(ui.info(`Sealed ${LOCKFILE_NAME} · ${result.linked} packages`));
+    }
+    return ExitCode.OK;
+  }
+
+  const lock = await readLockfile(root);
+  if (!lock) {
+    console.error(ui.error(`Missing ${LOCKFILE_NAME} — run: aol lock --write`));
+    return ExitCode.LOCK;
+  }
+  const validation = validateLockfile(lock);
+  if (json) {
+    console.log(JSON.stringify({ lockfile: LOCKFILE_NAME, validation, lock }, null, 2));
+  } else {
+    console.log(ui.brandLine());
+    console.log(
+      ui.panel('RTPSC-package-lock.json', [
+        `format      ${lock.lockfileFormat || '—'}`,
+        `version     v${lock.lockfileVersion} (current schema v${LOCKFILE_VERSION})`,
+        `generator   ${lock.generator || '—'}`,
+        `packages    ${Object.keys(lock.packages || {}).length}`,
+        `sectors     ${lock.stats?.sectorCount ?? Object.keys(lock.sectors || {}).length}`,
+        `source      ${lock._source || LOCKFILE_NAME}`,
+        `created     ${lock.createdAt || '—'}`,
+        `validation  ${validation.ok ? 'ok' : validation.issues.join('; ')}`
+      ])
+    );
+  }
+  return validation.ok ? ExitCode.OK : ExitCode.LOCK;
 }
 
 async function configCmd(root, args) {

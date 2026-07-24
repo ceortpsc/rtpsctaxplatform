@@ -79,7 +79,7 @@ export function helpText() {
     `  ${cyan('aol')} ${white('exec')} -w name -- <cmd>   Raw workspace channel exec`,
     `  ${cyan('aol')} ${white('ls')}|${white('buddy')}         Workspace Buddy List`,
     `  ${cyan('aol')} ${white('why')} <name>              Explain a buddy link`,
-    `  ${cyan('aol')} ${white('graph')}|${white('mail')}       Constellation map / status`,
+    `  ${cyan('aol')} ${white('graph')}|${white('mail')}|${white('lock')}  Map / status / RTPSC lock`,
     `  ${cyan('aol')} ${white('bench')}|${white('velocity')}   Speed report vs npm`,
     '',
     bold('Config · Codes · API · IP'),
@@ -88,7 +88,7 @@ export function helpText() {
     `  ${cyan('aol')} ${white('copyright')}|${white('ip')} | ${white('whoami')} | ${white('doctor')}`,
     '',
     bold('Signal'),
-    `  Lockfile: ${amber('aol.lock.json')}  Config: ${amber('aol.config.json')}  License: ${amber('MIT')}`,
+    `  Lockfile: ${amber('RTPSC-package-lock.json')}  Config: ${amber('aol.config.json')}  License: ${amber('MIT')}`,
     `  ${dim('aol help <command> · aol commands --json')}`,
     ''
   ].join('\n');

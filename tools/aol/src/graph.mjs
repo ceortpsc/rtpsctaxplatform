@@ -1,5 +1,5 @@
 import { discoverWorkspaces, loadRootManifest } from './workspaces.mjs';
-import { readLockfile } from './lockfile.mjs';
+import { readLockfile, LOCKFILE_NAME } from './lockfile.mjs';
 
 /**
  * Constellation graph — workspace nodes + conceptual edges from location roots.
@@ -15,6 +15,7 @@ export async function graph(root = process.cwd()) {
     location: ws.location,
     sector: ws.location.split('/')[0] || 'root',
     fingerprint: lock?.packages?.[ws.name]?.fingerprint || null,
+    integrity: lock?.packages?.[ws.name]?.integrity || null,
     scripts: Object.keys(ws.scripts || {})
   }));
 
@@ -30,6 +31,7 @@ export async function graph(root = process.cwd()) {
   return {
     root: manifest.name,
     version: manifest.version,
+    lockfile: LOCKFILE_NAME,
     nodeCount: nodes.length,
     sectors,
     nodes,
@@ -46,6 +48,9 @@ export async function mailStatus(root = process.cwd()) {
     workspaces: g.nodeCount,
     sectors: g.sectors,
     lockfile: Boolean(lock),
+    lockfileName: lock?._source || (lock ? LOCKFILE_NAME : null),
+    lockfileFormat: lock?.lockfileFormat || null,
+    lockfileVersion: lock?.lockfileVersion || null,
     lockedPackages: lock ? Object.keys(lock.packages || {}).length : 0,
     generator: lock?.generator || null,
     createdAt: lock?.createdAt || null

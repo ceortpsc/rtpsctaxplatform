@@ -15,7 +15,7 @@ export async function discoverWorkspaces(root, patterns = []) {
   for (const pattern of patterns) {
     if (!pattern.endsWith('/*')) {
       const abs = path.join(root, pattern);
-      const pkg = await readPackage(abs);
+      const pkg = await readPackage(abs, root);
       if (pkg) found.push(pkg);
       continue;
     }
@@ -28,7 +28,7 @@ export async function discoverWorkspaces(root, patterns = []) {
     }
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
-      const pkg = await readPackage(path.join(dir, entry.name));
+      const pkg = await readPackage(path.join(dir, entry.name), root);
       if (pkg) found.push(pkg);
     }
   }
@@ -36,7 +36,7 @@ export async function discoverWorkspaces(root, patterns = []) {
   return found;
 }
 
-async function readPackage(dir) {
+async function readPackage(dir, root) {
   const file = path.join(dir, 'package.json');
   try {
     await access(file);
@@ -52,7 +52,7 @@ async function readPackage(dir) {
     scripts: pkg.scripts || {},
     dependencies: pkg.dependencies || {},
     devDependencies: pkg.devDependencies || {},
-    location: path.relative(process.cwd(), dir).split(path.sep).join('/'),
+    location: path.relative(root, dir).split(path.sep).join('/'),
     dir
   };
 }

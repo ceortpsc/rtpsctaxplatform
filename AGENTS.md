@@ -12,7 +12,7 @@ dependencies**.
 Use **AOL** (Adaptive Optimized Linker) instead of npm:
 
 ```bash
-./scripts/aol install          # parallel workspace link + aol.lock.json
+./scripts/aol install          # parallel workspace link + RTPSC-package-lock.json
 ./scripts/aol run lint
 ./scripts/aol run test
 ./scripts/aol run build
@@ -53,4 +53,4 @@ Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
   `./scripts/aol run build` imports every module and writes `build/platform-manifest.json`.
   Neither uses ESLint/tsc/a bundler.
 - Do **not** reintroduce `npm install` / `package-lock.json` as the primary path; AOL owns
-  workspace linking via `aol.lock.json`.
+  workspace linking via `RTPSC-package-lock.json` (see `docs/rtpsc-package-lock.md`).

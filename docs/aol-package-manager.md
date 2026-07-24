@@ -10,7 +10,7 @@ npm is general-purpose and heavy. This monorepo is workspace-local (no external
 runtime dependencies). AOL is purpose-built for that graph:
 
 - **Parallel linking** — all workspace symlinks created concurrently
-- **Fingerprint lockfile** — `aol.lock.json` seals the constellation
+- **Fingerprint lockfile** — `RTPSC-package-lock.json` seals the constellation
 - **Cache hits** — healthy links + matching fingerprints → near-instant install
 - **Direct script exec** — no npm process tax for `run` / `exec`
 - **Signal UI** — "You've got packages." Buddy-list workspaces. Quantum handshake.
@@ -28,7 +28,7 @@ warm/cache-hit paths).
 ./scripts/aol run start
 ./scripts/aol run -w @rtp/api-gateway start
 ./scripts/aol ls               # buddy list
-./scripts/aol graph | mail     # constellation / status
+./scripts/aol graph | mail | lock   # constellation / status / RTPSC lock
 ./scripts/aol config list
 ./scripts/aol codes | api | copyright | doctor
 ./scripts/aol bench
@@ -37,7 +37,7 @@ warm/cache-hit paths).
 ```
 
 Full concept catalog, codes, config, and programmatic API:
-[`aol-api-and-config.md`](./aol-api-and-config.md) · IP: [`aol-intellectual-property.md`](./aol-intellectual-property.md)
+[`aol-api-and-config.md`](./aol-api-and-config.md) · IP: [`aol-intellectual-property.md`](./aol-intellectual-property.md) · Lockfile: [`rtpsc-package-lock.md`](./rtpsc-package-lock.md)
 
 Root `package.json` scripts delegate to AOL so `aol run <script>` and the
 Makefile stay aligned.
@@ -65,7 +65,7 @@ tools/aol/
     ansi.mjs           truecolor signal palette
     ui.mjs             panels, buddy list, handshake
     workspaces.mjs     glob discovery from package.json
-    lockfile.mjs       aol.lock.json fingerprinting
+    lockfile.mjs       RTPSC-package-lock.json (v2) + legacy aol.lock.json reader
     install.mjs        parallel linker + cache path
     run.mjs            script / exec runner
     bench.mjs          npm comparison harness

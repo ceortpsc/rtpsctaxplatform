@@ -2,7 +2,7 @@ import { install } from './install.mjs';
 import { runScript, execCommand } from './run.mjs';
 import { bench } from './bench.mjs';
 import { discoverWorkspaces, loadRootManifest, workspaceByName } from './workspaces.mjs';
-import { buildLockfile, readLockfile, writeLockfile, LOCKFILE_NAME, fingerprint } from './lockfile.mjs';
+import { buildLockfile, readLockfile, writeLockfile, LOCKFILE_NAME, fingerprint, integrity, validateLockfile, LOCKFILE_VERSION, LEGACY_LOCKFILE_NAME } from './lockfile.mjs';
 import {
   loadConfig,
   writeConfig,
@@ -104,7 +104,7 @@ export function describeApiSurface() {
       install: 'install()',
       run: 'runScript(), execCommand()',
       workspaces: 'discoverWorkspaces(), loadRootManifest(), workspaceByName()',
-      lockfile: 'buildLockfile(), readLockfile(), writeLockfile(), LOCKFILE_NAME',
+      lockfile: 'buildLockfile(), readLockfile(), writeLockfile(), validateLockfile(), LOCKFILE_NAME',
       config: 'loadConfig(), writeConfig(), initConfig(), DEFAULT_CONFIG',
       codes: 'ExitCode, SignalCode, AolError, listCodes()',
       ip: 'IP, copyrightBanner(), copyrightJson()',
@@ -131,7 +131,11 @@ export {
   readLockfile,
   writeLockfile,
   LOCKFILE_NAME,
+  LEGACY_LOCKFILE_NAME,
+  LOCKFILE_VERSION,
   fingerprint,
+  integrity,
+  validateLockfile,
   loadConfig,
   writeConfig,
   initConfig,

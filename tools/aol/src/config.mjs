@@ -17,7 +17,7 @@ export const DEFAULT_CONFIG = Object.freeze({
   install: {
     parallel: true,
     force: false,
-    lockfile: 'aol.lock.json',
+    lockfile: 'RTPSC-package-lock.json',
     cacheHit: true
   },
   ui: {

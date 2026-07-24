@@ -11,7 +11,7 @@
 | Asset | Kind | Notes |
 |-------|------|-------|
 | Source under `tools/aol/` | Copyright | Original software |
-| `aol.lock.json` format | Copyright | Lockfile schema/generator strings |
+| `aol.lock.json` / `RTPSC-package-lock.json` format | Copyright | Lockfile schema/generator strings |
 | `aol.config.json` + schema | Copyright | Configuration model |
 | Signal codes (`AOL-G###`, …) | Copyright | Diagnostics vocabulary |
 | Concept command catalog | Copyright | Command names, aliases, semantics |
