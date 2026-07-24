@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { loadRuntimeConfig, redactConfig } from '../../../packages/platform-core/src/index.mjs';
 import { answerQuery, buildDependencyGraph, buildInsights } from '../../../packages/module-advisor/src/index.mjs';
-import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor } from './catalog.mjs';
+import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor, SERVICE_ENDPOINTS } from './catalog.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3010;
@@ -51,6 +51,29 @@ function readRequestBody(request) {
     });
     request.on('error', reject);
   });
+}
+
+async function probeService({ name, port }) {
+  const start = Date.now();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 1500);
+  try {
+    const res = await fetch(`http://localhost:${port}/health`, { signal: controller.signal });
+    let status = `http ${res.status}`;
+    if (res.ok) {
+      try {
+        const body = await res.json();
+        status = body.status ?? 'ok';
+      } catch {
+        status = 'ok';
+      }
+    }
+    return { name, port, ok: res.ok, status, latencyMs: Date.now() - start };
+  } catch {
+    return { name, port, ok: false, status: 'unreachable', latencyMs: Date.now() - start };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function serveStatic(response, urlPath) {
@@ -103,6 +126,16 @@ export function createDashboardServer() {
 
     if (request.method === 'GET' && pathname === '/api/graph') {
       sendJson(response, 200, buildDependencyGraph(buildModuleCatalog()));
+      return;
+    }
+
+    if (request.method === 'GET' && pathname === '/api/status') {
+      const services = await Promise.all(SERVICE_ENDPOINTS.map((endpoint) => probeService(endpoint)));
+      sendJson(response, 200, {
+        checkedAt: new Date().toISOString(),
+        healthy: services.every((service) => service.ok),
+        services
+      });
       return;
     }
 

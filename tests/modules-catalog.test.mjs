@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildModuleCatalog, catalogSummary } from '../services/modules-dashboard/src/catalog.mjs';
+import { buildModuleCatalog, catalogSummary, SERVICE_ENDPOINTS } from '../services/modules-dashboard/src/catalog.mjs';
 
 test('module catalog exposes every module category', () => {
   const catalog = buildModuleCatalog();
@@ -22,6 +22,15 @@ test('workflow modules are listed as background modules with trigger tags', () =
   assert.deepEqual(names, ['refund-status-update', 'transcript-intake', 'transmission-cycle']);
   const refund = workflows.modules.find((m) => m.name === 'refund-status-update');
   assert.ok(refund.tags.some((tag) => tag.startsWith('event:')));
+});
+
+test('SERVICE_ENDPOINTS lists every HTTP service with a distinct port', () => {
+  const names = SERVICE_ENDPOINTS.map((e) => e.name);
+  assert.ok(names.includes('api-gateway'));
+  assert.ok(names.includes('modules-dashboard'));
+  const ports = SERVICE_ENDPOINTS.map((e) => e.port);
+  assert.equal(new Set(ports).size, ports.length, 'ports must be unique');
+  assert.ok(SERVICE_ENDPOINTS.find((e) => e.name === 'api-gateway').port === 3000);
 });
 
 test('every catalog entry has name, summary and tags', () => {

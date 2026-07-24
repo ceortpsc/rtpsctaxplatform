@@ -9,6 +9,31 @@ const state = {
   palette: { open: false, results: [], active: 0 }
 };
 
+/* ---------- Persistence & preferences ---------- */
+const STORE = { fav: "rtp.favorites", prefs: "rtp.prefs" };
+
+function loadJSON(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveJSON(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* storage unavailable — features degrade gracefully */
+  }
+}
+
+const favorites = new Set(loadJSON(STORE.fav, []));
+const prefs = Object.assign({ theme: "cream", motion: "on", statusMs: 5000 }, loadJSON(STORE.prefs, {}));
+let statusTimer = null;
+let navKeyArmed = false;
+
 const el = (tag, attrs = {}, children = []) => {
   const node = document.createElement(tag);
   for (const [key, value] of Object.entries(attrs)) {
@@ -43,6 +68,7 @@ async function postJSON(path, body) {
 }
 
 async function boot() {
+  applyPrefs();
   try {
     const data = await getJSON("/api/modules");
     state.catalog = data.categories;
@@ -58,6 +84,7 @@ async function boot() {
   }
   wireNav();
   wirePalette();
+  initFeatures();
   render();
 }
 
@@ -86,6 +113,10 @@ function setView(view) {
 }
 
 function render() {
+  if (statusTimer && state.view !== "status") {
+    clearInterval(statusTimer);
+    statusTimer = null;
+  }
   const view = document.getElementById("view");
   view.innerHTML = "";
   if (state.view === "catalog") view.appendChild(renderCatalog());
@@ -93,6 +124,7 @@ function render() {
   else if (state.view === "assistant") view.appendChild(renderAssistant());
   else if (state.view === "graph") renderGraph(view);
   else if (state.view === "design") renderDesign(view);
+  else if (state.view === "status") renderStatus(view);
 }
 
 /* ---------- Animation helpers ---------- */
@@ -121,7 +153,19 @@ function countUp(id, target) {
 /* ---------- Catalog ---------- */
 function moduleCard(module) {
   const card = el("article", { class: "module-card reveal", "data-name": module.name });
-  card.appendChild(el("h3", { class: "module-name", text: module.name }));
+  const star = el("button", {
+    class: "star-btn" + (favorites.has(module.name) ? " on" : ""),
+    title: "Pin to favorites",
+    text: favorites.has(module.name) ? "★" : "☆",
+    onclick: (event) => {
+      event.stopPropagation();
+      toggleFavorite(module.name);
+      star.classList.toggle("on");
+      star.textContent = favorites.has(module.name) ? "★" : "☆";
+    }
+  });
+  card.appendChild(star);
+  card.appendChild(el("h3", { class: "module-name", text: module.name, title: "Open details", onclick: () => openDrawer(module.name) }));
   card.appendChild(el("p", { class: "module-summary", text: module.summary ?? "" }));
   const tags = el("div", { class: "module-tags" });
   for (const tag of module.tags ?? []) tags.appendChild(el("span", { class: "tag", text: tag }));
@@ -155,13 +199,19 @@ function renderCatalog() {
   toolbar.appendChild(search);
 
   const filters = el("div", { class: "filters" });
-  ["all", ...state.catalog.map((g) => g.category)].forEach((option) => {
+  const options = [
+    { v: "all", label: "all" },
+    { v: "favorites", label: `★ favorites` },
+    ...state.catalog.map((g) => ({ v: g.category, label: g.category }))
+  ];
+  options.forEach(({ v, label }) => {
     filters.appendChild(
       el("button", {
-        class: "filter-btn" + (option === state.catalogFilter ? " active" : ""),
-        text: option,
+        class: "filter-btn" + (v === state.catalogFilter ? " active" : ""),
+        "data-filter": v,
+        text: label,
         onclick: () => {
-          state.catalogFilter = option;
+          state.catalogFilter = v;
           refreshCatalogBody();
         }
       })
@@ -180,14 +230,16 @@ function refreshCatalogBody() {
   if (!body) return;
   // Update filter active states
   document.querySelectorAll(".filters .filter-btn").forEach((b) => {
-    b.classList.toggle("active", b.textContent === state.catalogFilter);
+    b.classList.toggle("active", b.dataset.filter === state.catalogFilter);
   });
   body.innerHTML = "";
   const term = state.catalogSearch;
-  const groups = state.catalog.filter((g) => state.catalogFilter === "all" || g.category === state.catalogFilter);
+  const favMode = state.catalogFilter === "favorites";
+  const groups = state.catalog.filter((g) => favMode || state.catalogFilter === "all" || g.category === state.catalogFilter);
   let shown = 0;
   for (const group of groups) {
     const modules = group.modules.filter((m) => {
+      if (favMode && !favorites.has(m.name)) return false;
       if (!term) return true;
       return (
         m.name.toLowerCase().includes(term) ||
@@ -626,10 +678,30 @@ function wirePalette() {
       const pick = state.palette.results[state.palette.active];
       if (pick) {
         closePalette();
-        openModule(pick.name);
+        pick.run();
       }
     }
   });
+}
+
+function paletteEntries(term) {
+  const q = term.toLowerCase();
+  const commands = [
+    { label: "Go to Catalog", sub: "view", run: () => setView("catalog") },
+    { label: "Go to Insights", sub: "view", run: () => setView("insights") },
+    { label: "Go to AI Assistant", sub: "view", run: () => setView("assistant") },
+    { label: "Go to Dependency Graph", sub: "view", run: () => setView("graph") },
+    { label: "Go to System Status", sub: "view", run: () => setView("status") },
+    { label: "Go to Design System", sub: "view", run: () => setView("design") },
+    { label: "Toggle theme (Cream / Midnight)", sub: "action", run: toggleTheme },
+    { label: "Export catalog JSON", sub: "action", run: exportCatalog },
+    { label: "Open settings", sub: "action", run: openSettings },
+    { label: "Show keyboard shortcuts", sub: "action", run: openShortcuts }
+  ];
+  const modules = state.allModules.map((m) => ({ label: m.name, sub: m.category, run: () => openDrawer(m.name) }));
+  const all = [...commands, ...modules];
+  if (!q) return all.slice(0, 14);
+  return all.filter((e) => e.label.toLowerCase().includes(q) || e.sub.toLowerCase().includes(q)).slice(0, 14);
 }
 
 function openPalette() {
@@ -647,18 +719,7 @@ function closePalette() {
 }
 
 function updatePalette(term) {
-  const query = term.toLowerCase();
-  const results = state.allModules
-    .filter((m) => {
-      if (!query) return true;
-      return (
-        m.name.toLowerCase().includes(query) ||
-        m.category.toLowerCase().includes(query) ||
-        (m.tags ?? []).join(" ").toLowerCase().includes(query)
-      );
-    })
-    .slice(0, 12);
-  state.palette.results = results;
+  state.palette.results = paletteEntries(term);
   state.palette.active = 0;
   drawPalette();
 }
@@ -666,23 +727,340 @@ function updatePalette(term) {
 function drawPalette() {
   const list = document.getElementById("palette-results");
   list.innerHTML = "";
-  state.palette.results.forEach((module, index) => {
+  state.palette.results.forEach((entry, index) => {
     list.appendChild(
       el("li", {
         class: "palette-item" + (index === state.palette.active ? " active" : ""),
         onclick: () => {
           closePalette();
-          openModule(module.name);
+          entry.run();
         }
       }, [
-        el("span", { class: "pi-name", text: module.name }),
-        el("span", { class: "pi-cat", text: module.category })
+        el("span", { class: "pi-name", text: entry.label }),
+        el("span", { class: "pi-cat", text: entry.sub })
       ])
     );
   });
   if (state.palette.results.length === 0) {
-    list.appendChild(el("li", { class: "palette-item", text: "No modules found" }));
+    list.appendChild(el("li", { class: "palette-item", text: "No matches" }));
   }
+}
+
+/* ---------- Toasts ---------- */
+function toast(message) {
+  const container = document.getElementById("toasts");
+  if (!container) return;
+  const node = el("div", { class: "toast", text: message });
+  container.appendChild(node);
+  setTimeout(() => {
+    node.style.transition = "opacity .3s";
+    node.style.opacity = "0";
+    setTimeout(() => node.remove(), 320);
+  }, 2400);
+}
+
+/* ---------- Favorites ---------- */
+function toggleFavorite(name) {
+  if (favorites.has(name)) {
+    favorites.delete(name);
+    toast(`Unpinned ${name}`);
+  } else {
+    favorites.add(name);
+    toast(`Pinned ${name}`);
+  }
+  saveJSON(STORE.fav, [...favorites]);
+  updateFavBadge();
+  updateCardStar(name);
+}
+
+function updateFavBadge() {
+  const badge = document.getElementById("fav-badge");
+  if (!badge) return;
+  badge.textContent = String(favorites.size);
+  badge.style.display = favorites.size ? "" : "none";
+}
+
+function updateCardStar(name) {
+  document.querySelectorAll(`.module-card[data-name="${CSS.escape(name)}"] .star-btn`).forEach((btn) => {
+    const on = favorites.has(name);
+    btn.classList.toggle("on", on);
+    btn.textContent = on ? "★" : "☆";
+  });
+}
+
+/* ---------- Detail drawer ---------- */
+function openDrawer(name) {
+  const module = state.allModules.find((m) => m.name === name);
+  if (!module) {
+    toast(`No module named ${name}`);
+    return;
+  }
+  const drawer = document.getElementById("drawer");
+  const overlay = document.getElementById("drawer-overlay");
+  const isFav = favorites.has(name);
+  drawer.innerHTML = "";
+
+  drawer.appendChild(
+    el("div", { class: "drawer-head" }, [
+      el("div", {}, [el("h2", { class: "drawer-title", text: name }), el("span", { class: "drawer-cat", text: module.category })]),
+      el("button", { class: "icon-btn", text: "✕", onclick: closeDrawer })
+    ])
+  );
+
+  const body = el("div", { class: "drawer-body" });
+  body.appendChild(
+    el("div", { class: "drawer-actions" }, [
+      el("button", {
+        class: "mini-btn gold",
+        text: isFav ? "★ Pinned" : "☆ Pin",
+        onclick: () => {
+          toggleFavorite(name);
+          openDrawer(name);
+        }
+      }),
+      el("button", { class: "mini-btn", text: "Copy JSON", onclick: () => copyText(JSON.stringify(module, null, 2), "Module JSON copied") }),
+      el("button", { class: "mini-btn", text: "Show in graph", onclick: () => { closeDrawer(); setView("graph"); } })
+    ])
+  );
+
+  body.appendChild(el("div", { class: "drawer-section-title", text: "Summary" }));
+  body.appendChild(el("p", { class: "rec-body", text: module.summary ?? "" }));
+
+  if (module.tags?.length) {
+    body.appendChild(el("div", { class: "drawer-section-title", text: "Tags" }));
+    const tg = el("div", { class: "module-tags" });
+    module.tags.forEach((t) => tg.appendChild(el("span", { class: "tag", text: t })));
+    body.appendChild(tg);
+  }
+
+  const deps = module.detail?.dependencies;
+  if (deps?.length) {
+    body.appendChild(el("div", { class: "drawer-section-title", text: "Dependencies" }));
+    const wrap = el("div");
+    deps.forEach((d) => wrap.appendChild(el("span", { class: "rel-chip", text: d, onclick: () => openDrawer(d) })));
+    body.appendChild(wrap);
+  }
+
+  body.appendChild(el("div", { class: "drawer-section-title", text: "Detail" }));
+  body.appendChild(el("pre", { class: "drawer-pre", text: JSON.stringify(module.detail ?? {}, null, 2) }));
+
+  drawer.appendChild(body);
+  drawer.hidden = false;
+  overlay.hidden = false;
+}
+
+function closeDrawer() {
+  document.getElementById("drawer").hidden = true;
+  document.getElementById("drawer-overlay").hidden = true;
+}
+
+function copyText(text, message) {
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(() => toast(message)).catch(() => toast("Copy failed"));
+  } else {
+    toast("Clipboard unavailable");
+  }
+}
+
+/* ---------- System Status ---------- */
+function renderStatus(view) {
+  view.appendChild(
+    el("div", { class: "status-refresh" }, [
+      el("button", { class: "mini-btn", text: "Refresh now", onclick: refreshStatus }),
+      el("span", { id: "status-updated", text: "Checking…" })
+    ])
+  );
+  view.appendChild(el("div", { class: "status-banner", id: "status-banner", text: "Checking services…" }));
+  view.appendChild(el("div", { class: "status-grid", id: "status-grid" }));
+  refreshStatus();
+  if (statusTimer) clearInterval(statusTimer);
+  statusTimer = setInterval(refreshStatus, prefs.statusMs);
+}
+
+async function refreshStatus() {
+  const grid = document.getElementById("status-grid");
+  const banner = document.getElementById("status-banner");
+  if (!grid || !banner) return;
+  let data;
+  try {
+    data = await getJSON("/api/status");
+  } catch (error) {
+    banner.className = "status-banner down";
+    banner.textContent = `Status unavailable: ${error.message}`;
+    return;
+  }
+  const up = data.services.filter((s) => s.ok).length;
+  banner.className = "status-banner " + (data.healthy ? "up" : "down");
+  banner.textContent = data.healthy
+    ? `✓ All ${data.services.length} services healthy`
+    : `${up}/${data.services.length} services healthy`;
+  const updated = document.getElementById("status-updated");
+  if (updated) updated.textContent = "Updated " + new Date(data.checkedAt).toLocaleTimeString();
+
+  grid.innerHTML = "";
+  data.services.forEach((s) => {
+    grid.appendChild(
+      el("div", { class: "status-card" }, [
+        el("span", { class: "status-led " + (s.ok ? "ok" : "bad") }),
+        el("div", { class: "status-meta" }, [
+          el("div", { class: "status-name", text: s.name }),
+          el("div", { class: "status-sub", text: `:${s.port} · ${s.status}` })
+        ]),
+        el("span", { class: "status-latency", text: `${s.latencyMs}ms` })
+      ])
+    );
+  });
+}
+
+/* ---------- Export ---------- */
+function exportCatalog() {
+  const data = JSON.stringify({ summary: state.summary, categories: state.catalog }, null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = el("a", { href: url, download: "rtpsc-modules.json" });
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+  toast("Catalog exported (rtpsc-modules.json)");
+}
+
+/* ---------- Preferences & theme ---------- */
+function applyPrefs() {
+  const root = document.documentElement;
+  if (prefs.theme === "midnight") root.setAttribute("data-theme", "midnight");
+  else root.removeAttribute("data-theme");
+  root.setAttribute("data-motion", prefs.motion === "off" ? "off" : "on");
+}
+
+function setTheme(theme) {
+  prefs.theme = theme;
+  saveJSON(STORE.prefs, prefs);
+  applyPrefs();
+}
+
+function toggleTheme() {
+  setTheme(prefs.theme === "midnight" ? "cream" : "midnight");
+  toast(`Theme: ${prefs.theme === "midnight" ? "Midnight" : "Cream"}`);
+}
+
+/* ---------- Modals (settings / shortcuts) ---------- */
+function showModal(id) {
+  document.getElementById(id).hidden = false;
+}
+
+function closeModal(id) {
+  document.getElementById(id).hidden = true;
+}
+
+function openShortcuts() {
+  showModal("shortcuts-modal");
+}
+
+function segControl(options, current, onPick) {
+  const seg = el("div", { class: "seg" });
+  options.forEach((opt) => {
+    const [label, value] = Array.isArray(opt) ? opt : [opt, opt];
+    seg.appendChild(el("button", { class: value === current ? "on" : "", text: label, onclick: () => onPick(value) }));
+  });
+  return seg;
+}
+
+function settingRow(label, desc, control) {
+  return el("div", { class: "setting-row" }, [
+    el("div", {}, [el("div", { class: "setting-label", text: label }), el("div", { class: "setting-desc", text: desc })]),
+    control
+  ]);
+}
+
+function openSettings() {
+  const body = document.getElementById("settings-body");
+  body.innerHTML = "";
+  body.appendChild(
+    settingRow(
+      "Theme",
+      "Cream or Midnight canvas",
+      segControl([["Cream", "cream"], ["Midnight", "midnight"]], prefs.theme, (v) => {
+        setTheme(v);
+        openSettings();
+      })
+    )
+  );
+  body.appendChild(
+    settingRow(
+      "Motion",
+      "Enable UI animations",
+      segControl([["On", "on"], ["Off", "off"]], prefs.motion, (v) => {
+        prefs.motion = v;
+        saveJSON(STORE.prefs, prefs);
+        applyPrefs();
+        openSettings();
+      })
+    )
+  );
+  body.appendChild(
+    settingRow(
+      "Status refresh",
+      "Auto-refresh interval",
+      segControl([["3s", 3000], ["5s", 5000], ["10s", 10000]], prefs.statusMs, (v) => {
+        prefs.statusMs = v;
+        saveJSON(STORE.prefs, prefs);
+        if (state.view === "status") render();
+        openSettings();
+      })
+    )
+  );
+  showModal("settings-modal");
+}
+
+/* ---------- Global keyboard shortcuts ---------- */
+function onGlobalKey(event) {
+  if (event.key === "Escape") {
+    closeDrawer();
+    closeModal("settings-modal");
+    closeModal("shortcuts-modal");
+    return;
+  }
+  const tag = (event.target.tagName || "").toLowerCase();
+  if (tag === "input" || tag === "textarea" || event.metaKey || event.ctrlKey || event.altKey) return;
+
+  if (event.key === "?") {
+    openShortcuts();
+  } else if (event.key.toLowerCase() === "t") {
+    toggleTheme();
+  } else if (event.key.toLowerCase() === "g") {
+    navKeyArmed = true;
+    setTimeout(() => {
+      navKeyArmed = false;
+    }, 1200);
+  } else if (navKeyArmed) {
+    const map = { c: "catalog", i: "insights", a: "assistant", d: "graph", s: "status", y: "design" };
+    const target = map[event.key.toLowerCase()];
+    if (target) setView(target);
+    navKeyArmed = false;
+  }
+}
+
+/* ---------- Feature wiring ---------- */
+function initFeatures() {
+  document.getElementById("btn-export").addEventListener("click", exportCatalog);
+  document.getElementById("btn-settings").addEventListener("click", openSettings);
+  document.getElementById("btn-shortcuts").addEventListener("click", openShortcuts);
+  document.getElementById("drawer-overlay").addEventListener("click", closeDrawer);
+  document.querySelectorAll("[data-close-modal]").forEach((btn) =>
+    btn.addEventListener("click", () => closeModal(btn.dataset.closeModal))
+  );
+  document.querySelectorAll(".modal-overlay").forEach((overlay) =>
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) overlay.hidden = true;
+    })
+  );
+
+  const catNav = document.querySelector('.nav-item[data-view="catalog"]');
+  if (catNav) catNav.appendChild(el("span", { class: "nav-badge", id: "fav-badge" }));
+  updateFavBadge();
+
+  document.addEventListener("keydown", onGlobalKey);
 }
 
 boot();

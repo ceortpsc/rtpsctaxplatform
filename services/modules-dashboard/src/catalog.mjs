@@ -40,6 +40,9 @@ const SERVICE_PORTS = {
   'modules-dashboard': 3010
 };
 
+/** Service name/port pairs used for live status checks. */
+export const SERVICE_ENDPOINTS = Object.entries(SERVICE_PORTS).map(([name, port]) => ({ name, port }));
+
 function serviceEntry(descriptor) {
   return {
     name: descriptor.name,
