@@ -1,0 +1,55 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  engines/analytics-center: {}
+
+  engines/refund-intelligence-engine: {}
+
+  engines/tc-code-engine: {}
+
+  packages/client-config: {}
+
+  packages/module-advisor: {}
+
+  packages/platform-core: {}
+
+  packages/secure-tunnel: {}
+
+  packages/workflow-engine: {}
+
+  pipelines/masterfile-pipeline: {}
+
+  pipelines/refund-status-pipeline: {}
+
+  pipelines/transmission-pipeline: {}
+
+  services/analytics-service: {}
+
+  services/api-gateway: {}
+
+  services/modules-dashboard: {}
+
+  services/refund-status-service: {}
+
+  services/transcript-service: {}
+
+  workers/live-source-fetcher: {}
+
+  workers/tds-worker: {}
+
+  workers/transcript-pull-worker: {}
+
+  workers/workflow-runner: {}
+
+  workflows/refund-status-workflow: {}
+
+  workflows/transcript-intake-workflow: {}
+
+  workflows/transmission-workflow: {}

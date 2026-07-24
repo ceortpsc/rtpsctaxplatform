@@ -1,6 +1,17 @@
-# RTPSC Tax Platform Scaffold
+# Ross Tax Pro Software Co — Efile Transmission Software
 
-Production-grade scaffold for a tax platform focused on secure integrations, real-time processing, compliance boundaries, and iterative delivery. This baseline is intentionally limited to compliant adapters and executable stubs; it does **not** implement unauthorized access to IRS systems, non-public channels, or scraping workflows.
+**Ross Tax Pro Software Co (RTPSC)** — *Efile Transmission Software*.
+
+Production-grade scaffold for a tax e-file transmission platform focused on secure integrations, real-time processing, compliance boundaries, and iterative delivery. This baseline is intentionally limited to compliant adapters and executable stubs; it does **not** implement unauthorized access to IRS systems, non-public channels, or scraping workflows.
+
+### Environment protection
+
+Live IRS e-file transmission is guarded by a fail-safe **environment protection** check
+(`evaluateEnvironmentProtection` in `packages/platform-core`). Transmission stays **blocked**
+unless every safeguard passes: the environment is production, all secrets are configured, an
+approved secure tunnel endpoint is set, and `EFILE_TRANSMISSION_ENABLED=true`. Every service
+reports its protection state at `GET /metadata`; the dashboard exposes `GET /api/environment`
+and a live indicator (sidebar badge + System Status panel).
 
 ## Platform Overview
 
@@ -26,12 +37,28 @@ The repository is organized as a lightweight monorepo with executable Node.js se
 ## Quickstart
 
 ```bash
-npm run setup
-npm run lint
-npm test
-npm run build
-npm run start
+pnpm install
+ppnpm run lint
+ppnpm test
+ppnpm run build
+ppnpm run start
 ```
+
+> This project uses **pnpm** (see `packageManager` in `package.json`). Enable it with
+> `corepack enable pnpm` if you don't have it.
+
+## Deploy all (development)
+
+Bring up the whole platform — every HTTP service plus the background
+`workflow-runner` — with one command:
+
+```bash
+pnpm run deploy:all     # starts all components, health-checks them, stays live
+pnpm run deploy:smoke   # same, but verifies health once and exits (CI smoke check)
+```
+
+Services: api-gateway `:3000`, refund-status `:3001`, transcript `:3002`,
+analytics `:3003`, modules-dashboard `:3010`.
 
 Default gateway health check:
 
@@ -42,10 +69,58 @@ curl http://localhost:3000/health
 Run workers in one-shot mode:
 
 ```bash
-npm run worker:tds
-npm run worker:transcript-pull
-npm run worker:live-source
+pnpm run worker:tds
+pnpm run worker:transcript-pull
+pnpm run worker:live-source
 ```
+
+## Background Workflows
+
+The platform ships a modular workflow engine (`packages/workflow-engine`) plus
+domain workflows under `workflows/*`. Workflows run **in the background** via the
+`workflow-runner` worker (`workers/workflow-runner`) — they are not triggered
+from any dashboard.
+
+Run all workflows in the background (schedules fire automatically, event/manual
+workflows are driven on a cadence; every completed run is logged):
+
+```bash
+pnpm run start:workflows        # long-running background runner
+pnpm run worker:workflows       # one-shot: run every workflow once and exit
+```
+
+Trigger a single workflow from the terminal:
+
+```bash
+pnpm run workflow:list
+pnpm run workflow:run transcript-intake '{"requestId":"REQ-1","authorized":true}'
+```
+
+## Modules Dashboard
+
+The dashboard (`services/modules-dashboard`) is a **read-only inventory of
+platform modules only** (packages, services, workers, pipelines, engines, and
+workflow definitions). It does not trigger workflows.
+
+```bash
+pnpm run start:dashboard
+# then open http://localhost:3010
+```
+
+The dashboard has four views with a sidebar and a `Ctrl+K` command palette:
+
+- **Catalog** — searchable/filterable module inventory with per-module details
+- **Insights** — AI-assisted metrics (trigger distribution, category counts) and recommendations
+- **AI Assistant** — ask natural-language questions about modules (local heuristic engine, no external LLM)
+- **Dependency Graph** — layered SVG graph of module dependencies and workflow-runner links
+
+REST API (served by the dashboard):
+
+- `GET /api/modules` — categorized catalog of all platform modules
+- `GET /api/insights` — insights + recommendations (from `@rtp/module-advisor`)
+- `GET /api/graph` — dependency graph nodes/edges
+- `POST /api/assistant` — natural-language query (`{ "query": "..." }`) → answer + matches
+- `GET /health` and `GET /metadata` — service health and module summary
 
 ## Module Map
 
@@ -54,11 +129,20 @@ packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
   secure-tunnel/         compliant tunnel adapter interface scaffold
+  workflow-engine/       modular task/workflow/trigger engine + run history
+  module-advisor/        AI-assisted insights, assistant, and dependency graph
 services/
   api-gateway/           route registry and transmission entrypoint skeleton
   refund-status-service/ event-driven refund status surface
   transcript-service/    transcript intake and orchestration surface
   analytics-service/     analytics and refund intelligence API surface
+  modules-dashboard/     read-only dashboard + REST API for platform modules
+workflows/
+  refund-status-workflow/    event-driven refund status update workflow
+  transcript-intake-workflow/ authorization-gated transcript intake workflow
+  transmission-workflow/     scheduled transmission cycle workflow
+workers/
+  workflow-runner/       runs all workflows in the background (schedules/events)
 workers/
   tds-worker/            TDS orchestration worker scaffold
   transcript-pull-worker/account transcript pull worker scaffold
@@ -98,8 +182,8 @@ Key placeholders include:
 
 1. Copy the appropriate `env/.env.<environment>.example` file into a local untracked `.env` file.
 2. Run `docker compose up -d` to provision local Postgres and Redis placeholders.
-3. Run `npm run setup`, then `npm run start`.
-4. Run `npm test` and `npm run build` before opening changes.
+3. Run `pnpm run setup`, then `pnpm run start`.
+4. Run `pnpm test` and `pnpm run build` before opening changes.
 
 ## Documentation Index
 

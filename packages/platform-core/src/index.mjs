@@ -1,10 +1,19 @@
 import http from 'node:http';
 
+// Product identity for Ross Tax Pro Software Co (RTPSC).
+export const PLATFORM_IDENTITY = Object.freeze({
+  company: 'Ross Tax Pro Software Co',
+  application: 'Efile Transmission Software',
+  abbreviation: 'RTPSC'
+});
+
 const defaultComplianceNotice = [
   'No unauthorized access to IRS systems.',
   'No scraping-based refund status collection.',
   'Secrets must come from environment configuration.'
 ];
+
+const PRODUCTION_ENVIRONMENTS = new Set(['prod', 'production']);
 
 export function loadRuntimeConfig(overrides = {}) {
   const appEnv = overrides.appEnv ?? process.env.APP_ENV ?? 'local';
@@ -20,7 +29,9 @@ export function loadRuntimeConfig(overrides = {}) {
     tdsClientSecret: overrides.tdsClientSecret ?? process.env.TDS_CLIENT_SECRET ?? 'unset',
     tunnelClientId: overrides.tunnelClientId ?? process.env.TUNNEL_CLIENT_ID ?? 'unset',
     tunnelClientSecret: overrides.tunnelClientSecret ?? process.env.TUNNEL_CLIENT_SECRET ?? 'unset',
-    approvedTunnelEndpoint: overrides.approvedTunnelEndpoint ?? process.env.APPROVED_TUNNEL_ENDPOINT ?? 'unset'
+    approvedTunnelEndpoint: overrides.approvedTunnelEndpoint ?? process.env.APPROVED_TUNNEL_ENDPOINT ?? 'unset',
+    efileTransmissionEnabled:
+      overrides.efileTransmissionEnabled ?? process.env.EFILE_TRANSMISSION_ENABLED === 'true'
   };
 }
 
@@ -33,8 +44,51 @@ export function redactConfig(config) {
     tdsClientId: config.tdsClientId,
     tunnelClientId: config.tunnelClientId,
     approvedTunnelEndpoint: config.approvedTunnelEndpoint,
+    efileTransmissionEnabled: config.efileTransmissionEnabled === true,
     secretsConfigured: [config.apiClientSecret, config.tdsClientSecret, config.tunnelClientSecret].every((value) => value !== 'unset')
   };
+}
+
+/**
+ * Environment protection guard for the Efile Transmission Software.
+ *
+ * Live IRS e-file transmission is a high-risk operation. This guard fails safe:
+ * transmission stays BLOCKED unless every safeguard passes — the environment is
+ * production, all credentials are configured, an approved secure tunnel endpoint
+ * is set, and EFILE_TRANSMISSION_ENABLED is explicitly "true".
+ */
+export function evaluateEnvironmentProtection(config = loadRuntimeConfig()) {
+  const appEnv = config.appEnv;
+  const isProduction = PRODUCTION_ENVIRONMENTS.has(appEnv);
+  const secretsConfigured = [config.apiClientSecret, config.tdsClientSecret, config.tunnelClientSecret].every(
+    (value) => value && value !== 'unset'
+  );
+  const approvedTunnel = Boolean(config.approvedTunnelEndpoint) && config.approvedTunnelEndpoint !== 'unset';
+  const transmissionFlagEnabled = config.efileTransmissionEnabled === true;
+
+  const reasons = [];
+  if (!isProduction) reasons.push(`Environment "${appEnv}" is not a production environment.`);
+  if (!secretsConfigured) reasons.push('API/TDS/tunnel secrets are not fully configured.');
+  if (!approvedTunnel) reasons.push('No approved secure tunnel endpoint is configured.');
+  if (!transmissionFlagEnabled) reasons.push('EFILE_TRANSMISSION_ENABLED is not set to "true".');
+
+  const transmissionAllowed = reasons.length === 0;
+  return Object.freeze({
+    company: PLATFORM_IDENTITY.company,
+    application: PLATFORM_IDENTITY.application,
+    appEnv,
+    environment: isProduction ? 'production' : appEnv,
+    protected: !transmissionAllowed,
+    transmissionAllowed,
+    safeguards: {
+      productionEnvironment: isProduction,
+      secretsConfigured,
+      approvedTunnel,
+      transmissionFlagEnabled
+    },
+    reasons,
+    checkedAt: new Date().toISOString()
+  });
 }
 
 export function createServiceDescriptor({ name, domain, responsibilities = [], dependencies = [] }) {
@@ -56,8 +110,10 @@ export function createEngineDescriptor({ name, capabilities = [], outputs = [] }
 export function startHttpService({ descriptor, defaultPort = 3000, extraMetadata = {} }) {
   const config = loadRuntimeConfig({ servicePort: defaultPort });
   const payload = {
+    identity: PLATFORM_IDENTITY,
     service: descriptor,
     runtime: redactConfig(config),
+    environmentProtection: evaluateEnvironmentProtection(config),
     metadata: extraMetadata
   };
 

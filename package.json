@@ -1,30 +1,33 @@
 {
   "name": "rtpsctaxplatform",
   "version": "0.1.0",
+  "description": "Ross Tax Pro Software Co — Efile Transmission Software",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "packages/*",
-    "services/*",
-    "workers/*",
-    "pipelines/*",
-    "engines/*"
-  ],
+  "packageManager": "pnpm@10.33.3",
   "scripts": {
     "setup": "./scripts/setup.sh",
     "lint": "./scripts/lint.sh",
     "test": "./scripts/test.sh",
     "build": "./scripts/build.sh",
     "start": "./scripts/start.sh",
-    "start:gateway": "npm run -w @rtp/api-gateway start",
-    "start:refund-status": "npm run -w @rtp/refund-status-service start",
-    "start:transcript": "npm run -w @rtp/transcript-service start",
-    "start:analytics": "npm run -w @rtp/analytics-service start",
-    "worker:tds": "npm run -w @rtp/tds-worker start -- --once",
-    "worker:transcript-pull": "npm run -w @rtp/transcript-pull-worker start -- --once",
-    "worker:live-source": "npm run -w @rtp/live-source-fetcher start -- --once"
+    "start:gateway": "pnpm --filter @rtp/api-gateway start",
+    "start:refund-status": "pnpm --filter @rtp/refund-status-service start",
+    "start:transcript": "pnpm --filter @rtp/transcript-service start",
+    "start:analytics": "pnpm --filter @rtp/analytics-service start",
+    "start:dashboard": "pnpm --filter @rtp/modules-dashboard start",
+    "start:workflows": "pnpm --filter @rtp/workflow-runner start",
+    "deploy:all": "node scripts/deploy-all.mjs",
+    "deploy:smoke": "node scripts/deploy-all.mjs --smoke",
+    "worker:tds": "pnpm --filter @rtp/tds-worker start --once",
+    "worker:transcript-pull": "pnpm --filter @rtp/transcript-pull-worker start --once",
+    "worker:live-source": "pnpm --filter @rtp/live-source-fetcher start --once",
+    "worker:workflows": "pnpm --filter @rtp/workflow-runner start --once",
+    "workflow:list": "pnpm --filter @rtp/workflow-runner workflows",
+    "workflow:run": "pnpm --filter @rtp/workflow-runner run-workflow"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "pnpm": ">=10"
   }
 }

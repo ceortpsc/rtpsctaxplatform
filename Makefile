@@ -18,7 +18,7 @@ start:
 	./scripts/start.sh
 
 gateway:
-	npm run start:gateway
+	pnpm run start:gateway
 
 workers:
-	npm run worker:tds && npm run worker:transcript-pull && npm run worker:live-source
+	pnpm run worker:tds && pnpm run worker:transcript-pull && pnpm run worker:live-source

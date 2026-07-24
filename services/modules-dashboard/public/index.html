@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ross Tax Pro Software Co · Efile Transmission Software</title>
+    <link rel="stylesheet" href="/theme.css" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="icon" href="/assets/emblem.svg" />
+  </head>
+  <body>
+    <div class="bg-decor" aria-hidden="true">
+      <img class="decor-rosette decor-rosette--tr" src="/assets/guilloche.svg" alt="" />
+      <img class="decor-rosette decor-rosette--bl" src="/assets/guilloche.svg" alt="" />
+    </div>
+
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <img class="brand-emblem u-float" src="/assets/emblem.svg" alt="RTPSC emblem" />
+          <div class="brand-text">
+            <span class="brand-mark">RTPSC</span>
+            <span class="brand-sub">Efile Transmission</span>
+            <span class="brand-co">Ross Tax Pro Software Co</span>
+          </div>
+        </div>
+        <div class="env-badge" id="env-badge" hidden></div>
+        <nav class="nav" id="nav">
+          <button class="nav-item active" data-view="catalog"><span class="nav-ico">▦</span> Catalog</button>
+          <button class="nav-item" data-view="insights"><span class="nav-ico">✦</span> Insights</button>
+          <button class="nav-item" data-view="assistant"><span class="nav-ico">✨</span> AI Assistant</button>
+          <button class="nav-item" data-view="graph"><span class="nav-ico">⧉</span> Dependency Graph</button>
+          <button class="nav-item" data-view="status"><span class="nav-ico">◉</span> System Status</button>
+          <button class="nav-item" data-view="design"><span class="nav-ico">❖</span> Design System</button>
+        </nav>
+        <button class="palette-hint" id="open-palette">
+          <span>Search modules</span>
+          <span><kbd>Ctrl</kbd><kbd>K</kbd></span>
+        </button>
+        <div class="sidebar-foot">
+          Workflows run in the background via <code>workflow-runner</code>. This dashboard is
+          modules-only.
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-lead">
+            <h1 class="view-title" id="view-title">Catalog</h1>
+            <p class="view-kicker" id="view-kicker">Platform module inventory</p>
+          </div>
+          <div class="topbar-right">
+            <div class="topbar-actions">
+              <button class="icon-btn" id="btn-export" title="Export catalog JSON">⬇</button>
+              <button class="icon-btn" id="btn-shortcuts" title="Keyboard shortcuts (?)">⌨</button>
+              <button class="icon-btn" id="btn-settings" title="Settings">⚙</button>
+            </div>
+            <div class="stats" id="stats">
+              <div class="stat"><span class="stat-value" id="stat-modules" data-count="0">0</span><span class="stat-label">Modules</span></div>
+              <div class="stat"><span class="stat-value" id="stat-categories" data-count="0">0</span><span class="stat-label">Categories</span></div>
+            </div>
+          </div>
+        </header>
+        <div class="view" id="view"></div>
+      </main>
+    </div>
+
+    <div class="palette-overlay" id="palette" hidden>
+      <div class="palette">
+        <input id="palette-input" class="palette-input" type="text" placeholder="Search modules & actions…" autocomplete="off" />
+        <ul class="palette-results" id="palette-results"></ul>
+        <div class="palette-foot"><kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>↵</kbd> open · <kbd>Esc</kbd> close</div>
+      </div>
+    </div>
+
+    <div class="drawer-overlay" id="drawer-overlay" hidden></div>
+    <aside class="drawer" id="drawer" hidden aria-label="Module detail"></aside>
+
+    <div class="modal-overlay" id="settings-modal" hidden>
+      <div class="modal">
+        <div class="modal-head">
+          <h2>Settings</h2>
+          <button class="icon-btn" data-close-modal="settings-modal">✕</button>
+        </div>
+        <div class="modal-body" id="settings-body"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="shortcuts-modal" hidden>
+      <div class="modal">
+        <div class="modal-head">
+          <h2>Keyboard shortcuts</h2>
+          <button class="icon-btn" data-close-modal="shortcuts-modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="kbd-list">
+            <div class="kbd-row"><span>Command palette</span><span><kbd>Ctrl</kbd><kbd>K</kbd></span></div>
+            <div class="kbd-row"><span>Keyboard shortcuts</span><span><kbd>?</kbd></span></div>
+            <div class="kbd-row"><span>Toggle theme</span><span><kbd>T</kbd></span></div>
+            <div class="kbd-row"><span>Go to Catalog / Insights / Status</span><span><kbd>G</kbd> then <kbd>C</kbd>/<kbd>I</kbd>/<kbd>S</kbd></span></div>
+            <div class="kbd-row"><span>Close overlay</span><span><kbd>Esc</kbd></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toasts" id="toasts"></div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
