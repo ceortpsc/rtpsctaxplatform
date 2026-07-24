@@ -23,6 +23,8 @@
     "start:analytics": "npm run -w @rtp/analytics-service start",
     "start:dashboard": "npm run -w @rtp/modules-dashboard start",
     "start:workflows": "npm run -w @rtp/workflow-runner start",
+    "deploy:all": "node scripts/deploy-all.mjs",
+    "deploy:smoke": "node scripts/deploy-all.mjs --smoke",
     "worker:tds": "npm run -w @rtp/tds-worker start -- --once",
     "worker:transcript-pull": "npm run -w @rtp/transcript-pull-worker start -- --once",
     "worker:live-source": "npm run -w @rtp/live-source-fetcher start -- --once",

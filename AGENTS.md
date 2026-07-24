@@ -25,6 +25,10 @@ Use the npm scripts (`npm run lint`, `npm test`, `npm run build`, `npm run start
   `GET /api/insights`, `GET /api/graph`, `POST /api/assistant` (`{query}`).
 - The "AI Assistant"/insights come from `packages/module-advisor` — a local, dependency-free
   heuristic engine (intent detection + keyword scoring). There is **no external LLM or API key**.
+- `npm run deploy:all` starts every HTTP service (ports 3000-3003 + 3010) plus the background
+  `workflow-runner` as child processes, health-checks them, and stays live (Ctrl+C stops all).
+  `npm run deploy:smoke` does the same but verifies health once and exits (CI smoke check). Free
+  those ports first — stop any single-service dev processes so `deploy:all` doesn't hit EADDRINUSE.
 - Workflows run in the **background** via the `workflow-runner` worker, not from any dashboard:
   `npm run start:workflows` (long-running) or `npm run worker:workflows` (one-shot). A single
   workflow can be run from the terminal with `npm run workflow:run <name> '<json>'`.

@@ -33,6 +33,19 @@ npm run build
 npm run start
 ```
 
+## Deploy all (development)
+
+Bring up the whole platform — every HTTP service plus the background
+`workflow-runner` — with one command:
+
+```bash
+npm run deploy:all     # starts all components, health-checks them, stays live
+npm run deploy:smoke   # same, but verifies health once and exits (CI smoke check)
+```
+
+Services: api-gateway `:3000`, refund-status `:3001`, transcript `:3002`,
+analytics `:3003`, modules-dashboard `:3010`.
+
 Default gateway health check:
 
 ```bash
