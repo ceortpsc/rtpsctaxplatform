@@ -329,13 +329,13 @@ async function ask(query) {
 
 /* ---------- Dependency Graph ---------- */
 const CATEGORY_COLORS = {
-  packages: "#7c5cff",
-  services: "#4c8dff",
-  workers: "#3fb950",
-  pipelines: "#d29922",
-  engines: "#f778ba",
-  workflows: "#56d4dd",
-  external: "#8b98a9"
+  packages: "#14213d",
+  services: "#b8860b",
+  workers: "#6b7280",
+  pipelines: "#9c7a1e",
+  engines: "#22345f",
+  workflows: "#d4af37",
+  external: "#9aa1ac"
 };
 
 async function renderGraph(view) {
