@@ -6,6 +6,23 @@
 // a fail-safe payment gate until production approvals are satisfied.
 
 import { evaluateEnvironmentProtection, loadRuntimeConfig } from '../../platform-core/src/index.mjs';
+import {
+  createSbtpgClearanceStore,
+  evaluateLoginClearance,
+  loadSbtpgCredentials,
+  redactUsername,
+  sbtpgCredentialsConfigured,
+  validateSbtpgLogin
+} from './auth.mjs';
+
+export {
+  createSbtpgClearanceStore,
+  evaluateLoginClearance,
+  loadSbtpgCredentials,
+  redactUsername,
+  sbtpgCredentialsConfigured,
+  validateSbtpgLogin
+};
 
 export const SBTPG_PROVIDER = Object.freeze({
   name: 'Santa Barbara Tax Products Group',
@@ -80,14 +97,29 @@ export function createSbtpgAdapter() {
  * the environment is production, provider secrets are configured, SBTPG is
  * explicitly enabled, disclosures are accepted, and the amount is within limits.
  */
-export function evaluatePaymentGate({ config = loadRuntimeConfig(), product = null, requestedAmount = 0, consent = {}, enabled } = {}) {
+export function evaluatePaymentGate({
+  config = loadRuntimeConfig(),
+  product = null,
+  requestedAmount = 0,
+  consent = {},
+  enabled,
+  clearanceToken = null,
+  clearanceStore = null,
+  requireOperatorClearance = false
+} = {}) {
   const env = evaluateEnvironmentProtection(config);
   const sbtpgEnabled = enabled ?? (process.env.SBTPG_ENABLED === 'true');
+  const credentialsOk = sbtpgCredentialsConfigured();
+  const loginClearance = evaluateLoginClearance({ token: clearanceToken, store: clearanceStore });
 
   const reasons = [];
   if (!env.safeguards.productionEnvironment) reasons.push(`Environment "${env.appEnv}" is not a production environment.`);
   if (!env.safeguards.secretsConfigured) reasons.push('Provider/API secrets are not fully configured.');
+  if (!credentialsOk) reasons.push('SBTPG_USERNAME / SBTPG_SECRET are not provisioned.');
   if (!sbtpgEnabled) reasons.push('SBTPG_ENABLED is not set to "true".');
+  if (requireOperatorClearance && !loginClearance.cleared) {
+    reasons.push('Operator SBTPG login clearance is required (validate credentials first).');
+  }
   if (consent.disclosuresAccepted !== true) reasons.push('Required disclosures have not been accepted.');
   if (product && requestedAmount > product.maxAmount) {
     reasons.push(`Requested amount exceeds the ${product.name} limit of $${product.maxAmount}.`);
@@ -102,6 +134,12 @@ export function evaluatePaymentGate({ config = loadRuntimeConfig(), product = nu
     allowed,
     blocked: !allowed,
     reasons,
+    credentialsProvisioned: credentialsOk,
+    loginClearance: {
+      cleared: loginClearance.cleared,
+      status: loginClearance.status,
+      usernameHint: loginClearance.credentials?.usernameHint ?? null
+    },
     checkedAt: new Date().toISOString()
   };
 }

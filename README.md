@@ -105,6 +105,22 @@ logic. `services/enrollment-service` (port `3004`) exposes the REST API and a ta
 REST API: `GET /api/products`, `GET /api/payment-gate`, `POST /api/enrollments`,
 `GET /api/enrollments[/:id]`, plus `/health` + `/metadata`.
 
+### SBTPG login validation & clearance (audited)
+
+Operator credentials are provisioned via environment only (`SBTPG_USERNAME`, `SBTPG_SECRET`) —
+never hard-coded. `packages/bank-products/src/auth.mjs` validates logins with timing-safe
+comparison, issues a short-lived **clearance token**, and appends every attempt to
+`logs/sbtpg-login-audit.jsonl` (username redacted; secrets never logged).
+
+```bash
+export SBTPG_USERNAME='…'
+export SBTPG_SECRET='…'
+./rtpsc start enrollment   # login panel at http://localhost:3004
+```
+
+Auth API: `GET /api/auth/status`, `POST /api/auth/login`, `POST /api/auth/logout`,
+`GET /api/auth/clearance`, `GET /api/auth/audit[?persisted=1]`.
+
 ## Invoicing machine — operations, tax calc, PDF & receipt paper
 
 `packages/tax-data` holds **state + county/parish** taxation reference rates (Louisiana uses

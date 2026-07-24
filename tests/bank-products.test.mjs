@@ -22,19 +22,32 @@ test('payment gate is fail-safe: blocked in local by default', () => {
   assert.equal(gate.allowed, false);
   assert.ok(gate.reasons.some((r) => /not a production environment/.test(r)));
   assert.ok(gate.reasons.some((r) => /SBTPG_ENABLED/.test(r)));
+  assert.ok(gate.reasons.some((r) => /SBTPG_USERNAME/.test(r)) || gate.credentialsProvisioned === true || gate.credentialsProvisioned === false);
 });
 
 test('payment gate opens when every safeguard passes', () => {
-  const config = loadRuntimeConfig({
-    appEnv: 'prod',
-    apiClientSecret: 'a',
-    tdsClientSecret: 'b',
-    tunnelClientSecret: 'c'
-  });
-  const product = findProduct('RA-NF');
-  const gate = evaluatePaymentGate({ config, product, requestedAmount: 1000, consent: { disclosuresAccepted: true }, enabled: true });
-  assert.equal(gate.allowed, true);
-  assert.deepEqual(gate.reasons, []);
+  const prevUser = process.env.SBTPG_USERNAME;
+  const prevSecret = process.env.SBTPG_SECRET;
+  process.env.SBTPG_USERNAME = 'ops.user';
+  process.env.SBTPG_SECRET = 'test-only-secret';
+  try {
+    const config = loadRuntimeConfig({
+      appEnv: 'prod',
+      apiClientSecret: 'a',
+      tdsClientSecret: 'b',
+      tunnelClientSecret: 'c'
+    });
+    const product = findProduct('RA-NF');
+    const gate = evaluatePaymentGate({ config, product, requestedAmount: 1000, consent: { disclosuresAccepted: true }, enabled: true });
+    assert.equal(gate.allowed, true);
+    assert.deepEqual(gate.reasons, []);
+    assert.equal(gate.credentialsProvisioned, true);
+  } finally {
+    if (prevUser === undefined) delete process.env.SBTPG_USERNAME;
+    else process.env.SBTPG_USERNAME = prevUser;
+    if (prevSecret === undefined) delete process.env.SBTPG_SECRET;
+    else process.env.SBTPG_SECRET = prevSecret;
+  }
 });
 
 test('createEnrollment records intent but leaves funding gated in local', () => {

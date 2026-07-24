@@ -8,6 +8,7 @@ const modules = [
   '../packages/workflow-engine/src/index.mjs',
   '../packages/module-advisor/src/index.mjs',
   '../packages/bank-products/src/index.mjs',
+  '../packages/bank-products/src/auth.mjs',
   '../packages/tax-data/src/index.mjs',
   '../packages/invoice-core/src/index.mjs',
   '../packages/invoice-core/src/pdf.mjs',

@@ -1,5 +1,6 @@
 let products = [];
 let selected = null;
+let clearanceToken = sessionStorage.getItem("sbtpgClearanceToken") || null;
 
 const $ = (id) => document.getElementById(id);
 
@@ -11,8 +12,10 @@ function toast(message) {
   toast.timer = setTimeout(() => node.classList.remove("show"), 2600);
 }
 
-async function api(path, options) {
-  const response = await fetch(path, options);
+async function api(path, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (clearanceToken) headers["x-sbtpg-clearance"] = clearanceToken;
+  const response = await fetch(path, { ...options, headers });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || data.error || `Request failed (${response.status})`);
   return data;
@@ -23,13 +26,98 @@ async function loadGate() {
     const gate = await api("/api/payment-gate");
     const node = $("gate");
     node.className = "gate " + (gate.allowed ? "allowed" : "blocked");
+    const clearanceLine = gate.loginClearance
+      ? `<div class="reasons">Login clearance: ${gate.loginClearance.cleared ? "CLEARED" : gate.loginClearance.status}` +
+        (gate.loginClearance.usernameHint ? ` · ${gate.loginClearance.usernameHint}` : "") +
+        ` · credentials ${gate.credentialsProvisioned ? "provisioned" : "missing"}</div>`
+      : "";
     node.innerHTML = gate.allowed
-      ? "🟢 Payment gate OPEN — funding permitted in this environment."
+      ? "🟢 Payment gate OPEN — funding permitted in this environment." + clearanceLine
       : "🛡 Payment gate CLOSED — enrollment is recorded, but funding is blocked until approvals." +
-        `<div class="reasons">${gate.reasons.map((r) => "• " + r).join("<br/>")}</div>`;
+        `<div class="reasons">${gate.reasons.map((r) => "• " + r).join("<br/>")}</div>` +
+        clearanceLine;
   } catch (error) {
     $("gate").textContent = "Payment gate unavailable: " + error.message;
   }
+}
+
+async function refreshAuth() {
+  const data = await api("/api/auth/status");
+  const cred = data.credentials;
+  $("credStatus").textContent = cred.provisioned
+    ? `Credentials provisioned for hint ${cred.usernameHint} (env: ${cred.envKeys.join(", ")}).`
+    : "Credentials NOT provisioned — set SBTPG_USERNAME and SBTPG_SECRET in the environment.";
+
+  const clr = data.clearance;
+  const box = $("clearanceBox");
+  if (clr.cleared) {
+    box.hidden = false;
+    box.className = "result ok";
+    box.innerHTML = `<strong>CLEARED</strong> · session ${clr.session.id}<br/>User ${clr.session.username} · expires ${clr.session.expiresAt}`;
+    $("logoutBtn").disabled = false;
+    $("loginBtn").disabled = true;
+  } else {
+    box.hidden = false;
+    box.className = "result pending";
+    box.innerHTML = `<strong>Not cleared</strong> · ${clr.status}`;
+    $("logoutBtn").disabled = !clearanceToken;
+    $("loginBtn").disabled = false;
+  }
+  await loadAudit();
+}
+
+async function loadAudit() {
+  const data = await api("/api/auth/audit?limit=20&persisted=1");
+  const wrap = $("auditLog");
+  if (!data.entries.length) {
+    wrap.textContent = "No attempts yet.";
+    return;
+  }
+  wrap.innerHTML = data.entries
+    .map((e) => {
+      const cls = e.outcome === "success" || e.event === "login_cleared" ? "ok" : e.outcome === "failure" ? "fail" : "";
+      return `<div class="audit-row"><span class="${cls}">${e.event}</span> · ${e.outcome || ""} · ${e.usernameRedacted || "—"} · <code>${e.code || e.clearanceId || ""}</code> · ${e.at}</div>`;
+    })
+    .join("");
+}
+
+async function login() {
+  try {
+    const data = await api("/api/auth/login", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ username: $("authUser").value, secret: $("authSecret").value })
+    });
+    clearanceToken = data.clearance.token;
+    sessionStorage.setItem("sbtpgClearanceToken", clearanceToken);
+    $("authSecret").value = "";
+    toast("Login cleared — audit logged");
+    await refreshAuth();
+    await loadGate();
+  } catch (error) {
+    clearanceToken = null;
+    sessionStorage.removeItem("sbtpgClearanceToken");
+    toast(error.message);
+    await refreshAuth();
+    await loadGate();
+  }
+}
+
+async function logout() {
+  try {
+    await api("/api/auth/logout", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ token: clearanceToken })
+    });
+  } catch {
+    // ignore
+  }
+  clearanceToken = null;
+  sessionStorage.removeItem("sbtpgClearanceToken");
+  toast("Clearance revoked");
+  await refreshAuth();
+  await loadGate();
 }
 
 async function loadProducts() {
@@ -97,7 +185,7 @@ async function enroll() {
     result.hidden = false;
     result.className = "result err";
     result.textContent = "Enrollment failed: " + error.message;
-    toast("Enrollment failed", true);
+    toast("Enrollment failed");
   }
 }
 
@@ -119,6 +207,9 @@ async function loadEnrollments() {
 }
 
 $("enroll").addEventListener("click", enroll);
+$("loginBtn").addEventListener("click", () => login());
+$("logoutBtn").addEventListener("click", () => logout());
 loadGate();
 loadProducts();
 loadEnrollments();
+refreshAuth().catch((e) => toast(e.message));

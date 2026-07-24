@@ -11,6 +11,7 @@ import {
 } from '../../../packages/platform-core/src/index.mjs';
 import {
   createEnrollment,
+  createSbtpgClearanceStore,
   evaluatePaymentGate,
   REFUND_ADVANCE_PRODUCTS,
   SBTPG_PROVIDER,
@@ -26,9 +27,10 @@ export const enrollmentDescriptor = createServiceDescriptor({
   responsibilities: [
     'Expose SBTPG refund advance / refund transfer products and disclosures.',
     'Provide the taxpayer enrollment interface and REST API.',
+    'Validate SBTPG operator logins, issue clearance tokens, and audit every attempt.',
     'Enforce the fail-safe payment gate before any funding is permitted.'
   ],
-  dependencies: []
+  dependencies: ['@rtp/bank-products']
 });
 
 const CONTENT_TYPES = {
@@ -83,9 +85,24 @@ async function serveStatic(response, urlPath) {
   }
 }
 
+function clientMeta(request) {
+  return {
+    source: 'enrollment-ui',
+    ip: request.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || request.socket?.remoteAddress || null,
+    userAgent: request.headers['user-agent'] ?? null
+  };
+}
+
+function bearerToken(request, url) {
+  const header = request.headers.authorization ?? '';
+  if (header.toLowerCase().startsWith('bearer ')) return header.slice(7).trim();
+  return url.searchParams.get('token') || request.headers['x-sbtpg-clearance'] || null;
+}
+
 export function createEnrollmentServer() {
   const config = loadRuntimeConfig({ servicePort: DEFAULT_PORT });
   const enrollments = [];
+  const clearance = createSbtpgClearanceStore();
 
   const server = http.createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host ?? 'localhost'}`);
@@ -104,7 +121,12 @@ export function createEnrollmentServer() {
           provider: SBTPG_PROVIDER,
           adapter: createSbtpgAdapter(),
           environmentProtection: evaluateEnvironmentProtection(config),
-          metadata: { products: REFUND_ADVANCE_PRODUCTS.length, enrollments: enrollments.length }
+          credentials: clearance.credentialsStatus(),
+          metadata: {
+            products: REFUND_ADVANCE_PRODUCTS.length,
+            enrollments: enrollments.length,
+            auditEntries: clearance.listAudit({ limit: 1000 }).length
+          }
         });
       }
 
@@ -112,8 +134,60 @@ export function createEnrollmentServer() {
         return sendJson(response, 200, { provider: SBTPG_PROVIDER, products: REFUND_ADVANCE_PRODUCTS });
       }
 
+      if (request.method === 'GET' && pathname === '/api/auth/status') {
+        return sendJson(response, 200, {
+          credentials: clearance.credentialsStatus(),
+          clearance: clearance.evaluateClearance(bearerToken(request, url))
+        });
+      }
+
+      if (request.method === 'POST' && pathname === '/api/auth/login') {
+        const body = await readBody(request);
+        const result = await clearance.login({
+          username: body.username,
+          secret: body.secret ?? body.password,
+          meta: clientMeta(request)
+        });
+        if (!result.cleared) {
+          return sendJson(response, 401, {
+            error: 'login_rejected',
+            code: result.error.code,
+            message: result.error.message,
+            auditId: result.auditId
+          });
+        }
+        return sendJson(response, 200, {
+          cleared: true,
+          clearance: result.clearance,
+          auditId: result.auditId,
+          message: 'SBTPG login validated — clearance issued.'
+        });
+      }
+
+      if (request.method === 'POST' && pathname === '/api/auth/logout') {
+        const body = await readBody(request);
+        const token = body.token || bearerToken(request, url);
+        const result = await clearance.logout(token, clientMeta(request));
+        return sendJson(response, 200, result);
+      }
+
+      if (request.method === 'GET' && pathname === '/api/auth/clearance') {
+        return sendJson(response, 200, clearance.evaluateClearance(bearerToken(request, url)));
+      }
+
+      if (request.method === 'GET' && pathname === '/api/auth/audit') {
+        const limit = Math.min(200, Number(url.searchParams.get('limit')) || 50);
+        const persisted = url.searchParams.get('persisted') === '1';
+        const entries = persisted ? await clearance.readPersistedAudit({ limit }) : clearance.listAudit({ limit });
+        return sendJson(response, 200, { count: entries.length, auditPath: clearance.auditPath, entries });
+      }
+
       if (request.method === 'GET' && pathname === '/api/payment-gate') {
-        return sendJson(response, 200, evaluatePaymentGate({ config }));
+        return sendJson(response, 200, evaluatePaymentGate({
+          config,
+          clearanceToken: bearerToken(request, url),
+          clearanceStore: clearance
+        }));
       }
 
       if (request.method === 'GET' && pathname === '/api/enrollments') {
@@ -147,7 +221,7 @@ export function createEnrollmentServer() {
     }
   });
 
-  return { server, config, enrollments };
+  return { server, config, enrollments, clearance };
 }
 
 export function start() {

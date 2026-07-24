@@ -52,8 +52,12 @@ Two equivalent runners exist:
   scheduled workflow timers are unref'd. Set `WORKFLOW_CYCLE_MS` to change the background cadence.
 - `services/enrollment-service` (port `3004`) is the **SBTPG refund-advance enrollment interface**
   (`packages/bank-products`). Funding is guarded by a fail-safe **payment gate** — enrollment records
-  intent/consent but funding stays blocked unless env=prod, secrets set, `SBTPG_ENABLED=true`,
-  disclosures accepted, and amount within limits. No real SBTPG calls (stub). `./rtpsc start enrollment`.
+  intent/consent but funding stays blocked unless env=prod, platform secrets set, **SBTPG_USERNAME /
+  SBTPG_SECRET provisioned**, `SBTPG_ENABLED=true`, disclosures accepted, and amount within limits.
+  Operator **login clearance** lives in `packages/bank-products/src/auth.mjs`: `POST /api/auth/login`
+  issues a clearance token; every attempt is appended to `logs/sbtpg-login-audit.jsonl` (gitignored)
+  with redacted usernames — **never log the secret**. No real SBTPG network calls (stub).
+  `./rtpsc start enrollment`.
 - `services/invoice-service` (port `3005`) is the **invoicing machine** (`packages/invoice-core` +
   `packages/tax-data`). Operator flow: AI assist → create draft → submit → approve → record payment
   (confirmation) → download invoice PDF / receipt PDF / receipt-paper `.txt`. Tax rates are

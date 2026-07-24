@@ -18,6 +18,23 @@
     <main class="wrap">
       <div class="gate" id="gate">Checking payment gate…</div>
 
+      <section class="clearance-panel">
+        <h2>0 · SBTPG operator login clearance</h2>
+        <p class="hint">Validate provisioned SBTPG credentials. Every attempt is audit-logged (secrets never stored in logs).</p>
+        <div id="credStatus" class="tax-preview">Checking credential provisioning…</div>
+        <div class="row2" id="loginFields">
+          <div class="field"><label>SBTPG username</label><input id="authUser" autocomplete="username" placeholder="SBTPG_USERNAME" /></div>
+          <div class="field"><label>SBTPG secret</label><input id="authSecret" type="password" autocomplete="current-password" placeholder="SBTPG_SECRET" /></div>
+        </div>
+        <div class="actions">
+          <button type="button" id="loginBtn" class="enroll-btn">Validate &amp; clear login</button>
+          <button type="button" id="logoutBtn" class="secondary-btn" disabled>Revoke clearance</button>
+        </div>
+        <div id="clearanceBox" class="result" hidden></div>
+        <h3>Login audit log</h3>
+        <div id="auditLog" class="enrollments">No attempts yet.</div>
+      </section>
+
       <section class="grid">
         <div class="col">
           <h2>1 · Choose a product</h2>
