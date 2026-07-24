@@ -7,6 +7,9 @@ import { refundStatusDescriptor } from '../../../services/refund-status-service/
 import { transcriptDescriptor } from '../../../services/transcript-service/src/index.mjs';
 import { analyticsDescriptor } from '../../../services/analytics-service/src/index.mjs';
 import { enrollmentDescriptor } from '../../../services/enrollment-service/src/index.mjs';
+import { invoiceDescriptor } from '../../../services/invoice-service/src/index.mjs';
+import { TAX_DATA_NOTICE } from '../../../packages/tax-data/src/index.mjs';
+import { listServiceCatalog } from '../../../packages/invoice-core/src/index.mjs';
 import { tdsWorkerDescriptor } from '../../../workers/tds-worker/src/index.mjs';
 import { transcriptPullWorkerDescriptor } from '../../../workers/transcript-pull-worker/src/index.mjs';
 import { liveSourceFetcherDescriptor } from '../../../workers/live-source-fetcher/src/index.mjs';
@@ -39,6 +42,7 @@ const SERVICE_PORTS = {
   'transcript-service': 3002,
   'analytics-service': 3003,
   'enrollment-service': 3004,
+  'invoice-service': 3005,
   'modules-dashboard': 3010
 };
 
@@ -138,6 +142,18 @@ export function buildModuleCatalog() {
           summary: 'SBTPG refund advance / transfer products, disclosures, and the fail-safe payment gate.',
           tags: ['bank-products', 'sbtpg'],
           detail: { provider: 'SBTPG', products: ['RA-NF', 'RA-FC', 'RT'] }
+        },
+        {
+          name: '@rtp/tax-data',
+          summary: 'State and county/parish taxation reference data for invoicing calculations.',
+          tags: ['tax', 'jurisdiction', 'parish'],
+          detail: { notice: TAX_DATA_NOTICE[0], localityKinds: ['county', 'parish'] }
+        },
+        {
+          name: '@rtp/invoice-core',
+          summary: 'Invoicing machine core: AI data entry, tax calc, payment approval/confirmation, PDF & receipt export.',
+          tags: ['invoicing', 'ai-assist', 'pdf', 'receipt'],
+          detail: { catalogSkus: listServiceCatalog().map((s) => s.sku), exports: ['pdf', 'receipt.pdf', 'receipt.txt'] }
         }
       ]
     },
@@ -150,6 +166,7 @@ export function buildModuleCatalog() {
         serviceEntry(transcriptDescriptor),
         serviceEntry(analyticsDescriptor),
         serviceEntry(enrollmentDescriptor),
+        serviceEntry(invoiceDescriptor),
         serviceEntry(modulesDashboardDescriptor)
       ]
     },

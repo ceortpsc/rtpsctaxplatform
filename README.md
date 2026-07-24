@@ -105,6 +105,24 @@ logic. `services/enrollment-service` (port `3004`) exposes the REST API and a ta
 REST API: `GET /api/products`, `GET /api/payment-gate`, `POST /api/enrollments`,
 `GET /api/enrollments[/:id]`, plus `/health` + `/metadata`.
 
+## Invoicing machine — operations, tax calc, PDF & receipt paper
+
+`packages/tax-data` holds **state + county/parish** taxation reference rates (Louisiana uses
+parishes). `packages/invoice-core` is the invoicing machine: local **AI-assisted data entry**,
+line-item/tax calculations, payment **approval → confirmation**, and export to **PDF** plus
+**receipt paper** (thermal `.txt` and narrow receipt PDF). `services/invoice-service` (port
+`3005`) exposes the REST API and operator UI.
+
+```bash
+./rtpsc start invoice      # http://localhost:3005  (invoicing machine UI)
+```
+
+Lifecycle: `draft` → `pending-approval` → `approved` → `paid` (+ confirmation).  
+REST: `POST /api/assist`, `GET /api/tax`, `GET /api/catalog`, `POST /api/invoices`,
+`POST /api/invoices/:id/{submit,approve,pay}`, `GET /api/invoices/:id/{pdf,receipt.pdf,receipt.txt}`.
+
+Rates are reference/stub data for development — confirm with the tax authority before production use.
+
 ## Deployment Assist & Development Team
 
 A virtual **deployment-assist and development team** ships as developer/deployment tooling under

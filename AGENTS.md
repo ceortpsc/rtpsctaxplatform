@@ -20,7 +20,8 @@ Two equivalent runners exist:
   it in a background terminal/tmux session. Verify with `curl http://localhost:3000/health` and
   `curl http://localhost:3000/metadata`.
 - Other services are independent HTTP stubs on fixed ports: refund-status `3001`, transcript `3002`,
-  analytics `3003` (`pnpm run start:refund-status`, `start:transcript`, `start:analytics`).
+  analytics `3003`, enrollment `3004`, invoice `3005`
+  (`./rtpsc start refund-status|transcript|analytics|enrollment|invoice`).
 - Workers run one-shot and print a JSON descriptor + planned steps, then exit
   (`pnpm run worker:tds`, `worker:transcript-pull`, `worker:live-source`).
 - `pnpm run start:dashboard` launches the **modules-dashboard** on port `3010`: a read-only module
@@ -29,10 +30,10 @@ Two equivalent runners exist:
   `GET /api/insights`, `GET /api/graph`, `POST /api/assistant` (`{query}`).
 - The "AI Assistant"/insights come from `packages/module-advisor` — a local, dependency-free
   heuristic engine (intent detection + keyword scoring). There is **no external LLM or API key**.
-- `pnpm run deploy:all` starts every HTTP service (ports 3000-3003 + 3010) plus the background
-  `workflow-runner` as child processes, health-checks them, and stays live (Ctrl+C stops all).
-  `pnpm run deploy:smoke` does the same but verifies health once and exits (CI smoke check). Free
-  those ports first — stop any single-service dev processes so `deploy:all` doesn't hit EADDRINUSE.
+- `./rtpsc deploy` (or `pnpm run deploy:all`) starts every HTTP service (ports `3000`–`3005` + `3010`)
+  plus the background `workflow-runner` as child processes, health-checks them, and stays live
+  (Ctrl+C stops all). `./rtpsc deploy --smoke` verifies health once and exits. Free those ports
+  first — stop any single-service dev processes so deploy doesn't hit EADDRINUSE.
 - Workflows run in the **background** via the `workflow-runner` worker, not from any dashboard:
   `pnpm run start:workflows` (long-running) or `pnpm run worker:workflows` (one-shot). A single
   workflow can be run from the terminal with `pnpm run workflow:run <name> '<json>'`.
@@ -53,7 +54,12 @@ Two equivalent runners exist:
   (`packages/bank-products`). Funding is guarded by a fail-safe **payment gate** — enrollment records
   intent/consent but funding stays blocked unless env=prod, secrets set, `SBTPG_ENABLED=true`,
   disclosures accepted, and amount within limits. No real SBTPG calls (stub). `./rtpsc start enrollment`.
+- `services/invoice-service` (port `3005`) is the **invoicing machine** (`packages/invoice-core` +
+  `packages/tax-data`). Operator flow: AI assist → create draft → submit → approve → record payment
+  (confirmation) → download invoice PDF / receipt PDF / receipt-paper `.txt`. Tax rates are
+  reference stubs (LA uses parishes). PDF export is a hand-rolled PDF 1.4 writer (no npm PDF libs).
+  `./rtpsc start invoice`.
 - `agents/*` (+ `packages/agent-core`) are a **deployment-assist & development team** — dev/deploy
-  tooling, NOT a runtime product subsystem. Run with `pnpm run agents`; regenerate the reports in
-  `docs/agents/` with `pnpm run agents:docs`. They introspect the module catalog/workflows and are
+  tooling, NOT a runtime product subsystem. Run with `./rtpsc agents`; regenerate the reports in
+  `docs/agents/` with `./rtpsc agents docs`. They introspect the module catalog/workflows and are
   intentionally not exposed in the product dashboard/API.

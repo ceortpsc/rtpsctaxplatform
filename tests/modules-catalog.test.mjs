@@ -28,9 +28,11 @@ test('SERVICE_ENDPOINTS lists every HTTP service with a distinct port', () => {
   const names = SERVICE_ENDPOINTS.map((e) => e.name);
   assert.ok(names.includes('api-gateway'));
   assert.ok(names.includes('modules-dashboard'));
+  assert.ok(names.includes('invoice-service'));
   const ports = SERVICE_ENDPOINTS.map((e) => e.port);
   assert.equal(new Set(ports).size, ports.length, 'ports must be unique');
   assert.ok(SERVICE_ENDPOINTS.find((e) => e.name === 'api-gateway').port === 3000);
+  assert.equal(SERVICE_ENDPOINTS.find((e) => e.name === 'invoice-service').port, 3005);
 });
 
 test('every catalog entry has name, summary and tags', () => {
