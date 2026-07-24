@@ -64,6 +64,14 @@ Run workers in one-shot mode:
 ./scripts/aol run worker:live-source
 ```
 
+Run the Agent Build Engineering Team across all modules:
+
+```bash
+./scripts/aol run team:inventory
+./scripts/aol run team:plan
+./scripts/aol run team
+```
+
 ## Module Map
 
 ```text
@@ -73,6 +81,7 @@ packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
   secure-tunnel/         compliant tunnel adapter interface scaffold
+  agent-build-team/      Agent Build Engineering Team (multi-role module orchestration)
 services/
   api-gateway/           route registry and transmission entrypoint skeleton
   refund-status-service/ event-driven refund status surface
@@ -126,6 +135,7 @@ Key placeholders include:
 - `/docs/aol-api-and-config.md`
 - `/docs/aol-intellectual-property.md`
 - `/docs/rtpsc-package-lock.md`
+- `/docs/agent-build-engineering-team.md`
 - `/docs/architecture.md`
 - `/docs/engineering-standards.md`
 - `/docs/api-spec-overview.md`

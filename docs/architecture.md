@@ -49,6 +49,7 @@ The platform provides a governed baseline for tax operations, secure integration
 - `platform-core`: runtime config loading, health-response helpers, service/worker descriptors.
 - `client-config`: required client ID and secret placeholders, plus governance text.
 - `secure-tunnel`: compliant adapter contract and approval checkpoints.
+- `agent-build-team`: Agent Build Engineering Team — inventories all developmental modules and runs multi-role build/compliance assessments.
 
 ### Security boundaries
 

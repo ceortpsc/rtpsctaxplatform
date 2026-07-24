@@ -29,6 +29,24 @@ Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
 Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 `aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`.
 
+### Agent Build Engineering Team
+
+Use the Agent Build Engineering Team to inventory and assess **every**
+developmental project/module (packages, services, workers, pipelines, engines,
+tools):
+
+```bash
+./scripts/aol run team:roles
+./scripts/aol run team:inventory
+./scripts/aol run team:plan
+./scripts/aol run team                 # assessments + lint/test/build gates
+./scripts/aol run team -- --skip-gates # assessments only
+```
+
+Roles: Platform Architect, Build Engineer, QA Engineer, Compliance Officer,
+Docs Steward, Release Lead. Report: `build/agent-build-team-report.json`.
+Docs: `docs/agent-build-engineering-team.md`.
+
 ### Running services / commands
 
 - `./scripts/aol run start` launches only the **api-gateway** on port `3000` and blocks

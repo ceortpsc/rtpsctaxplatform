@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 AOL := node ./tools/aol/bin/aol.mjs
 
-.PHONY: setup lint test build start gateway workers bench aol
+.PHONY: setup lint test build start gateway workers bench aol team team-inventory
 
 setup:
 	./scripts/setup.sh
@@ -29,3 +29,9 @@ bench:
 
 aol:
 	$(AOL) $(ARGS)
+
+team:
+	$(AOL) run team
+
+team-inventory:
+	$(AOL) run team:inventory
