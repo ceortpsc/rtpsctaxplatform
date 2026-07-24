@@ -85,6 +85,26 @@ pnpm run worker:transcript-pull
 pnpm run worker:live-source
 ```
 
+## Bank products — SBTPG refund advance (payment gate + enrollment)
+
+`packages/bank-products` models **Santa Barbara Tax Products Group (SBTPG)** refund-advance /
+refund-transfer products with required disclosures, a fail-safe **payment gate**, and enrollment
+logic. `services/enrollment-service` (port `3004`) exposes the REST API and a taxpayer
+**enrollment interface**.
+
+- Products: `RA-NF` (No-Fee Refund Advance), `RA-FC` (Refund Advance w/ finance charge), `RT` (Refund Transfer).
+- **Payment gate is fail-safe:** enrollment records taxpayer intent + consent, but **funding stays
+  blocked** unless the environment is production, provider secrets are configured, `SBTPG_ENABLED=true`,
+  disclosures are accepted, and the amount is within product limits. No real SBTPG integration is
+  performed (stub adapter, pending bank/legal/security sign-off).
+
+```bash
+./rtpsc start enrollment      # http://localhost:3004  (enrollment UI)
+```
+
+REST API: `GET /api/products`, `GET /api/payment-gate`, `POST /api/enrollments`,
+`GET /api/enrollments[/:id]`, plus `/health` + `/metadata`.
+
 ## Deployment Assist & Development Team
 
 A virtual **deployment-assist and development team** ships as developer/deployment tooling under

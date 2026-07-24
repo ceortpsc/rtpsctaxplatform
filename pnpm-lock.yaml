@@ -30,6 +30,8 @@ importers:
 
   packages/agent-core: {}
 
+  packages/bank-products: {}
+
   packages/client-config: {}
 
   packages/module-advisor: {}
@@ -49,6 +51,8 @@ importers:
   services/analytics-service: {}
 
   services/api-gateway: {}
+
+  services/enrollment-service: {}
 
   services/modules-dashboard: {}
 

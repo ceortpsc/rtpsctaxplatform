@@ -49,6 +49,10 @@ Two equivalent runners exist:
   module and writes `build/platform-manifest.json`. Neither uses ESLint/tsc/a bundler.
 - The background `workflow-runner` keeps itself alive via a non-unref'd interval timer; its
   scheduled workflow timers are unref'd. Set `WORKFLOW_CYCLE_MS` to change the background cadence.
+- `services/enrollment-service` (port `3004`) is the **SBTPG refund-advance enrollment interface**
+  (`packages/bank-products`). Funding is guarded by a fail-safe **payment gate** — enrollment records
+  intent/consent but funding stays blocked unless env=prod, secrets set, `SBTPG_ENABLED=true`,
+  disclosures accepted, and amount within limits. No real SBTPG calls (stub). `./rtpsc start enrollment`.
 - `agents/*` (+ `packages/agent-core`) are a **deployment-assist & development team** — dev/deploy
   tooling, NOT a runtime product subsystem. Run with `pnpm run agents`; regenerate the reports in
   `docs/agents/` with `pnpm run agents:docs`. They introspect the module catalog/workflows and are

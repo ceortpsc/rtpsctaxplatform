@@ -6,6 +6,7 @@ import { gatewayDescriptor } from '../../../services/api-gateway/src/index.mjs';
 import { refundStatusDescriptor } from '../../../services/refund-status-service/src/index.mjs';
 import { transcriptDescriptor } from '../../../services/transcript-service/src/index.mjs';
 import { analyticsDescriptor } from '../../../services/analytics-service/src/index.mjs';
+import { enrollmentDescriptor } from '../../../services/enrollment-service/src/index.mjs';
 import { tdsWorkerDescriptor } from '../../../workers/tds-worker/src/index.mjs';
 import { transcriptPullWorkerDescriptor } from '../../../workers/transcript-pull-worker/src/index.mjs';
 import { liveSourceFetcherDescriptor } from '../../../workers/live-source-fetcher/src/index.mjs';
@@ -37,6 +38,7 @@ const SERVICE_PORTS = {
   'refund-status-service': 3001,
   'transcript-service': 3002,
   'analytics-service': 3003,
+  'enrollment-service': 3004,
   'modules-dashboard': 3010
 };
 
@@ -130,6 +132,12 @@ export function buildModuleCatalog() {
           summary: 'Modular task/workflow/trigger engine with run history.',
           tags: ['workflow', 'engine'],
           detail: { primitives: ['defineTask', 'defineWorkflow', 'createWorkflowRunner', 'createTriggerManager'] }
+        },
+        {
+          name: '@rtp/bank-products',
+          summary: 'SBTPG refund advance / transfer products, disclosures, and the fail-safe payment gate.',
+          tags: ['bank-products', 'sbtpg'],
+          detail: { provider: 'SBTPG', products: ['RA-NF', 'RA-FC', 'RT'] }
         }
       ]
     },
@@ -141,6 +149,7 @@ export function buildModuleCatalog() {
         serviceEntry(refundStatusDescriptor),
         serviceEntry(transcriptDescriptor),
         serviceEntry(analyticsDescriptor),
+        serviceEntry(enrollmentDescriptor),
         serviceEntry(modulesDashboardDescriptor)
       ]
     },

@@ -27,6 +27,8 @@ const packageFiles = [
   'packages/workflow-engine/package.json',
   'packages/module-advisor/package.json',
   'packages/agent-core/package.json',
+  'packages/bank-products/package.json',
+  'services/enrollment-service/package.json',
   'agents/planning-agent/package.json',
   'agents/scoping-agent/package.json',
   'agents/testing-agent/package.json',

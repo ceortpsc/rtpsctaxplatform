@@ -16,6 +16,7 @@ const services = [
   { name: 'refund-status-service', entry: 'services/refund-status-service/src/index.mjs', port: 3001 },
   { name: 'transcript-service', entry: 'services/transcript-service/src/index.mjs', port: 3002 },
   { name: 'analytics-service', entry: 'services/analytics-service/src/index.mjs', port: 3003 },
+  { name: 'enrollment-service', entry: 'services/enrollment-service/src/index.mjs', port: 3004 },
   { name: 'modules-dashboard', entry: 'services/modules-dashboard/src/index.mjs', port: 3010 }
 ];
 

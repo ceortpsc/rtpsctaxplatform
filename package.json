@@ -18,6 +18,7 @@
     "start:refund-status": "pnpm --filter @rtp/refund-status-service start",
     "start:transcript": "pnpm --filter @rtp/transcript-service start",
     "start:analytics": "pnpm --filter @rtp/analytics-service start",
+    "start:enrollment": "pnpm --filter @rtp/enrollment-service start",
     "start:dashboard": "pnpm --filter @rtp/modules-dashboard start",
     "start:workflows": "pnpm --filter @rtp/workflow-runner start",
     "deploy:all": "node scripts/deploy-all.mjs",

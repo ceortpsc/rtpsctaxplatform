@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SBTPG Refund Advance · Enrollment</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">RTPSC</span>
+        <span class="brand-sub">Refund Advance Enrollment · SBTPG</span>
+      </div>
+      <div class="provider" id="provider">Santa Barbara Tax Products Group</div>
+    </header>
+
+    <main class="wrap">
+      <div class="gate" id="gate">Checking payment gate…</div>
+
+      <section class="grid">
+        <div class="col">
+          <h2>1 · Choose a product</h2>
+          <div id="products" class="products">Loading products…</div>
+
+          <h2>2 · Your details</h2>
+          <div class="field"><label>Application ID</label><input id="applicationId" value="APP-1001" /></div>
+          <div class="field"><label>Taxpayer reference</label><input id="taxpayerRef" value="TP-77" /></div>
+          <div class="field"><label>Requested amount ($)</label><input id="requestedAmount" type="number" value="2500" min="1" /></div>
+        </div>
+
+        <div class="col">
+          <h2>3 · Disclosures &amp; consent</h2>
+          <ul class="disclosures" id="disclosures"><li>Select a product to view disclosures.</li></ul>
+          <label class="check"><input type="checkbox" id="disclosuresAccepted" /> I have read and accept the disclosures above.</label>
+          <label class="check" id="creditRow" hidden><input type="checkbox" id="creditCheckAuthorized" /> I authorize a credit inquiry for underwriting.</label>
+          <button id="enroll" class="enroll-btn">Enroll</button>
+          <div id="result" class="result" hidden></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Recent enrollments</h2>
+        <div id="enrollments" class="enrollments">None yet.</div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast"></div>
+    <script src="/app.js"></script>
+  </body>
+</html>
