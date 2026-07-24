@@ -13,15 +13,19 @@ Two equivalent runners exist:
 - **Custom CLI (preferred for local dev):** `./rtpsc <command>` (or `node bin/rtpsc.mjs <command>`) —
   a dependency-free dispatcher that runs everything via `node` directly, **no package manager
   required**. Commands: `lint`, `test`, `build`, `start [service]`, `deploy [--smoke]`, `workflows`,
-  `workflow run|emit …`, `agents [docs]`, `env`, `help`. Command mapping lives in `bin/rtpsc.mjs`.
+  `workflow run|emit …`, `agents [docs]`, `clients …`, `env`, `help`. Mapping in `bin/rtpsc.mjs`.
 - **pnpm scripts:** `pnpm run lint`, `pnpm test`, `pnpm run build`, etc. (used by CI).
 
 - `pnpm run start` launches only the **api-gateway** on port `3000` and blocks (long-running). Start
   it in a background terminal/tmux session. Verify with `curl http://localhost:3000/health` and
   `curl http://localhost:3000/metadata`.
-- Other services are independent HTTP stubs on fixed ports: refund-status `3001`, transcript `3002`,
-  analytics `3003`, enrollment `3004`, invoice `3005`, pos-crm `3006`
+- Other services on fixed ports: refund-status `3001` (**full refund center** + client auth),
+  transcript `3002`, analytics `3003`, enrollment `3004`, invoice `3005`, pos-crm `3006`
   (`./rtpsc start refund-status|transcript|analytics|enrollment|invoice|pos-crm`).
+- **API/TDS clients:** `./rtpsc clients issue api|tds` writes one-time secrets to
+  `logs/issued-client-secrets.json` (gitignored). Gateway and refund-status auto-ensure local
+  clients on boot if none exist (secrets printed once to the service console). Auth headers:
+  `x-api-client-id` / `x-api-client-secret` (or HTTP Basic). Never commit client secrets.
 - Workers run one-shot and print a JSON descriptor + planned steps, then exit
   (`pnpm run worker:tds`, `worker:transcript-pull`, `worker:live-source`).
 - `pnpm run start:dashboard` launches the **modules-dashboard** on port `3010`: a read-only module

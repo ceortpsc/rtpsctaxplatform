@@ -34,6 +34,33 @@ The repository is organized as a lightweight monorepo with executable Node.js se
 - Client IDs, secrets, certificates, and tunnel credentials are environment-based only.
 - Production integrations touching taxpayer data require legal approval, security review, and documented operating procedures before implementation.
 
+## Full API client id + TDS client id
+
+`packages/client-identity` issues and authenticates **full** API and TDS client credentials
+(scopes, audit log, hashed secret registry under `logs/`). Prefer the custom CLI:
+
+```bash
+./rtpsc clients issue api --name "Ops API"
+./rtpsc clients issue tds --name "TDS Pull"
+./rtpsc clients export-env    # prints export API_CLIENT_* / TDS_CLIENT_*
+./rtpsc clients status
+```
+
+The **api-gateway** (`:3000`) authenticates API clients (`POST /api/auth/token`) and proxies
+`/api/refund/*` to the refund service. The **tds-worker** authenticates TDS clients before
+simulated pull jobs.
+
+## Full refund center
+
+`packages/refund-core` + upgraded `services/refund-status-service` (`:3001`) provide full refund
+cases: approved-event ingest → pipeline stages → `refund-status-update` workflow → intelligence
+timeline. UI at `http://localhost:3001`. Write paths require an API or TDS client.
+
+```bash
+./rtpsc start refund-status
+# POST /api/events  or  POST /api/refunds/full   (with x-api-client-id / x-api-client-secret)
+```
+
 ## Quickstart
 
 Use the built-in **`rtpsc`** command runner — a dependency-free CLI that drives everything through

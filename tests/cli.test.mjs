@@ -43,7 +43,12 @@ test('agents docs maps to the --write flag', () => {
 
 test('usage lists the commands', () => {
   const usage = buildUsage();
-  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'workflow']) {
+  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'workflow', 'clients']) {
     assert.ok(usage.includes(name), `usage should mention ${name}`);
   }
+});
+
+test('clients command resolves to scripts/clients.mjs', () => {
+  assert.match(planCommand(['clients']).args.join(' '), /scripts\/clients\.mjs/);
+  assert.match(planCommand(['clients', 'issue', 'api']).args.join(' '), /issue api$/);
 });

@@ -62,6 +62,11 @@ export const COMMANDS = {
     desc: 'Run the deployment-assist & development team (add "docs" to write markdown)',
     plan: (rest) => node('scripts/agents.mjs', rest.includes('docs') || rest.includes('--write') ? ['--write'] : [])
   },
+  clients: {
+    usage: 'clients [status|issue api|issue tds|ensure|export-env]',
+    desc: 'Issue/list full API and TDS client ids (secrets gitignored)',
+    plan: (rest) => node('scripts/clients.mjs', rest.length ? rest : ['status'])
+  },
   env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') }
 };
 

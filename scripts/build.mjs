@@ -4,6 +4,8 @@ import path from 'node:path';
 const modules = [
   '../packages/platform-core/src/index.mjs',
   '../packages/client-config/src/index.mjs',
+  '../packages/client-identity/src/index.mjs',
+  '../packages/refund-core/src/index.mjs',
   '../packages/secure-tunnel/src/index.mjs',
   '../packages/workflow-engine/src/index.mjs',
   '../packages/module-advisor/src/index.mjs',

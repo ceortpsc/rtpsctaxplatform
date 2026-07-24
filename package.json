@@ -32,7 +32,8 @@
     "workflow:list": "pnpm --filter @rtp/workflow-runner workflows",
     "workflow:run": "pnpm --filter @rtp/workflow-runner run-workflow",
     "agents": "node scripts/agents.mjs",
-    "agents:docs": "node scripts/agents.mjs --write"
+    "agents:docs": "node scripts/agents.mjs --write",
+    "clients": "node scripts/clients.mjs"
   },
   "engines": {
     "node": ">=22",

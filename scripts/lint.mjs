@@ -23,6 +23,8 @@ const packageFiles = [
   'package.json',
   'packages/platform-core/package.json',
   'packages/client-config/package.json',
+  'packages/client-identity/package.json',
+  'packages/refund-core/package.json',
   'packages/secure-tunnel/package.json',
   'packages/workflow-engine/package.json',
   'packages/module-advisor/package.json',

@@ -34,6 +34,8 @@ importers:
 
   packages/client-config: {}
 
+  packages/client-identity: {}
+
   packages/crm-core: {}
 
   packages/ero-ops: {}
@@ -45,6 +47,8 @@ importers:
   packages/platform-core: {}
 
   packages/pos-core: {}
+
+  packages/refund-core: {}
 
   packages/secure-tunnel: {}
 

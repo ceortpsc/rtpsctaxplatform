@@ -129,6 +129,18 @@ export function buildModuleCatalog() {
           detail: { placeholders: clientIdentityPlaceholders }
         },
         {
+          name: '@rtp/client-identity',
+          summary: 'Full API + TDS client id issuance, authentication, scopes, and auth audit logging.',
+          tags: ['identity', 'api-client', 'tds-client'],
+          detail: { kinds: ['api', 'tds'], commands: ['./rtpsc clients issue api', './rtpsc clients issue tds'] }
+        },
+        {
+          name: '@rtp/refund-core',
+          summary: 'Full refund cases, approved-event ingest, pipeline stages, workflow + intelligence.',
+          tags: ['refund', 'pipeline', 'intelligence'],
+          detail: { channels: ['refund.status.received', 'refund.status.updated'] }
+        },
+        {
           name: '@rtp/secure-tunnel',
           summary: 'Compliant secure tunnel adapter interface (stub-safe).',
           tags: ['compliance'],
