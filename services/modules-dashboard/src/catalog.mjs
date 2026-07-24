@@ -142,9 +142,14 @@ export function buildModuleCatalog() {
         },
         {
           name: '@rtp/bank-products',
-          summary: 'SBTPG refund advance / transfer products, disclosures, and the fail-safe payment gate.',
-          tags: ['bank-products', 'sbtpg'],
-          detail: { provider: 'SBTPG', products: ['RA-NF', 'RA-FC', 'RT'] }
+          summary: 'SBTPG products, login clearance/audit logging, disclosures, and the fail-safe payment gate.',
+          tags: ['bank-products', 'sbtpg', 'auth', 'audit'],
+          detail: {
+            provider: 'SBTPG',
+            products: ['RA-NF', 'RA-FC', 'RT'],
+            auth: ['validateSbtpgLogin', 'createSbtpgClearanceStore', 'evaluateLoginClearance'],
+            envKeys: ['SBTPG_USERNAME', 'SBTPG_SECRET', 'SBTPG_ENABLED']
+          }
         },
         {
           name: '@rtp/tax-data',
