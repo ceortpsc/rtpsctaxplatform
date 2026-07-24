@@ -1,0 +1,284 @@
+/* =============================================================================
+   RTPSC "Sovereign Ledger" Design System — Theme Tokens
+   -----------------------------------------------------------------------------
+   A treasury-grade visual language for the RTPSC Tax Platform. Evokes engraved
+   currency, embossed certificates, and navy-and-gold institutional trust.
+   Palette: cream base · gold · navy blue · black trim · white · silver.
+   This file defines all design tokens, motion primitives, and keyframes.
+   ========================================================================== */
+
+:root {
+  /* ---- Color primitives ---- */
+  --cream-50: #fbf7ec;
+  --cream-100: #f8f2e2;
+  --cream-200: #f1e8d2;
+  --cream-300: #e9dcbd;
+  --cream-400: #ddcb9f;
+
+  --gold-300: #e7cf87;
+  --gold-400: #d4af37; /* metallic gold */
+  --gold-500: #b8860b; /* dark goldenrod */
+  --gold-600: #9c7a1e;
+  --gold-700: #7a5c00;
+
+  --navy-500: #22345f;
+  --navy-600: #182a52;
+  --navy-700: #14213d; /* primary ink */
+  --navy-800: #0e1730;
+  --navy-900: #0a1022;
+
+  --silver-300: #c4cad2;
+  --silver-400: #9aa1ac;
+  --silver-500: #6b7280;
+
+  --black: #16181d; /* trim */
+  --white: #ffffff;
+
+  /* ---- Semantic surfaces ---- */
+  --color-bg: var(--cream-200);
+  --color-surface: var(--white);
+  --color-surface-2: var(--cream-100);
+  --color-surface-3: var(--cream-50);
+  --color-ink: var(--navy-700);
+  --color-ink-soft: var(--navy-500);
+  --color-muted: var(--silver-500);
+  --color-faint: var(--silver-400);
+  --color-line: var(--cream-400);
+  --color-trim: var(--black);
+  --color-gold: var(--gold-500);
+  --color-gold-bright: var(--gold-400);
+  --color-navy: var(--navy-700);
+
+  /* ---- Gradients & sheens ---- */
+  --grad-gold-navy: linear-gradient(120deg, var(--gold-500) 0%, var(--navy-700) 100%);
+  --grad-gold: linear-gradient(120deg, var(--gold-400) 0%, var(--gold-600) 100%);
+  --grad-navy: linear-gradient(160deg, var(--navy-600) 0%, var(--navy-900) 100%);
+  --grad-hero: radial-gradient(1200px 520px at 78% -12%, rgba(212, 175, 55, 0.22) 0%, rgba(241, 232, 210, 0) 60%),
+    radial-gradient(900px 500px at 8% 110%, rgba(34, 52, 95, 0.14) 0%, rgba(241, 232, 210, 0) 55%);
+  --sheen: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.65) 48%,
+    rgba(255, 255, 255, 0) 66%
+  );
+  --sheen-gold: linear-gradient(
+    100deg,
+    rgba(212, 175, 55, 0) 30%,
+    rgba(212, 175, 55, 0.8) 50%,
+    rgba(212, 175, 55, 0) 70%
+  );
+
+  /* ---- Typography ---- */
+  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
+  --font-sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", "JetBrains Mono", "Consolas", "Menlo", monospace;
+
+  --fs-xs: 11px;
+  --fs-sm: 12.5px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 26px;
+  --fs-3xl: 34px;
+  --fs-4xl: 46px;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-normal: 1.6;
+
+  --tracking-wide: 0.08em;
+  --tracking-wider: 0.16em;
+
+  /* ---- Spacing scale (4px base) ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* ---- Radii ---- */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-pill: 999px;
+
+  /* ---- Elevation ---- */
+  --shadow-1: 0 1px 2px rgba(20, 33, 61, 0.08);
+  --shadow-2: 0 6px 18px rgba(20, 33, 61, 0.12);
+  --shadow-3: 0 18px 48px rgba(20, 33, 61, 0.22);
+  --shadow-gold: 0 6px 22px rgba(184, 134, 11, 0.28);
+  --ring-gold: 0 0 0 2px rgba(184, 134, 11, 0.35);
+
+  /* ---- Motion ---- */
+  --dur-fast: 140ms;
+  --dur-base: 260ms;
+  --dur-slow: 520ms;
+  --dur-xslow: 900ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---- Z-index scale ---- */
+  --z-bg: 0;
+  --z-base: 1;
+  --z-sticky: 4;
+  --z-overlay: 30;
+  --z-toast: 40;
+}
+
+/* =============================================================================
+   Keyframes
+   ========================================================================== */
+@keyframes rtp-fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rtp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rtp-shimmer {
+  0% {
+    background-position: -160% 0;
+  }
+  100% {
+    background-position: 160% 0;
+  }
+}
+
+@keyframes rtp-gradient-pan {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes rtp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes rtp-spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rtp-dash-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+@keyframes rtp-draw-in {
+  from {
+    stroke-dashoffset: var(--dash-len, 1200);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes rtp-pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes rtp-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =============================================================================
+   Motion utilities
+   ========================================================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.reveal.in {
+  animation: rtp-fade-rise var(--dur-slow) var(--ease-out) both;
+}
+
+.u-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.u-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--sheen);
+  background-size: 220% 100%;
+  animation: rtp-shimmer 3.6s var(--ease-emphasized) infinite;
+  pointer-events: none;
+}
+
+.u-float {
+  animation: rtp-float 6s ease-in-out infinite;
+}
+
+/* =============================================================================
+   Reduced motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}

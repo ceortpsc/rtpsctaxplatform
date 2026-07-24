@@ -50,8 +50,8 @@ async function boot() {
     state.allModules = data.categories.flatMap((group) =>
       group.modules.map((module) => ({ ...module, category: group.category }))
     );
-    document.getElementById("stat-modules").textContent = data.summary.totalModules;
-    document.getElementById("stat-categories").textContent = data.summary.categories.length;
+    countUp("stat-modules", data.summary.totalModules);
+    countUp("stat-categories", data.summary.categories.length);
   } catch (error) {
     document.getElementById("view").innerHTML = `<p class="empty">Failed to load: ${error.message}</p>`;
     return;
@@ -67,15 +67,21 @@ function wireNav() {
   });
 }
 
+const VIEW_META = {
+  catalog: { title: "Catalog", kicker: "Platform module inventory" },
+  insights: { title: "Insights", kicker: "AI-assisted analysis & recommendations" },
+  assistant: { title: "AI Assistant", kicker: "Ask the platform about its modules" },
+  graph: { title: "Dependency Graph", kicker: "How the modules connect" },
+  design: { title: "Design System", kicker: "The Sovereign Ledger visual language" }
+};
+
 function setView(view) {
   state.view = view;
   document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
-  document.getElementById("view-title").textContent = {
-    catalog: "Catalog",
-    insights: "Insights",
-    assistant: "AI Assistant",
-    graph: "Dependency Graph"
-  }[view];
+  const meta = VIEW_META[view] ?? { title: view, kicker: "" };
+  document.getElementById("view-title").textContent = meta.title;
+  const kicker = document.getElementById("view-kicker");
+  if (kicker) kicker.textContent = meta.kicker;
   render();
 }
 
@@ -86,11 +92,35 @@ function render() {
   else if (state.view === "insights") renderInsights(view);
   else if (state.view === "assistant") view.appendChild(renderAssistant());
   else if (state.view === "graph") renderGraph(view);
+  else if (state.view === "design") renderDesign(view);
+}
+
+/* ---------- Animation helpers ---------- */
+function animateReveal(scope = document) {
+  const nodes = [...scope.querySelectorAll(".reveal:not(.in)")];
+  nodes.forEach((node, index) => {
+    setTimeout(() => node.classList.add("in"), Math.min(index * 55, 600));
+  });
+}
+
+function countUp(id, target) {
+  const node = document.getElementById(id);
+  if (!node) return;
+  const duration = 700;
+  const start = performance.now();
+  const step = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    node.textContent = Math.round(eased * target);
+    if (progress < 1) requestAnimationFrame(step);
+    else node.textContent = target;
+  };
+  requestAnimationFrame(step);
 }
 
 /* ---------- Catalog ---------- */
 function moduleCard(module) {
-  const card = el("article", { class: "module-card", "data-name": module.name });
+  const card = el("article", { class: "module-card reveal", "data-name": module.name });
   card.appendChild(el("h3", { class: "module-name", text: module.name }));
   card.appendChild(el("p", { class: "module-summary", text: module.summary ?? "" }));
   const tags = el("div", { class: "module-tags" });
@@ -180,6 +210,7 @@ function refreshCatalogBody() {
     body.appendChild(section);
   }
   if (shown === 0) body.appendChild(el("p", { class: "empty", text: "No modules match your filter." }));
+  animateReveal(body);
 }
 
 /* ---------- Insights ---------- */
@@ -214,9 +245,7 @@ async function renderInsights(view) {
     triggerCard.appendChild(
       el("div", { class: "bar-row" }, [
         el("span", { class: "bar-label", text: label }),
-        el("div", { class: "bar-track" }, [
-          el("div", { class: "bar-fill", style: `width:${(count / maxTrigger) * 100}%` })
-        ]),
+        el("div", { class: "bar-track" }, [el("div", { class: "bar-fill", "data-w": (count / maxTrigger) * 100 })]),
         el("span", { class: "bar-value", text: String(count) })
       ])
     );
@@ -229,13 +258,19 @@ async function renderInsights(view) {
     catCard.appendChild(
       el("div", { class: "bar-row" }, [
         el("span", { class: "bar-label", text: category }),
-        el("div", { class: "bar-track" }, [el("div", { class: "bar-fill", style: `width:${(count / maxCat) * 100}%` })]),
+        el("div", { class: "bar-track" }, [el("div", { class: "bar-fill", "data-w": (count / maxCat) * 100 })]),
         el("span", { class: "bar-value", text: String(count) })
       ])
     );
   }
   grid.appendChild(catCard);
   view.appendChild(grid);
+
+  requestAnimationFrame(() =>
+    view.querySelectorAll(".bar-fill[data-w]").forEach((fill) => {
+      fill.style.width = `${fill.getAttribute("data-w")}%`;
+    })
+  );
 
   view.appendChild(el("h2", { class: "section-title", text: "AI-assisted recommendations" }));
   for (const rec of insights.recommendations) {
@@ -249,6 +284,9 @@ async function renderInsights(view) {
       ])
     );
   }
+
+  view.querySelectorAll(".insight-card, .rec").forEach((node) => node.classList.add("reveal"));
+  animateReveal(view);
 }
 
 /* ---------- Assistant ---------- */
@@ -441,6 +479,118 @@ function openModule(name) {
       setTimeout(() => card.classList.remove("flash"), 1600);
     }
   }, 60);
+}
+
+/* ---------- Design System ---------- */
+const PALETTE_SWATCHES = [
+  { name: "Cream (base)", hex: "#f1e8d2", ink: "#14213d" },
+  { name: "Cream 100", hex: "#f8f2e2", ink: "#14213d" },
+  { name: "Gold", hex: "#b8860b", ink: "#ffffff" },
+  { name: "Gold bright", hex: "#d4af37", ink: "#14213d" },
+  { name: "Navy (ink)", hex: "#14213d", ink: "#ffffff" },
+  { name: "Navy 500", hex: "#22345f", ink: "#ffffff" },
+  { name: "Black trim", hex: "#16181d", ink: "#ffffff" },
+  { name: "White", hex: "#ffffff", ink: "#14213d" },
+  { name: "Silver", hex: "#9aa1ac", ink: "#14213d" }
+];
+
+function dsPanel(title, note, children) {
+  return el("section", { class: "ds-panel reveal" }, [
+    el("h2", { text: title }),
+    note ? el("p", { class: "ds-note", text: note }) : null,
+    ...[].concat(children)
+  ]);
+}
+
+function renderDesign(view) {
+  const hero = el("div", { class: "ds-hero reveal" }, [
+    el("img", { class: "ds-hero-rosette", src: "/assets/guilloche.svg", alt: "" }),
+    el("p", { class: "ds-hero-eyebrow", text: "RTPSC Design Language" }),
+    el("h1", { class: "ds-hero-title", html: 'The <span class="grad">Sovereign Ledger</span> System' }),
+    el("p", {
+      class: "ds-hero-sub",
+      text:
+        "A treasury-grade visual language — engraved guilloché artwork, an embossed seal, " +
+        "a cream-and-navy canvas, and gold that behaves like light on metal. Every token, " +
+        "curve, and motion cue is tuned to feel considered, official, and unmistakably premium."
+    }),
+    el("div", { class: "ds-hero-rule" })
+  ]);
+  view.appendChild(hero);
+
+  // Palette
+  const swatchGrid = el("div", { class: "swatch-grid" });
+  PALETTE_SWATCHES.forEach((s) => {
+    swatchGrid.appendChild(
+      el("div", { class: "swatch" }, [
+        el("div", { class: "swatch-chip", style: `background:${s.hex}` }),
+        el("div", { class: "swatch-meta" }, [
+          el("div", { class: "swatch-name", text: s.name }),
+          el("div", { class: "swatch-hex", text: s.hex })
+        ])
+      ])
+    );
+  });
+  view.appendChild(dsPanel("Color", "Cream base · gold · navy blue · black trim · white · silver.", swatchGrid));
+
+  // Typography
+  const typeRows = [
+    ["Display / 46", "display", "Sovereign Ledger", "font-family: var(--font-display); font-size: 46px;"],
+    ["Display / 26", "display", "Platform Modules", "font-size: 26px;"],
+    ["Body / 16", "", "Every module is an executable, compliant stub.", "font-size: 16px;"],
+    ["Body / 14", "", "Read-only inventory of the platform surface.", "font-size: 14px;"],
+    ["Mono / 13", "mono", "workflow-runner · api-gateway", "font-family: var(--font-mono);"]
+  ].map(([tag, cls, sample, style]) =>
+    el("div", { class: "type-row" }, [
+      el("span", { class: "type-tag", text: tag }),
+      el("span", { class: `type-sample ${cls}`, style, text: sample })
+    ])
+  );
+  view.appendChild(dsPanel("Typography", "Serif display for authority, humanist sans for clarity, mono for identifiers.", typeRows));
+
+  // Components
+  const gallery = el("div", { class: "gallery" }, [
+    el("button", { class: "ask-btn", text: "Primary action", style: "height:40px" }),
+    el("button", { class: "filter-btn active", text: "active filter" }),
+    el("button", { class: "filter-btn", text: "filter" }),
+    el("span", { class: "tag", text: "event-driven" }),
+    el("span", { class: "chip", text: "suggested prompt" })
+  ]);
+  const barDemo = el("div", { class: "bar-row", style: "max-width:360px;margin-top:16px" }, [
+    el("span", { class: "bar-label", text: "sample" }),
+    el("div", { class: "bar-track" }, [el("div", { class: "bar-fill", style: "width:72%" })]),
+    el("span", { class: "bar-value", text: "72" })
+  ]);
+  view.appendChild(dsPanel("Components", "Buttons, filters, tags, chips, and data bars share one gold→navy accent system.", [gallery, barDemo]));
+
+  // Motion
+  const motion = el("div", { class: "motion-grid" }, [
+    motionCard("Float", el("div", { class: "demo-coin u-float" })),
+    motionCard("Gold shimmer", el("div", { class: "demo-shimmer" })),
+    motionCard("Bar reveal", el("div", { class: "demo-bar-track" }, [el("div", { class: "demo-bar-fill" })])),
+    motionCard("Rosette spin", el("img", { src: "/assets/guilloche.svg", alt: "", style: "width:52px;animation:rtp-spin-slow 14s linear infinite" }))
+  ]);
+  view.appendChild(dsPanel("Motion", "Calm, purposeful motion: fade-rise entrances, staggered reveals, metallic shimmer, and slow engraving spins. Honors prefers-reduced-motion.", motion));
+
+  // Artwork
+  const art = el("div", { class: "ds-art" }, [
+    el("img", { src: "/assets/emblem.svg", alt: "RTPSC seal", width: "128", height: "128" }),
+    el("img", { src: "/assets/guilloche.svg", alt: "Guilloché rosette", width: "180", height: "180" }),
+    el("p", {
+      class: "ds-note",
+      style: "max-width:34ch",
+      text:
+        "The seal fuses a ledger crest, ascending bars, and a milled coin edge. The guilloché rosette " +
+        "echoes currency-grade security engraving — hand-tuned overlapping ellipses."
+    })
+  ]);
+  view.appendChild(dsPanel("Concept artwork", "Original, dependency-free SVG graphics — no external assets.", art));
+
+  animateReveal(view);
+}
+
+function motionCard(label, demo) {
+  return el("div", { class: "motion-card" }, [el("div", { class: "motion-demo" }, [demo]), document.createTextNode(label)]);
 }
 
 /* ---------- Command palette ---------- */

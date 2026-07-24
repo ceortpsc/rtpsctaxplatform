@@ -3,29 +3,36 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>RTPSC Modules Dashboard</title>
+    <title>RTPSC · Sovereign Ledger</title>
+    <link rel="stylesheet" href="/theme.css" />
     <link rel="stylesheet" href="/styles.css" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A9%3C/text%3E%3C/svg%3E"
-    />
+    <link rel="icon" href="/assets/emblem.svg" />
   </head>
   <body>
+    <div class="bg-decor" aria-hidden="true">
+      <img class="decor-rosette decor-rosette--tr" src="/assets/guilloche.svg" alt="" />
+      <img class="decor-rosette decor-rosette--bl" src="/assets/guilloche.svg" alt="" />
+    </div>
+
     <div class="app">
       <aside class="sidebar">
         <div class="brand">
-          <span class="brand-mark">RTPSC</span>
-          <span class="brand-sub">Modules</span>
+          <img class="brand-emblem u-float" src="/assets/emblem.svg" alt="RTPSC emblem" />
+          <div class="brand-text">
+            <span class="brand-mark">RTPSC</span>
+            <span class="brand-sub">Sovereign Ledger</span>
+          </div>
         </div>
         <nav class="nav" id="nav">
           <button class="nav-item active" data-view="catalog"><span class="nav-ico">▦</span> Catalog</button>
           <button class="nav-item" data-view="insights"><span class="nav-ico">✦</span> Insights</button>
           <button class="nav-item" data-view="assistant"><span class="nav-ico">✨</span> AI Assistant</button>
           <button class="nav-item" data-view="graph"><span class="nav-ico">⧉</span> Dependency Graph</button>
+          <button class="nav-item" data-view="design"><span class="nav-ico">❖</span> Design System</button>
         </nav>
         <button class="palette-hint" id="open-palette">
           <span>Search modules</span>
-          <kbd>Ctrl</kbd><kbd>K</kbd>
+          <span><kbd>Ctrl</kbd><kbd>K</kbd></span>
         </button>
         <div class="sidebar-foot">
           Workflows run in the background via <code>workflow-runner</code>. This dashboard is
@@ -35,10 +42,13 @@
 
       <main class="main">
         <header class="topbar">
-          <h1 class="view-title" id="view-title">Catalog</h1>
+          <div class="topbar-lead">
+            <h1 class="view-title" id="view-title">Catalog</h1>
+            <p class="view-kicker" id="view-kicker">Platform module inventory</p>
+          </div>
           <div class="stats" id="stats">
-            <div class="stat"><span class="stat-value" id="stat-modules">0</span><span class="stat-label">Modules</span></div>
-            <div class="stat"><span class="stat-value" id="stat-categories">0</span><span class="stat-label">Categories</span></div>
+            <div class="stat"><span class="stat-value" id="stat-modules" data-count="0">0</span><span class="stat-label">Modules</span></div>
+            <div class="stat"><span class="stat-value" id="stat-categories" data-count="0">0</span><span class="stat-label">Categories</span></div>
           </div>
         </header>
         <div class="view" id="view"></div>
