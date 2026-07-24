@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RTPSC Modules Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A9%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">RTPSC</span>
+        <span class="brand-title">Platform Modules Dashboard</span>
+      </div>
+      <div class="stats" id="stats">
+        <div class="stat"><span class="stat-value" id="stat-modules">0</span><span class="stat-label">Modules</span></div>
+        <div class="stat"><span class="stat-value" id="stat-categories">0</span><span class="stat-label">Categories</span></div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <p class="lead">
+        Read-only inventory of every platform module. Workflows run in the background via the
+        <code>workflow-runner</code> worker — this dashboard is for modules only.
+      </p>
+      <nav class="filters" id="filters"></nav>
+      <div id="catalog" class="catalog">
+        <p class="empty">Loading modules…</p>
+      </div>
+    </main>
+
+    <template id="category-template">
+      <section class="category" data-category="">
+        <div class="category-head">
+          <h2 class="category-title"></h2>
+          <span class="category-count"></span>
+        </div>
+        <p class="category-desc"></p>
+        <div class="module-grid"></div>
+      </section>
+    </template>
+
+    <template id="module-template">
+      <article class="module-card">
+        <div class="module-head">
+          <h3 class="module-name"></h3>
+        </div>
+        <p class="module-summary"></p>
+        <div class="module-tags"></div>
+        <button class="detail-toggle" type="button">Details</button>
+        <pre class="module-detail"></pre>
+      </article>
+    </template>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

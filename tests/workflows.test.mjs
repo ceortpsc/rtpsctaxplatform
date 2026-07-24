@@ -4,7 +4,7 @@ import { createWorkflowRunner, createWorkflowRegistry } from '../packages/workfl
 import { refundStatusWorkflow } from '../workflows/refund-status-workflow/src/index.mjs';
 import { transcriptIntakeWorkflow } from '../workflows/transcript-intake-workflow/src/index.mjs';
 import { transmissionWorkflow } from '../workflows/transmission-workflow/src/index.mjs';
-import { createPlatformRegistry, platformWorkflows } from '../services/workflow-dashboard/src/registry.mjs';
+import { createPlatformRegistry, platformWorkflows } from '../workers/workflow-runner/src/registry.mjs';
 
 function runnerFor(workflow) {
   const registry = createWorkflowRegistry([workflow]);

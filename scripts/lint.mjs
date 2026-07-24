@@ -29,10 +29,11 @@ const packageFiles = [
   'services/refund-status-service/package.json',
   'services/transcript-service/package.json',
   'services/analytics-service/package.json',
-  'services/workflow-dashboard/package.json',
+  'services/modules-dashboard/package.json',
   'workers/tds-worker/package.json',
   'workers/transcript-pull-worker/package.json',
   'workers/live-source-fetcher/package.json',
+  'workers/workflow-runner/package.json',
   'workflows/refund-status-workflow/package.json',
   'workflows/transcript-intake-workflow/package.json',
   'workflows/transmission-workflow/package.json'

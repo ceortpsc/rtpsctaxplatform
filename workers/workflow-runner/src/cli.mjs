@@ -1,18 +1,17 @@
 import { describeWorkflow } from '../../../packages/workflow-engine/src/index.mjs';
 import { createPlatformRegistry } from './registry.mjs';
 
-// Terminal task runner for modular workflows.
+// Terminal task runner for the background workflows.
 //   node src/cli.mjs list
 //   node src/cli.mjs run <workflow-name> '<json-input>'
 //   node src/cli.mjs emit <event-name> '<json-payload>'
 
 async function main() {
   const [command, target, rawPayload] = process.argv.slice(2);
-  const { registry, runner, triggers } = createPlatformRegistry();
+  const { registry, triggers } = createPlatformRegistry();
 
   if (!command || command === 'list') {
-    const workflows = registry.list().map(describeWorkflow);
-    console.log(JSON.stringify({ workflows }, null, 2));
+    console.log(JSON.stringify({ workflows: registry.list().map(describeWorkflow) }, null, 2));
     return;
   }
 

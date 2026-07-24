@@ -47,36 +47,43 @@ npm run worker:transcript-pull
 npm run worker:live-source
 ```
 
-## Workflows & Interactive Dashboard
+## Background Workflows
 
 The platform ships a modular workflow engine (`packages/workflow-engine`) plus
-domain workflows under `workflows/*` and an interactive operations dashboard
-(`services/workflow-dashboard`).
+domain workflows under `workflows/*`. Workflows run **in the background** via the
+`workflow-runner` worker (`workers/workflow-runner`) — they are not triggered
+from any dashboard.
 
-Start the dashboard (default port `3010`) and open it in a browser:
+Run all workflows in the background (schedules fire automatically, event/manual
+workflows are driven on a cadence; every completed run is logged):
 
 ```bash
-npm run start:dashboard
-# then open http://localhost:3010
+npm run start:workflows        # long-running background runner
+npm run worker:workflows       # one-shot: run every workflow once and exit
 ```
 
-The dashboard lists every registered workflow, lets you edit JSON input, trigger
-runs (manual / event / scheduled), and inspect live run history with per-step
-task status, timing, logs, and outputs.
-
-Trigger workflows from the terminal:
+Trigger a single workflow from the terminal:
 
 ```bash
 npm run workflow:list
 npm run workflow:run transcript-intake '{"requestId":"REQ-1","authorized":true}'
 ```
 
+## Modules Dashboard
+
+The dashboard (`services/modules-dashboard`) is a **read-only inventory of
+platform modules only** (packages, services, workers, pipelines, engines, and
+workflow definitions). It does not trigger workflows.
+
+```bash
+npm run start:dashboard
+# then open http://localhost:3010
+```
+
 REST API (served by the dashboard):
 
-- `GET /api/workflows` — list workflows and their steps/triggers
-- `POST /api/workflows/:name/run` — trigger a workflow with a JSON body
-- `POST /api/events` — emit an event (`{ "event": "...", "payload": {} }`)
-- `GET /api/runs` and `GET /api/runs/:id` — run history and details
+- `GET /api/modules` — categorized catalog of all platform modules
+- `GET /health` and `GET /metadata` — service health and module summary
 
 ## Module Map
 
@@ -91,11 +98,13 @@ services/
   refund-status-service/ event-driven refund status surface
   transcript-service/    transcript intake and orchestration surface
   analytics-service/     analytics and refund intelligence API surface
-  workflow-dashboard/    interactive dashboard + REST API for workflows
+  modules-dashboard/     read-only dashboard + REST API for platform modules
 workflows/
   refund-status-workflow/    event-driven refund status update workflow
   transcript-intake-workflow/ authorization-gated transcript intake workflow
   transmission-workflow/     scheduled transmission cycle workflow
+workers/
+  workflow-runner/       runs all workflows in the background (schedules/events)
 workers/
   tds-worker/            TDS orchestration worker scaffold
   transcript-pull-worker/account transcript pull worker scaffold
