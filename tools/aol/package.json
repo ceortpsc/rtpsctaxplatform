@@ -1,0 +1,16 @@
+{
+  "name": "@rtp/aol",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AOL — Adaptive Optimized Linker. A next-gen, Instant-Messenger-era package manager built for monorepo velocity.",
+  "type": "module",
+  "bin": {
+    "aol": "./bin/aol.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

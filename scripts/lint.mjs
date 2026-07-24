@@ -10,6 +10,9 @@ const requiredPaths = [
   'docs/operations-runbook.md',
   'docs/compliance-and-governance.md',
   'docs/irm-aligned-handbook.md',
+  'docs/aol-package-manager.md',
+  'tools/aol/bin/aol.mjs',
+  'tools/aol/package.json',
   'infra/terraform/modules/platform-service/main.tf',
   '.github/workflows/ci.yml',
   '.github/workflows/compliance.yml'
