@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# RTPSC custom command runner — thin wrapper around bin/rtpsc.mjs (no pnpm required).
+exec node "$(dirname "$0")/bin/rtpsc.mjs" "$@"

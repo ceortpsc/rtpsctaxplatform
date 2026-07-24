@@ -9,8 +9,12 @@ dependencies**, so `pnpm install` just links the workspaces.
 
 ### Running services / commands
 
-Standard commands are documented in `README.md` and wired in root `package.json` / `Makefile`.
-Use the pnpm scripts (`pnpm run lint`, `pnpm test`, `pnpm run build`, `pnpm run start`, `pnpm run worker:*`).
+Two equivalent runners exist:
+- **Custom CLI (preferred for local dev):** `./rtpsc <command>` (or `node bin/rtpsc.mjs <command>`) —
+  a dependency-free dispatcher that runs everything via `node` directly, **no package manager
+  required**. Commands: `lint`, `test`, `build`, `start [service]`, `deploy [--smoke]`, `workflows`,
+  `workflow run|emit …`, `agents [docs]`, `env`, `help`. Command mapping lives in `bin/rtpsc.mjs`.
+- **pnpm scripts:** `pnpm run lint`, `pnpm test`, `pnpm run build`, etc. (used by CI).
 
 - `pnpm run start` launches only the **api-gateway** on port `3000` and blocks (long-running). Start
   it in a background terminal/tmux session. Verify with `curl http://localhost:3000/health` and

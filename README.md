@@ -36,16 +36,27 @@ The repository is organized as a lightweight monorepo with executable Node.js se
 
 ## Quickstart
 
+Use the built-in **`rtpsc`** command runner — a dependency-free CLI that drives everything through
+`node` directly (no package manager required to run tasks):
+
 ```bash
-pnpm install
-ppnpm run lint
-ppnpm test
-ppnpm run build
-ppnpm run start
+./rtpsc help          # list all commands
+./rtpsc lint
+./rtpsc test
+./rtpsc build
+./rtpsc start         # api-gateway (or: ./rtpsc start dashboard)
+./rtpsc deploy        # all services + background worker (add --smoke to verify & exit)
+./rtpsc workflow run transcript-intake '{"requestId":"REQ-1","authorized":true}'
+./rtpsc agents        # deployment-assist & development team (./rtpsc agents docs writes markdown)
+./rtpsc env           # environment protection status
 ```
 
-> This project uses **pnpm** (see `packageManager` in `package.json`). Enable it with
-> `corepack enable pnpm` if you don't have it.
+`rtpsc` is a thin wrapper over `bin/rtpsc.mjs` (also exposed as a `bin` entry); run it as
+`./rtpsc <command>` or `node bin/rtpsc.mjs <command>`.
+
+Install dependencies with your package manager of choice; this repo is configured for **pnpm**
+(`pnpm install`; `corepack enable pnpm` if needed). The equivalent pnpm scripts remain available
+and are used by CI.
 
 ## Deploy all (development)
 
