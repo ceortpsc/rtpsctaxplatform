@@ -80,9 +80,19 @@ npm run start:dashboard
 # then open http://localhost:3010
 ```
 
+The dashboard has four views with a sidebar and a `Ctrl+K` command palette:
+
+- **Catalog** — searchable/filterable module inventory with per-module details
+- **Insights** — AI-assisted metrics (trigger distribution, category counts) and recommendations
+- **AI Assistant** — ask natural-language questions about modules (local heuristic engine, no external LLM)
+- **Dependency Graph** — layered SVG graph of module dependencies and workflow-runner links
+
 REST API (served by the dashboard):
 
 - `GET /api/modules` — categorized catalog of all platform modules
+- `GET /api/insights` — insights + recommendations (from `@rtp/module-advisor`)
+- `GET /api/graph` — dependency graph nodes/edges
+- `POST /api/assistant` — natural-language query (`{ "query": "..." }`) → answer + matches
 - `GET /health` and `GET /metadata` — service health and module summary
 
 ## Module Map
@@ -93,6 +103,7 @@ packages/
   client-config/         API/TDS/tunnel credential placeholder definitions
   secure-tunnel/         compliant tunnel adapter interface scaffold
   workflow-engine/       modular task/workflow/trigger engine + run history
+  module-advisor/        AI-assisted insights, assistant, and dependency graph
 services/
   api-gateway/           route registry and transmission entrypoint skeleton
   refund-status-service/ event-driven refund status surface

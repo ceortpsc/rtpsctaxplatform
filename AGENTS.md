@@ -20,7 +20,11 @@ Use the npm scripts (`npm run lint`, `npm test`, `npm run build`, `npm run start
 - Workers run one-shot and print a JSON descriptor + planned steps, then exit
   (`npm run worker:tds`, `worker:transcript-pull`, `worker:live-source`).
 - `npm run start:dashboard` launches the **modules-dashboard** on port `3010`: a read-only module
-  catalog UI (`GET /api/modules`). It only lists modules; it does not trigger workflows.
+  catalog UI. It only lists modules; it does not trigger workflows. Views: Catalog, Insights,
+  AI Assistant, Dependency Graph (sidebar + `Ctrl+K` command palette). APIs: `GET /api/modules`,
+  `GET /api/insights`, `GET /api/graph`, `POST /api/assistant` (`{query}`).
+- The "AI Assistant"/insights come from `packages/module-advisor` — a local, dependency-free
+  heuristic engine (intent detection + keyword scoring). There is **no external LLM or API key**.
 - Workflows run in the **background** via the `workflow-runner` worker, not from any dashboard:
   `npm run start:workflows` (long-running) or `npm run worker:workflows` (one-shot). A single
   workflow can be run from the terminal with `npm run workflow:run <name> '<json>'`.

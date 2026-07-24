@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { loadRuntimeConfig, redactConfig } from '../../../packages/platform-core/src/index.mjs';
+import { answerQuery, buildDependencyGraph, buildInsights } from '../../../packages/module-advisor/src/index.mjs';
 import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor } from './catalog.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
@@ -21,6 +22,35 @@ const CONTENT_TYPES = {
 function sendJson(response, statusCode, body) {
   response.writeHead(statusCode, { 'content-type': 'application/json; charset=utf-8' });
   response.end(JSON.stringify(body, null, 2));
+}
+
+function readRequestBody(request) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0;
+    request.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > 100_000) {
+        reject(new Error('Request body too large.'));
+        request.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    request.on('end', () => {
+      const raw = Buffer.concat(chunks).toString('utf8').trim();
+      if (raw === '') {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(raw));
+      } catch {
+        reject(new Error('Request body must be valid JSON.'));
+      }
+    });
+    request.on('error', reject);
+  });
 }
 
 async function serveStatic(response, urlPath) {
@@ -63,6 +93,26 @@ export function createDashboardServer() {
     if (request.method === 'GET' && pathname === '/api/modules') {
       const catalog = buildModuleCatalog();
       sendJson(response, 200, { summary: catalogSummary(catalog), categories: catalog });
+      return;
+    }
+
+    if (request.method === 'GET' && pathname === '/api/insights') {
+      sendJson(response, 200, buildInsights(buildModuleCatalog()));
+      return;
+    }
+
+    if (request.method === 'GET' && pathname === '/api/graph') {
+      sendJson(response, 200, buildDependencyGraph(buildModuleCatalog()));
+      return;
+    }
+
+    if (request.method === 'POST' && pathname === '/api/assistant') {
+      try {
+        const body = await readRequestBody(request);
+        sendJson(response, 200, answerQuery(buildModuleCatalog(), body.query ?? ''));
+      } catch (error) {
+        sendJson(response, 400, { error: 'bad_request', message: error.message });
+      }
       return;
     }
 

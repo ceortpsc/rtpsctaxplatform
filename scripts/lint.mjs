@@ -25,6 +25,7 @@ const packageFiles = [
   'packages/client-config/package.json',
   'packages/secure-tunnel/package.json',
   'packages/workflow-engine/package.json',
+  'packages/module-advisor/package.json',
   'services/api-gateway/package.json',
   'services/refund-status-service/package.json',
   'services/transcript-service/package.json',
