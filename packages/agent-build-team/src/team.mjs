@@ -190,7 +190,7 @@ export function planTeamCoverage(modules) {
     version: TEAM_VERSION,
     objectives: [
       'Inventory every developmental project and module across packages, services, workers, pipelines, engines, and tools.',
-      'Run Platform Architect, Build Engineer, QA Engineer, Compliance Officer, Docs Steward, and Release Lead assessments.',
+      'Run Platform Architect, Build Engineer, QA Engineer, Compliance Officer, Docs Steward, Design Style & Presentation, and Release Lead assessments.',
       'Execute lint, test, and build quality gates for the whole platform.',
       'Produce a consolidated readiness report with blockers and warnings.'
     ],

@@ -10,6 +10,8 @@ export {
   qaEngineer,
   complianceOfficer,
   docsSteward,
+  designStylist,
+  DESIGN_STYLE_GUIDANCE,
   releaseLead
 } from './roles.mjs';
 

@@ -1,3 +1,5 @@
+export { DESIGN_STYLE_GUIDANCE } from './design-style.mjs';
+
 /**
  * Agent Build Engineering Team — role roster.
  *
@@ -9,7 +11,7 @@
 
 export const TEAM_NAME = 'Agent Build Engineering Team';
 export const TEAM_ID = 'agent-build-engineering-team';
-export const TEAM_VERSION = '0.1.0';
+export const TEAM_VERSION = '0.1.1';
 
 /**
  * @typedef {object} Finding
@@ -252,11 +254,131 @@ export const docsSteward = Object.freeze({
   }
 });
 
+/**
+ * Design Style & Presentation — brand, visual language, and operator-facing polish.
+ *
+ * Applies to UI surfaces (public/, CSS/HTML/SVG) and to how modules present
+ * themselves in README/branding copy. Flags common AI-default visual clichés
+ * when style assets exist.
+ */
+export const designStylist = Object.freeze({
+  id: 'design-stylist',
+  name: 'Design Style & Presentation',
+  order: 55,
+  focus: ['brand', 'visual-language', 'presentation', 'operator-polish'],
+  description:
+    'Guards design style and presentation: brand-first signals, presentation-surface quality, and avoidance of generic AI visual defaults.',
+  assess(module) {
+    const findings = [];
+    const presentation = module.presentation || {};
+    const hasSurface = Boolean(presentation.hasSurface);
+
+    if (module.readmeExists) {
+      if (presentation.readmeHasHeading) {
+        findings.push(
+          finding('ok', 'DESIGN_README_HEADING', 'README opens with a clear presentation heading.', {
+            module: module.name
+          })
+        );
+      } else {
+        findings.push(
+          finding('warning', 'DESIGN_README_NO_HEADING', 'README should open with a clear # heading for presentation.', {
+            module: module.name,
+            path: `${module.location}/README.md`
+          })
+        );
+      }
+
+      if (presentation.brandMentioned) {
+        findings.push(
+          finding('ok', 'DESIGN_BRAND_SIGNAL', 'Brand or product identity is present in module presentation copy.', {
+            module: module.name
+          })
+        );
+      } else if (module.kind === 'service' || module.kind === 'tool' || hasSurface) {
+        findings.push(
+          finding(
+            'info',
+            'DESIGN_BRAND_SOFT',
+            'Consider naming RTPSC / product identity in operator-facing presentation copy.',
+            { module: module.name }
+          )
+        );
+      }
+    }
+
+    if (hasSurface) {
+      findings.push(
+        finding('ok', 'DESIGN_SURFACE_FOUND', 'Presentation surface detected (public UI and/or style assets).', {
+          module: module.name,
+          path: presentation.publicDir || presentation.styleFiles?.[0]
+        })
+      );
+
+      if (!presentation.hasCssVariables && presentation.styleFiles?.length > 0) {
+        findings.push(
+          finding(
+            'warning',
+            'DESIGN_NO_TOKENS',
+            'Presentation CSS should define a clear visual direction via CSS variables.',
+            { module: module.name }
+          )
+        );
+      } else if (presentation.hasCssVariables) {
+        findings.push(
+          finding('ok', 'DESIGN_TOKENS_OK', 'CSS variables establish a presentation design direction.', {
+            module: module.name
+          })
+        );
+      }
+
+      for (const hit of presentation.styleAntiPatterns || []) {
+        findings.push(
+          finding('warning', `DESIGN_LOOK_${hit.id.toUpperCase().replace(/-/g, '_')}`, hit.message, {
+            module: module.name,
+            path: hit.path
+          })
+        );
+      }
+
+      if ((presentation.styleAntiPatterns || []).length === 0 && presentation.styleFiles?.length > 0) {
+        findings.push(
+          finding('ok', 'DESIGN_LOOK_CLEAR', 'No banned default AI visual looks detected in style assets.', {
+            module: module.name
+          })
+        );
+      }
+    } else {
+      findings.push(
+        finding(
+          'ok',
+          'DESIGN_NO_UI',
+          'No dedicated UI presentation surface — style agent scoped to operator docs polish.',
+          { module: module.name }
+        )
+      );
+    }
+
+    return {
+      roleId: this.id,
+      roleName: this.name,
+      status: statusFromFindings(findings),
+      findings,
+      metrics: {
+        hasSurface,
+        brandMentioned: Boolean(presentation.brandMentioned),
+        styleFileCount: presentation.styleFiles?.length ?? 0,
+        antiPatternCount: presentation.styleAntiPatterns?.length ?? 0
+      }
+    };
+  }
+});
+
 /** Release Lead — consolidates module readiness for ship/build decisions. */
 export const releaseLead = Object.freeze({
   id: 'release-lead',
   name: 'Release Lead',
-  order: 60,
+  order: 70,
   focus: ['readiness', 'roll-up', 'ship-gate'],
   description: 'Rolls up peer findings into a per-module ship/build readiness verdict.',
   assess(module, context = {}) {
@@ -310,6 +432,7 @@ export const TEAM_ROLES = Object.freeze([
   qaEngineer,
   complianceOfficer,
   docsSteward,
+  designStylist,
   releaseLead
 ]);
 

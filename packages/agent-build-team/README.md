@@ -14,6 +14,7 @@ engines, and tools).
 | QA Engineer | Scripts and quality-gate surface |
 | Compliance Officer | No scraping, env-only secrets, stub gates |
 | Docs Steward | README / operator docs coverage |
+| Design Style & Presentation | Brand signals, UI/presentation polish, anti-default looks |
 | Release Lead | Roll-up readiness verdict per module |
 
 ## Commands

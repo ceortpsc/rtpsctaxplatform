@@ -44,7 +44,8 @@ tools):
 ```
 
 Roles: Platform Architect, Build Engineer, QA Engineer, Compliance Officer,
-Docs Steward, Release Lead. Report: `build/agent-build-team-report.json`.
+Docs Steward, Design Style & Presentation, Release Lead.
+Report: `build/agent-build-team-report.json`.
 Docs: `docs/agent-build-engineering-team.md`.
 
 ### Running services / commands

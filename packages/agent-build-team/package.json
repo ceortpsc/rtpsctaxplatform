@@ -1,6 +1,6 @@
 {
   "name": "@rtp/agent-build-team",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Agent Build Engineering Team — multi-role orchestration across all RTPSC developmental projects and modules.",
   "type": "module",
@@ -25,6 +25,8 @@
   "keywords": [
     "agent-build-team",
     "engineering-team",
+    "design-style",
+    "presentation",
     "monorepo",
     "build-orchestration",
     "rtpsc"

@@ -1,5 +1,6 @@
 import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { DESIGN_STYLE_GUIDANCE } from './design-style.mjs';
 
 /** Developmental sectors covered by the Agent Build Engineering Team. */
 export const DEVELOPMENTAL_SECTORS = Object.freeze([
@@ -31,6 +32,81 @@ async function exists(filePath) {
 
 async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
+}
+
+async function collectFiles(dir, extensions, acc = [], relativeBase = dir) {
+  if (!(await exists(dir))) return acc;
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
+      await collectFiles(abs, extensions, acc, relativeBase);
+    } else if (extensions.some((ext) => entry.name.toLowerCase().endsWith(ext))) {
+      acc.push(path.relative(relativeBase, abs).split(path.sep).join('/'));
+    }
+  }
+  return acc;
+}
+
+async function inspectPresentation(absModuleDir, location, readmeExists) {
+  const publicDir = path.join(absModuleDir, 'public');
+  const hasPublic = await exists(publicDir);
+  const styleRoots = hasPublic ? [publicDir, absModuleDir] : [absModuleDir];
+  const styleFiles = [];
+  const htmlFiles = [];
+  const svgFiles = [];
+
+  for (const root of styleRoots) {
+    const css = await collectFiles(root, ['.css'], [], absModuleDir);
+    const html = await collectFiles(root, ['.html', '.htm'], [], absModuleDir);
+    const svg = await collectFiles(root, ['.svg'], [], absModuleDir);
+    for (const file of css) if (!styleFiles.includes(file)) styleFiles.push(file);
+    for (const file of html) if (!htmlFiles.includes(file)) htmlFiles.push(file);
+    for (const file of svg) if (!svgFiles.includes(file)) svgFiles.push(file);
+  }
+
+  const publicStyleFiles = styleFiles.filter((file) => file.startsWith('public/'));
+  const publicHtmlFiles = htmlFiles.filter((file) => file.startsWith('public/'));
+  const publicSvgFiles = svgFiles.filter((file) => file.startsWith('public/'));
+  const hasSurface = hasPublic || publicStyleFiles.length > 0 || publicHtmlFiles.length > 0;
+
+  let readmeHasHeading = false;
+  let brandMentioned = false;
+  if (readmeExists) {
+    const readme = await readFile(path.join(absModuleDir, 'README.md'), 'utf8');
+    readmeHasHeading = /^#\s+\S+/m.test(readme);
+    const lower = readme.toLowerCase();
+    brandMentioned = DESIGN_STYLE_GUIDANCE.brandSignals.some((signal) => lower.includes(signal));
+  }
+
+  let hasCssVariables = false;
+  const styleAntiPatterns = [];
+  for (const relative of publicStyleFiles) {
+    const cssText = await readFile(path.join(absModuleDir, relative), 'utf8');
+    if (/--[a-z][\w-]*\s*:/i.test(cssText)) hasCssVariables = true;
+    for (const look of DESIGN_STYLE_GUIDANCE.avoidedLooks) {
+      if (look.pattern.test(cssText)) {
+        styleAntiPatterns.push({
+          id: look.id,
+          message: look.message,
+          path: path.join(location, relative)
+        });
+      }
+    }
+  }
+
+  return {
+    hasSurface,
+    publicDir: hasPublic ? path.join(location, 'public') : null,
+    styleFiles: publicStyleFiles,
+    htmlFiles: publicHtmlFiles,
+    svgFiles: publicSvgFiles,
+    readmeHasHeading,
+    brandMentioned,
+    hasCssVariables,
+    styleAntiPatterns
+  };
 }
 
 /**
@@ -83,6 +159,8 @@ export async function inventModules(rootDir = process.cwd()) {
       let status = 'active';
       if (entry.name.includes('secure-tunnel')) status = 'stub';
 
+      const presentation = await inspectPresentation(abs, location, readmeExists);
+
       modules.push({
         name: entry.name,
         packageName,
@@ -101,7 +179,8 @@ export async function inventModules(rootDir = process.cwd()) {
         summary,
         tags: [sector, SECTOR_KIND[sector] ?? 'module'],
         status,
-        hasHardcodedSecretHint: false
+        hasHardcodedSecretHint: false,
+        presentation
       });
     }
   }
@@ -142,7 +221,8 @@ export function describeInventory(modules) {
         location: module.location,
         entryExists: module.entryExists,
         readmeExists: module.readmeExists,
-        status: module.status
+        status: module.status,
+        presentationSurface: Boolean(module.presentation?.hasSurface)
       }))
     }))
   };

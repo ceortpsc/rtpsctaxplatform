@@ -26,7 +26,8 @@ Sectors in scope:
 3. **QA Engineer** — scripts / quality-gate surface
 4. **Compliance Officer** — no scraping, env-only secrets, stub gates
 5. **Docs Steward** — README coverage
-6. **Release Lead** — roll-up ship/build verdict
+6. **Design Style & Presentation** — brand signals, presentation surfaces, anti-default visual looks
+7. **Release Lead** — roll-up ship/build verdict
 
 ## Usage
 
@@ -52,3 +53,11 @@ JSON artifact: `build/agent-build-team-report.json`.
 The team never introduces scraping flows or embedded secrets. Compliance Officer
 findings are blockers when scraping language or hardcoded-secret hints appear in
 module metadata.
+
+## Design style & presentation
+
+The Design Style & Presentation agent reviews operator-facing README polish and
+any `public/` UI surfaces. It requires clear headings, encourages brand signals,
+expects CSS variables on presentation stylesheets, and warns on banned default
+AI looks (purple/indigo gradients, cream+terracotta, generic system fonts, glow
+stacks).
