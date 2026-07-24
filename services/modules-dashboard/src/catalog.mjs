@@ -8,8 +8,10 @@ import { transcriptDescriptor } from '../../../services/transcript-service/src/i
 import { analyticsDescriptor } from '../../../services/analytics-service/src/index.mjs';
 import { enrollmentDescriptor } from '../../../services/enrollment-service/src/index.mjs';
 import { invoiceDescriptor } from '../../../services/invoice-service/src/index.mjs';
+import { posCrmDescriptor } from '../../../services/pos-crm-service/src/index.mjs';
 import { TAX_DATA_NOTICE } from '../../../packages/tax-data/src/index.mjs';
 import { listServiceCatalog } from '../../../packages/invoice-core/src/index.mjs';
+import { listPhraseTemplates } from '../../../packages/ero-ops/src/index.mjs';
 import { tdsWorkerDescriptor } from '../../../workers/tds-worker/src/index.mjs';
 import { transcriptPullWorkerDescriptor } from '../../../workers/transcript-pull-worker/src/index.mjs';
 import { liveSourceFetcherDescriptor } from '../../../workers/live-source-fetcher/src/index.mjs';
@@ -43,6 +45,7 @@ const SERVICE_PORTS = {
   'analytics-service': 3003,
   'enrollment-service': 3004,
   'invoice-service': 3005,
+  'pos-crm-service': 3006,
   'modules-dashboard': 3010
 };
 
@@ -154,6 +157,24 @@ export function buildModuleCatalog() {
           summary: 'Invoicing machine core: AI data entry, tax calc, payment approval/confirmation, PDF & receipt export.',
           tags: ['invoicing', 'ai-assist', 'pdf', 'receipt'],
           detail: { catalogSkus: listServiceCatalog().map((s) => s.sku), exports: ['pdf', 'receipt.pdf', 'receipt.txt'] }
+        },
+        {
+          name: '@rtp/crm-core',
+          summary: 'CRM contacts, household accounts, and interaction timeline for tax-prep operations.',
+          tags: ['crm', 'contacts'],
+          detail: { entities: ['contact', 'account', 'interaction'] }
+        },
+        {
+          name: '@rtp/pos-core',
+          summary: 'Point of Sale sessions/carts that check out through invoice-core and link sales back to CRM.',
+          tags: ['pos', 'checkout', 'crm-linked'],
+          detail: { integrates: ['@rtp/crm-core', '@rtp/invoice-core', '@rtp/tax-data'] }
+        },
+        {
+          name: '@rtp/ero-ops',
+          summary: 'SBTPG report tracing, automated ERO phrasing, and refund-intelligence scoring.',
+          tags: ['ero', 'sbtpg', 'refund-intelligence'],
+          detail: { phrases: listPhraseTemplates().map((t) => t.code) }
         }
       ]
     },
@@ -167,6 +188,7 @@ export function buildModuleCatalog() {
         serviceEntry(analyticsDescriptor),
         serviceEntry(enrollmentDescriptor),
         serviceEntry(invoiceDescriptor),
+        serviceEntry(posCrmDescriptor),
         serviceEntry(modulesDashboardDescriptor)
       ]
     },

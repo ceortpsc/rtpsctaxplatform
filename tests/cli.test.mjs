@@ -30,6 +30,8 @@ test('core commands resolve to node spawn plans (no pnpm)', () => {
 test('start resolves services and rejects unknown ones', () => {
   assert.match(planCommand(['start', 'dashboard']).args.join(' '), /modules-dashboard\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'invoice']).args.join(' '), /invoice-service\/src\/index\.mjs$/);
+  assert.match(planCommand(['start', 'pos-crm']).args.join(' '), /pos-crm-service\/src\/index\.mjs$/);
+  assert.match(planCommand(['start', 'crm']).args.join(' '), /pos-crm-service\/src\/index\.mjs$/);
   assert.match(planCommand(['start']).args.join(' '), /api-gateway\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'nope']).error, /Unknown service/);
 });

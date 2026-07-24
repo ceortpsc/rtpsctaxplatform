@@ -20,6 +20,7 @@
     "start:analytics": "pnpm --filter @rtp/analytics-service start",
     "start:enrollment": "pnpm --filter @rtp/enrollment-service start",
     "start:invoice": "pnpm --filter @rtp/invoice-service start",
+    "start:pos-crm": "pnpm --filter @rtp/pos-crm-service start",
     "start:dashboard": "pnpm --filter @rtp/modules-dashboard start",
     "start:workflows": "pnpm --filter @rtp/workflow-runner start",
     "deploy:all": "node scripts/deploy-all.mjs",

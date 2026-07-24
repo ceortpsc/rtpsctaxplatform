@@ -27,6 +27,9 @@ const SERVICE_ENTRIES = {
   analytics: 'services/analytics-service/src/index.mjs',
   enrollment: 'services/enrollment-service/src/index.mjs',
   invoice: 'services/invoice-service/src/index.mjs',
+  'pos-crm': 'services/pos-crm-service/src/index.mjs',
+  pos: 'services/pos-crm-service/src/index.mjs',
+  crm: 'services/pos-crm-service/src/index.mjs',
   dashboard: 'services/modules-dashboard/src/index.mjs'
 };
 
@@ -35,7 +38,7 @@ export const COMMANDS = {
   test: { usage: 'test', desc: 'Run the automated test suite', plan: () => nodeRaw(['--test']) },
   build: { usage: 'build', desc: 'Build the platform manifest', plan: () => node('scripts/build.mjs') },
   start: {
-    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|dashboard]',
+    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard]',
     desc: 'Start a service (defaults to the api-gateway)',
     plan: (rest) => {
       const target = rest[0] ?? 'gateway';

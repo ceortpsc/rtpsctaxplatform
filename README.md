@@ -123,6 +123,25 @@ REST: `POST /api/assist`, `GET /api/tax`, `GET /api/catalog`, `POST /api/invoice
 
 Rates are reference/stub data for development — confirm with the tax authority before production use.
 
+## POS + CRM (integrated operations) · ERO / SBTPG intelligence
+
+Modular engineering packages fully integrated with the existing operating stack:
+
+| Package | Role |
+|---------|------|
+| `@rtp/crm-core` | Contacts, household accounts, interaction timeline |
+| `@rtp/pos-core` | POS sessions/carts; checkout settles via **invoice-core** + tax-data |
+| `@rtp/ero-ops` | SBTPG report **tracking/tracing**, automated **ERO phrasing**, refund-intelligence scoring |
+
+`services/pos-crm-service` (port **3006**) exposes a unified operator UI (CRM · Point of Sale · Refund Intel / SBTPG) and REST APIs. POS sales attach to CRM contacts, write interactions, create paid invoices, and offer PDF / receipt-paper downloads.
+
+```bash
+./rtpsc start pos-crm     # http://localhost:3006  (aliases: pos, crm)
+```
+
+REST highlights: `GET/POST /api/contacts`, `POST /api/pos/sessions` → `/items` → `/checkout`,
+`GET/POST /api/sbtpg/traces`, `POST /api/ero/phrases`, `POST /api/ero/intelligence`.
+
 ## Deployment Assist & Development Team
 
 A virtual **deployment-assist and development team** ships as developer/deployment tooling under

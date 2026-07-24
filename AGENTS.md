@@ -20,8 +20,8 @@ Two equivalent runners exist:
   it in a background terminal/tmux session. Verify with `curl http://localhost:3000/health` and
   `curl http://localhost:3000/metadata`.
 - Other services are independent HTTP stubs on fixed ports: refund-status `3001`, transcript `3002`,
-  analytics `3003`, enrollment `3004`, invoice `3005`
-  (`./rtpsc start refund-status|transcript|analytics|enrollment|invoice`).
+  analytics `3003`, enrollment `3004`, invoice `3005`, pos-crm `3006`
+  (`./rtpsc start refund-status|transcript|analytics|enrollment|invoice|pos-crm`).
 - Workers run one-shot and print a JSON descriptor + planned steps, then exit
   (`pnpm run worker:tds`, `worker:transcript-pull`, `worker:live-source`).
 - `pnpm run start:dashboard` launches the **modules-dashboard** on port `3010`: a read-only module
@@ -30,7 +30,7 @@ Two equivalent runners exist:
   `GET /api/insights`, `GET /api/graph`, `POST /api/assistant` (`{query}`).
 - The "AI Assistant"/insights come from `packages/module-advisor` — a local, dependency-free
   heuristic engine (intent detection + keyword scoring). There is **no external LLM or API key**.
-- `./rtpsc deploy` (or `pnpm run deploy:all`) starts every HTTP service (ports `3000`–`3005` + `3010`)
+- `./rtpsc deploy` (or `pnpm run deploy:all`) starts every HTTP service (ports `3000`–`3006` + `3010`)
   plus the background `workflow-runner` as child processes, health-checks them, and stays live
   (Ctrl+C stops all). `./rtpsc deploy --smoke` verifies health once and exits. Free those ports
   first — stop any single-service dev processes so deploy doesn't hit EADDRINUSE.
@@ -59,6 +59,12 @@ Two equivalent runners exist:
   (confirmation) → download invoice PDF / receipt PDF / receipt-paper `.txt`. Tax rates are
   reference stubs (LA uses parishes). PDF export is a hand-rolled PDF 1.4 writer (no npm PDF libs).
   `./rtpsc start invoice`.
+- `services/pos-crm-service` (port `3006`) is the integrated **POS + CRM** surface
+  (`packages/crm-core`, `packages/pos-core`, `packages/ero-ops`). POS checkout auto-approves and
+  settles through `invoice-core` (same tax/PDF/receipt path), then writes a CRM interaction on the
+  contact. The ERO tab tracks SBTPG report traces, generates automated client/ERO phrases, and
+  scores refund intelligence locally (no live SBTPG/IRS). Start with `./rtpsc start pos-crm`
+  (aliases: `pos`, `crm`). Seeded demo contact: Jordan Ellis / Orleans Parish.
 - `agents/*` (+ `packages/agent-core`) are a **deployment-assist & development team** — dev/deploy
   tooling, NOT a runtime product subsystem. Run with `./rtpsc agents`; regenerate the reports in
   `docs/agents/` with `./rtpsc agents docs`. They introspect the module catalog/workflows and are

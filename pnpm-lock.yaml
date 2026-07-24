@@ -34,11 +34,17 @@ importers:
 
   packages/client-config: {}
 
+  packages/crm-core: {}
+
+  packages/ero-ops: {}
+
   packages/invoice-core: {}
 
   packages/module-advisor: {}
 
   packages/platform-core: {}
+
+  packages/pos-core: {}
 
   packages/secure-tunnel: {}
 
@@ -61,6 +67,8 @@ importers:
   services/invoice-service: {}
 
   services/modules-dashboard: {}
+
+  services/pos-crm-service: {}
 
   services/refund-status-service: {}
 
