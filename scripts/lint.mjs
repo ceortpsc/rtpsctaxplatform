@@ -24,13 +24,18 @@ const packageFiles = [
   'packages/platform-core/package.json',
   'packages/client-config/package.json',
   'packages/secure-tunnel/package.json',
+  'packages/workflow-engine/package.json',
   'services/api-gateway/package.json',
   'services/refund-status-service/package.json',
   'services/transcript-service/package.json',
   'services/analytics-service/package.json',
+  'services/workflow-dashboard/package.json',
   'workers/tds-worker/package.json',
   'workers/transcript-pull-worker/package.json',
-  'workers/live-source-fetcher/package.json'
+  'workers/live-source-fetcher/package.json',
+  'workflows/refund-status-workflow/package.json',
+  'workflows/transcript-intake-workflow/package.json',
+  'workflows/transmission-workflow/package.json'
 ];
 
 for (const relativePath of packageFiles) {

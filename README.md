@@ -47,6 +47,37 @@ npm run worker:transcript-pull
 npm run worker:live-source
 ```
 
+## Workflows & Interactive Dashboard
+
+The platform ships a modular workflow engine (`packages/workflow-engine`) plus
+domain workflows under `workflows/*` and an interactive operations dashboard
+(`services/workflow-dashboard`).
+
+Start the dashboard (default port `3010`) and open it in a browser:
+
+```bash
+npm run start:dashboard
+# then open http://localhost:3010
+```
+
+The dashboard lists every registered workflow, lets you edit JSON input, trigger
+runs (manual / event / scheduled), and inspect live run history with per-step
+task status, timing, logs, and outputs.
+
+Trigger workflows from the terminal:
+
+```bash
+npm run workflow:list
+npm run workflow:run transcript-intake '{"requestId":"REQ-1","authorized":true}'
+```
+
+REST API (served by the dashboard):
+
+- `GET /api/workflows` — list workflows and their steps/triggers
+- `POST /api/workflows/:name/run` — trigger a workflow with a JSON body
+- `POST /api/events` — emit an event (`{ "event": "...", "payload": {} }`)
+- `GET /api/runs` and `GET /api/runs/:id` — run history and details
+
 ## Module Map
 
 ```text
@@ -54,11 +85,17 @@ packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
   secure-tunnel/         compliant tunnel adapter interface scaffold
+  workflow-engine/       modular task/workflow/trigger engine + run history
 services/
   api-gateway/           route registry and transmission entrypoint skeleton
   refund-status-service/ event-driven refund status surface
   transcript-service/    transcript intake and orchestration surface
   analytics-service/     analytics and refund intelligence API surface
+  workflow-dashboard/    interactive dashboard + REST API for workflows
+workflows/
+  refund-status-workflow/    event-driven refund status update workflow
+  transcript-intake-workflow/ authorization-gated transcript intake workflow
+  transmission-workflow/     scheduled transmission cycle workflow
 workers/
   tds-worker/            TDS orchestration worker scaffold
   transcript-pull-worker/account transcript pull worker scaffold

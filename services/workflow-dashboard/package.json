@@ -1,0 +1,11 @@
+{
+  "name": "@rtp/workflow-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.mjs",
+    "workflows": "node src/cli.mjs list",
+    "run": "node src/cli.mjs run"
+  }
+}

@@ -8,7 +8,8 @@
     "services/*",
     "workers/*",
     "pipelines/*",
-    "engines/*"
+    "engines/*",
+    "workflows/*"
   ],
   "scripts": {
     "setup": "./scripts/setup.sh",
@@ -20,6 +21,9 @@
     "start:refund-status": "npm run -w @rtp/refund-status-service start",
     "start:transcript": "npm run -w @rtp/transcript-service start",
     "start:analytics": "npm run -w @rtp/analytics-service start",
+    "start:dashboard": "npm run -w @rtp/workflow-dashboard start",
+    "workflow:list": "npm run -w @rtp/workflow-dashboard workflows",
+    "workflow:run": "npm run -w @rtp/workflow-dashboard run --",
     "worker:tds": "npm run -w @rtp/tds-worker start -- --once",
     "worker:transcript-pull": "npm run -w @rtp/transcript-pull-worker start -- --once",
     "worker:live-source": "npm run -w @rtp/live-source-fetcher start -- --once"
