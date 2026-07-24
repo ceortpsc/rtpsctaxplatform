@@ -34,11 +34,15 @@ importers:
 
   packages/client-config: {}
 
+  packages/invoice-core: {}
+
   packages/module-advisor: {}
 
   packages/platform-core: {}
 
   packages/secure-tunnel: {}
+
+  packages/tax-data: {}
 
   packages/workflow-engine: {}
 
@@ -53,6 +57,8 @@ importers:
   services/api-gateway: {}
 
   services/enrollment-service: {}
+
+  services/invoice-service: {}
 
   services/modules-dashboard: {}
 
