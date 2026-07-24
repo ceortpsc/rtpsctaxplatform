@@ -3,6 +3,7 @@ import { runScript, execCommand } from './run.mjs';
 import { bench } from './bench.mjs';
 import { discoverWorkspaces, loadRootManifest, workspaceByName } from './workspaces.mjs';
 import { readLockfile, validateLockfile, LOCKFILE_NAME, LOCKFILE_VERSION } from './lockfile.mjs';
+import { listFootprints, formatFootprintLedger } from './footprints.mjs';
 import {
   loadConfig,
   writeConfig,
@@ -57,6 +58,8 @@ export async function runCli(argv) {
         return await why(root, rest.find((a) => !a.startsWith('-')), json);
       case 'lock':
         return await lockCmd(root, rest);
+      case 'footprints':
+        return await footprintsCmd(root, json);
       case 'bench': {
         const cfg = await loadConfig(root);
         const rounds = Number(rest.find((a) => /^\d+$/.test(a)) || cfg.bench.rounds || 3);
@@ -240,6 +243,33 @@ async function why(root, name, json) {
     );
   }
   return ExitCode.OK;
+}
+
+async function footprintsCmd(root, json) {
+  const report = await listFootprints(root);
+  if (json) {
+    console.log(JSON.stringify(report, null, 2));
+  } else {
+    console.log(ui.brandLine());
+    console.log(ui.youveGot(`${report.count} footprints`));
+    console.log(
+      ui.panel('All Footprints', [
+        `lockfile   ${report.lockfile}${report.lockfilePresent ? '' : ' (missing)'}`,
+        `sealed     ${report.sealed}/${report.count}`,
+        `drift      ${report.drift}`,
+        `unsealed   ${report.unsealed}`,
+        `status     ${report.ok ? 'signal clear' : 'attention needed'}`
+      ])
+    );
+    console.log('');
+    console.log('  footprint          status    package                               location');
+    console.log('  ────────────────  ────────  ────────────────────────────────────  ────────────────────────');
+    for (const line of formatFootprintLedger(report)) {
+      console.log(`  ${line}`);
+    }
+    console.log('');
+  }
+  return report.ok ? ExitCode.OK : ExitCode.LOCK;
 }
 
 async function lockCmd(root, args) {

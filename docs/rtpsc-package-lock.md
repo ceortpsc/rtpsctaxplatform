@@ -31,7 +31,20 @@ successful v2 seal.
 ./scripts/aol lock             # inspect sealed lock
 ./scripts/aol lock --json      # machine-readable
 ./scripts/aol lock --write     # force re-seal
+./scripts/aol footprints       # all package footprints ledger
+./scripts/aol footprints --json
 ./scripts/aol doctor           # validates format + fingerprints
+```
+
+## All footprints
+
+Companion ledger: **`RTPSC-footprints.json`** (written on every seal).
+
+Each footprint is the 16-char package fingerprint plus full `sha256-…` integrity.
+Statuses: `sealed` · `drift` · `unsealed`.
+
+```bash
+./scripts/aol fp               # alias
 ```
 
 ## Example package entry
