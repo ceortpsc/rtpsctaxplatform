@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rtpsc.local/schemas/RTPSC-package-lock.json",
+  "title": "RTPSC-package-lock",
+  "description": "Canonical RTPSC Tax Platform package lockfile sealed by AOL (Adaptive Optimized Linker).",
+  "type": "object",
+  "required": ["name", "version", "lockfileVersion", "lockfileFormat", "packages"],
+  "properties": {
+    "name": { "type": "string" },
+    "version": { "type": "string" },
+    "lockfileVersion": { "type": "integer", "enum": [1, 2] },
+    "lockfileFormat": { "type": "string", "const": "RTPSC-package-lock" },
+    "generator": { "type": "string" },
+    "platform": { "type": "string" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "engines": { "type": "object" },
+    "packageManager": { "type": "string" },
+    "copyright": { "type": "string" },
+    "product": { "type": "string" },
+    "disclaimer": { "type": "string" },
+    "requires": { "type": "boolean" },
+    "stats": {
+      "type": "object",
+      "properties": {
+        "workspaceCount": { "type": "integer" },
+        "sectorCount": { "type": "integer" },
+        "linkedCount": { "type": "integer" }
+      }
+    },
+    "sectors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "packages": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["version", "location", "fingerprint"],
+        "properties": {
+          "name": { "type": "string" },
+          "version": { "type": "string" },
+          "location": { "type": "string" },
+          "sector": { "type": "string" },
+          "private": { "type": "boolean" },
+          "link": { "type": "boolean" },
+          "linkTarget": { "type": "string" },
+          "fingerprint": { "type": "string", "minLength": 16, "maxLength": 16 },
+          "integrity": { "type": "string", "pattern": "^sha256-[a-f0-9]{64}$" },
+          "scripts": { "type": "array", "items": { "type": "string" } },
+          "dependencies": { "type": "object" },
+          "devDependencies": { "type": "object" }
+        }
+      }
+    },
+    "meta": { "type": "object" }
+  }
+}

@@ -6,3 +6,7 @@ coverage/
 .env.*
 !.env.example
 !env/*.example
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+pnpm-lock.yaml

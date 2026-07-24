@@ -16,8 +16,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-      - run: npm install
-      - run: npm run lint
-      - run: npm test
-      - run: npm run build
+      - name: AOL install
+        run: node ./tools/aol/bin/aol.mjs install
+      - run: node ./tools/aol/bin/aol.mjs run lint
+      - run: node ./tools/aol/bin/aol.mjs run test
+      - run: node ./tools/aol/bin/aol.mjs run build

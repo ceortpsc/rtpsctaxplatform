@@ -1,6 +1,7 @@
 SHELL := /bin/bash
+AOL := node ./tools/aol/bin/aol.mjs
 
-.PHONY: setup lint test build start gateway workers
+.PHONY: setup lint test build start gateway workers bench aol
 
 setup:
 	./scripts/setup.sh
@@ -18,7 +19,13 @@ start:
 	./scripts/start.sh
 
 gateway:
-	npm run start:gateway
+	$(AOL) run start:gateway
 
 workers:
-	npm run worker:tds && npm run worker:transcript-pull && npm run worker:live-source
+	$(AOL) run worker:tds && $(AOL) run worker:transcript-pull && $(AOL) run worker:live-source
+
+bench:
+	$(AOL) bench
+
+aol:
+	$(AOL) $(ARGS)

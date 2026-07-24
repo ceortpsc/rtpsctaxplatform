@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "packageManager": "aol@0.1.0",
   "workspaces": [
     "packages/*",
     "services/*",
     "workers/*",
     "pipelines/*",
-    "engines/*"
+    "engines/*",
+    "tools/*"
   ],
   "scripts": {
     "setup": "./scripts/setup.sh",
@@ -16,13 +18,15 @@
     "test": "./scripts/test.sh",
     "build": "./scripts/build.sh",
     "start": "./scripts/start.sh",
-    "start:gateway": "npm run -w @rtp/api-gateway start",
-    "start:refund-status": "npm run -w @rtp/refund-status-service start",
-    "start:transcript": "npm run -w @rtp/transcript-service start",
-    "start:analytics": "npm run -w @rtp/analytics-service start",
-    "worker:tds": "npm run -w @rtp/tds-worker start -- --once",
-    "worker:transcript-pull": "npm run -w @rtp/transcript-pull-worker start -- --once",
-    "worker:live-source": "npm run -w @rtp/live-source-fetcher start -- --once"
+    "start:gateway": "node ./tools/aol/bin/aol.mjs run -w @rtp/api-gateway start",
+    "start:refund-status": "node ./tools/aol/bin/aol.mjs run -w @rtp/refund-status-service start",
+    "start:transcript": "node ./tools/aol/bin/aol.mjs run -w @rtp/transcript-service start",
+    "start:analytics": "node ./tools/aol/bin/aol.mjs run -w @rtp/analytics-service start",
+    "worker:tds": "node ./tools/aol/bin/aol.mjs run -w @rtp/tds-worker start -- --once",
+    "worker:transcript-pull": "node ./tools/aol/bin/aol.mjs run -w @rtp/transcript-pull-worker start -- --once",
+    "worker:live-source": "node ./tools/aol/bin/aol.mjs run -w @rtp/live-source-fetcher start -- --once",
+    "bench:aol": "node ./tools/aol/bin/aol.mjs bench",
+    "aol": "node ./tools/aol/bin/aol.mjs"
   },
   "engines": {
     "node": ">=22"

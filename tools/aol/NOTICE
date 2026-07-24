@@ -1,0 +1,25 @@
+AOL — Adaptive Optimized Linker
+================================
+
+Copyright (c) 2026 RTPSC / Ross Tax Software
+
+This product, including its source code, command catalog, signal codes,
+configuration schemas, CLI trade dress (signal chevron ▲, buddy-list panels,
+quantum-handshake progress), documentation, and the tagline "You've got packages."
+are original intellectual property of RTPSC / Ross Tax Software, licensed under
+the MIT License (see the repository root LICENSE file), except where otherwise noted.
+
+TRADEMARK / AFFILIATION DISCLAIMER
+----------------------------------
+"AOL" as used in this repository means solely "Adaptive Optimized Linker."
+This software is NOT affiliated with, endorsed by, sponsored by, or related to
+America Online, AOL LLC, Yahoo, or any consumer online service of similar name.
+Nostalgic Instant Messenger aesthetic motifs are conceptual homage only and do
+not imply common source, sponsorship, or endorsement.
+
+CONTACT
+-------
+ceo@rosstaxsoftware.com
+
+For the full intellectual-property statement see:
+docs/aol-intellectual-property.md

@@ -32,6 +32,19 @@ Health endpoint for analytics runtime.
 ### `GET /metadata`
 Returns refund intelligence, analytics center, and TC code engine bindings.
 
+## AOL Package Manager API
+
+Programmatic Adaptive Optimized Linker surface (`@rtp/aol`). See
+[`aol-api-and-config.md`](./aol-api-and-config.md).
+
+```js
+import { createAol } from '@rtp/aol';
+const aol = await createAol();
+await aol.install();
+```
+
+CLI mirrors: `aol api`, `aol codes`, `aol config`, `aol copyright`.
+
 ## Future contracts
 
 - Version external and internal event schemas.
