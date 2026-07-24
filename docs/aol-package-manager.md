@@ -21,17 +21,23 @@ warm/cache-hit paths).
 ## Commands
 
 ```bash
-./scripts/aol install          # link workspaces + write aol.lock.json
+./scripts/aol install          # dial / handshake aliases work too
 ./scripts/aol run lint
 ./scripts/aol run test
 ./scripts/aol run build
 ./scripts/aol run start
 ./scripts/aol run -w @rtp/api-gateway start
-./scripts/aol ls               # workspace buddy list
-./scripts/aol why @rtp/platform-core
-./scripts/aol bench            # velocity report vs npm
+./scripts/aol ls               # buddy list
+./scripts/aol graph | mail     # constellation / status
+./scripts/aol config list
+./scripts/aol codes | api | copyright | doctor
+./scripts/aol bench
+./scripts/aol commands
 ./scripts/aol help
 ```
+
+Full concept catalog, codes, config, and programmatic API:
+[`aol-api-and-config.md`](./aol-api-and-config.md) · IP: [`aol-intellectual-property.md`](./aol-intellectual-property.md)
 
 Root `package.json` scripts delegate to AOL so `aol run <script>` and the
 Makefile stay aligned.

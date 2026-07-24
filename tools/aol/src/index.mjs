@@ -1,6 +1,39 @@
-export { install } from './install.mjs';
-export { runScript, execCommand } from './run.mjs';
-export { bench } from './bench.mjs';
-export { discoverWorkspaces, loadRootManifest, workspaceByName } from './workspaces.mjs';
-export { buildLockfile, readLockfile, writeLockfile, LOCKFILE_NAME } from './lockfile.mjs';
+export {
+  createAol,
+  describeApiSurface,
+  install,
+  runScript,
+  execCommand,
+  bench,
+  discoverWorkspaces,
+  loadRootManifest,
+  workspaceByName,
+  buildLockfile,
+  readLockfile,
+  writeLockfile,
+  LOCKFILE_NAME,
+  fingerprint,
+  loadConfig,
+  writeConfig,
+  initConfig,
+  getConfigValue,
+  setConfigValue,
+  DEFAULT_CONFIG,
+  CONFIG_FILE_NAME,
+  ExitCode,
+  SignalCode,
+  listCodes,
+  AolError,
+  getSignal,
+  IP,
+  copyrightBanner,
+  copyrightJson,
+  COMMANDS,
+  resolveCommand,
+  listCommands,
+  doctor,
+  graph,
+  mailStatus
+} from './api.mjs';
+
 export { runCli } from './cli.mjs';

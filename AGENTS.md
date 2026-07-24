@@ -23,7 +23,11 @@ Use **AOL** (Adaptive Optimized Linker) instead of npm:
 
 Equivalent: `node ./tools/aol/bin/aol.mjs <cmd>` or `make setup|lint|test|build|start|bench`.
 
-Docs: `docs/aol-package-manager.md`.
+Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
+`docs/aol-intellectual-property.md`.
+
+Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
+`aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`.
 
 ### Running services / commands
 

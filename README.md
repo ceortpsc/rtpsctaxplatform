@@ -123,6 +123,8 @@ Key placeholders include:
 ## Documentation Index
 
 - `/docs/aol-package-manager.md`
+- `/docs/aol-api-and-config.md`
+- `/docs/aol-intellectual-property.md`
 - `/docs/architecture.md`
 - `/docs/engineering-standards.md`
 - `/docs/api-spec-overview.md`

@@ -1,0 +1,40 @@
+{
+  "$schema": "./tools/aol/aol.config.schema.json",
+  "brand": {
+    "name": "AOL",
+    "expansion": "Adaptive Optimized Linker",
+    "tagline": "You've got packages.",
+    "chevron": "▲",
+    "aesthetic": "instant-messenger-signal"
+  },
+  "install": {
+    "parallel": true,
+    "force": false,
+    "lockfile": "aol.lock.json",
+    "cacheHit": true
+  },
+  "ui": {
+    "color": true,
+    "buddyList": true,
+    "handshake": true,
+    "quiet": false
+  },
+  "bench": {
+    "rounds": 3,
+    "compareWith": "npm"
+  },
+  "workspaces": {
+    "patterns": null
+  },
+  "api": {
+    "version": "0.1.0",
+    "jsonDefault": false
+  },
+  "ip": {
+    "copyrightHolder": "RTPSC / Ross Tax Software",
+    "copyrightYear": 2026,
+    "spdxLicense": "MIT",
+    "productNotice": "AOL Adaptive Optimized Linker",
+    "disclaimer": "Not affiliated with, endorsed by, or related to America Online, AOL LLC, or Yahoo."
+  }
+}

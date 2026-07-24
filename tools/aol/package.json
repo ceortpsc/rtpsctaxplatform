@@ -4,13 +4,30 @@
   "private": true,
   "description": "AOL — Adaptive Optimized Linker. A next-gen, Instant-Messenger-era package manager built for monorepo velocity.",
   "type": "module",
+  "license": "MIT",
+  "author": "RTPSC / Ross Tax Software <ceo@rosstaxsoftware.com>",
+  "copyright": "Copyright (c) 2026 RTPSC / Ross Tax Software",
   "bin": {
     "aol": "./bin/aol.mjs"
   },
   "exports": {
-    ".": "./src/index.mjs"
+    ".": "./src/index.mjs",
+    "./package.json": "./package.json"
   },
+  "files": [
+    "bin/",
+    "src/",
+    "NOTICE",
+    "aol.config.schema.json"
+  ],
   "engines": {
     "node": ">=22"
-  }
+  },
+  "keywords": [
+    "aol",
+    "adaptive-optimized-linker",
+    "package-manager",
+    "monorepo",
+    "workspaces"
+  ]
 }
