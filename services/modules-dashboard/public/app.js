@@ -6,6 +6,7 @@ const state = {
   catalogFilter: "all",
   catalogSearch: "",
   thread: [],
+  environment: null,
   palette: { open: false, results: [], active: 0 }
 };
 
@@ -85,6 +86,7 @@ async function boot() {
   wireNav();
   wirePalette();
   initFeatures();
+  loadEnvironment();
   render();
 }
 
@@ -557,7 +559,7 @@ function dsPanel(title, note, children) {
 function renderDesign(view) {
   const hero = el("div", { class: "ds-hero reveal" }, [
     el("img", { class: "ds-hero-rosette", src: "/assets/guilloche.svg", alt: "" }),
-    el("p", { class: "ds-hero-eyebrow", text: "RTPSC Design Language" }),
+    el("p", { class: "ds-hero-eyebrow", text: "Ross Tax Pro Software Co · Design Language" }),
     el("h1", { class: "ds-hero-title", html: 'The <span class="grad">Sovereign Ledger</span> System' }),
     el("p", {
       class: "ds-hero-sub",
@@ -746,6 +748,79 @@ function drawPalette() {
   }
 }
 
+/* ---------- Environment protection ---------- */
+async function loadEnvironment() {
+  try {
+    state.environment = await getJSON("/api/environment");
+  } catch {
+    state.environment = null;
+  }
+  renderEnvBadge();
+  return state.environment;
+}
+
+async function ensureEnvironment() {
+  if (!state.environment) await loadEnvironment();
+  return state.environment;
+}
+
+function renderEnvBadge() {
+  const badge = document.getElementById("env-badge");
+  const env = state.environment;
+  if (!badge || !env) return;
+  badge.hidden = false;
+  badge.className = "env-badge " + (env.transmissionAllowed ? "live" : "protected");
+  badge.title = env.transmissionAllowed
+    ? "E-file transmission is LIVE in this environment"
+    : "Environment protection active — live transmission blocked";
+  badge.innerHTML = "";
+  badge.appendChild(el("span", { class: "env-shield", text: env.transmissionAllowed ? "⚠" : "🛡" }));
+  badge.appendChild(el("span", { class: "env-env", text: env.environment }));
+  badge.appendChild(el("span", { class: "env-state", text: env.transmissionAllowed ? "E-file LIVE" : "Protected" }));
+}
+
+function envPanelContent(env) {
+  const wrap = el("div", { class: "insight-card reveal" });
+  wrap.appendChild(el("h3", { text: "Environment Protection" }));
+  wrap.appendChild(
+    el("div", {
+      style: "font-family:var(--font-display);font-size:var(--fs-xl);color:var(--color-navy);margin-bottom:4px",
+      text: `${env.environment.toUpperCase()} · ${env.transmissionAllowed ? "E-FILE LIVE" : "PROTECTED"}`
+    })
+  );
+  wrap.appendChild(
+    el("div", {
+      class: "status-sub",
+      text: env.transmissionAllowed
+        ? "All safeguards satisfied — live IRS e-file transmission is permitted."
+        : "Fail-safe active — live e-file transmission is blocked until every safeguard passes."
+    })
+  );
+
+  const safeguards = [
+    ["Production environment", env.safeguards.productionEnvironment],
+    ["Secrets configured", env.safeguards.secretsConfigured],
+    ["Approved secure tunnel", env.safeguards.approvedTunnel],
+    ["Transmission flag enabled", env.safeguards.transmissionFlagEnabled]
+  ];
+  const list = el("div", { style: "margin-top:12px;display:flex;flex-direction:column;gap:6px" });
+  safeguards.forEach(([label, ok]) => {
+    list.appendChild(
+      el("div", { style: "display:flex;align-items:center;gap:9px;font-size:var(--fs-sm)" }, [
+        el("span", { class: "status-led " + (ok ? "ok" : "bad"), style: "width:9px;height:9px" }),
+        el("span", { text: label })
+      ])
+    );
+  });
+  wrap.appendChild(list);
+
+  if (env.reasons.length) {
+    wrap.appendChild(el("div", { class: "drawer-section-title", text: "Why transmission is blocked" }));
+    env.reasons.forEach((reason) => wrap.appendChild(el("div", { class: "status-sub", text: "• " + reason })));
+  }
+  return wrap;
+}
+
 /* ---------- Toasts ---------- */
 function toast(message) {
   const container = document.getElementById("toasts");
@@ -864,6 +939,16 @@ function copyText(text, message) {
 
 /* ---------- System Status ---------- */
 function renderStatus(view) {
+  const envWrap = el("div", { id: "env-panel-wrap", style: "margin-bottom:20px" });
+  view.appendChild(envWrap);
+  ensureEnvironment().then(() => {
+    if (state.environment) {
+      envWrap.innerHTML = "";
+      envWrap.appendChild(envPanelContent(state.environment));
+      animateReveal(envWrap);
+    }
+  });
+
   view.appendChild(
     el("div", { class: "status-refresh" }, [
       el("button", { class: "mini-btn", text: "Refresh now", onclick: refreshStatus }),

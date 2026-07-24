@@ -2,7 +2,12 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { loadRuntimeConfig, redactConfig } from '../../../packages/platform-core/src/index.mjs';
+import {
+  evaluateEnvironmentProtection,
+  loadRuntimeConfig,
+  PLATFORM_IDENTITY,
+  redactConfig
+} from '../../../packages/platform-core/src/index.mjs';
 import { answerQuery, buildDependencyGraph, buildInsights } from '../../../packages/module-advisor/src/index.mjs';
 import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor, SERVICE_ENDPOINTS } from './catalog.mjs';
 
@@ -106,9 +111,19 @@ export function createDashboardServer() {
 
     if (request.method === 'GET' && pathname === '/metadata') {
       sendJson(response, 200, {
+        identity: PLATFORM_IDENTITY,
         service: dashboardDescriptor,
         runtime: redactConfig(config),
+        environmentProtection: evaluateEnvironmentProtection(config),
         metadata: catalogSummary()
+      });
+      return;
+    }
+
+    if (request.method === 'GET' && pathname === '/api/environment') {
+      sendJson(response, 200, {
+        identity: PLATFORM_IDENTITY,
+        ...evaluateEnvironmentProtection(config)
       });
       return;
     }

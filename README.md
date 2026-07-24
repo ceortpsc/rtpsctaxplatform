@@ -1,6 +1,17 @@
-# RTPSC Tax Platform Scaffold
+# Ross Tax Pro Software Co — Efile Transmission Software
 
-Production-grade scaffold for a tax platform focused on secure integrations, real-time processing, compliance boundaries, and iterative delivery. This baseline is intentionally limited to compliant adapters and executable stubs; it does **not** implement unauthorized access to IRS systems, non-public channels, or scraping workflows.
+**Ross Tax Pro Software Co (RTPSC)** — *Efile Transmission Software*.
+
+Production-grade scaffold for a tax e-file transmission platform focused on secure integrations, real-time processing, compliance boundaries, and iterative delivery. This baseline is intentionally limited to compliant adapters and executable stubs; it does **not** implement unauthorized access to IRS systems, non-public channels, or scraping workflows.
+
+### Environment protection
+
+Live IRS e-file transmission is guarded by a fail-safe **environment protection** check
+(`evaluateEnvironmentProtection` in `packages/platform-core`). Transmission stays **blocked**
+unless every safeguard passes: the environment is production, all secrets are configured, an
+approved secure tunnel endpoint is set, and `EFILE_TRANSMISSION_ENABLED=true`. Every service
+reports its protection state at `GET /metadata`; the dashboard exposes `GET /api/environment`
+and a live indicator (sidebar badge + System Status panel).
 
 ## Platform Overview
 

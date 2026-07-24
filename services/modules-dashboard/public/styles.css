@@ -108,6 +108,56 @@ body {
   letter-spacing: 0.04em;
 }
 
+.brand-co {
+  color: var(--color-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+
+/* Environment protection badge */
+.env-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  border: 1px solid var(--color-trim);
+  border-left-width: 3px;
+  border-radius: var(--r-sm);
+  padding: 8px 10px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.env-badge[hidden] {
+  display: none;
+}
+
+.env-badge.protected {
+  border-left-color: var(--color-gold);
+}
+
+.env-badge.live {
+  border-left-color: #b23b3b;
+}
+
+.env-badge .env-shield {
+  font-size: 14px;
+}
+
+.env-badge .env-env {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-navy);
+}
+
+.env-badge .env-state {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--color-muted);
+}
+
 .nav {
   display: flex;
   flex-direction: column;
