@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Repo-local AOL shim — works before node_modules exists.
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec node "$ROOT/tools/aol/bin/aol.mjs" "$@"
