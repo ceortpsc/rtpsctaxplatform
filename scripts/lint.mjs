@@ -25,6 +25,8 @@ const requiredPaths = [
   'packages/production-compliance/package.json',
   'packages/production-compliance/bin/prodcheck.mjs',
   'packages/production-compliance/src/index.mjs',
+  'policy/procedures/production-signoffs/registry.json',
+  'policy/procedures/production-signoffs/README.md',
   'infra/terraform/modules/platform-service/main.tf',
   '.github/workflows/ci.yml',
   '.github/workflows/compliance.yml'

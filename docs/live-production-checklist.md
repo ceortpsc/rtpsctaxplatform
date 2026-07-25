@@ -36,6 +36,7 @@ Artifacts:
 - [ ] This live production checklist reviewed for the release train
 - [ ] Legal approval recorded for each production integration
 - [ ] Data-governance review completed for taxpayer retention and masking
+- [ ] Production sign-off pack present (`policy/procedures/production-signoffs`)
 
 ### 2. Security and compliance boundaries
 
@@ -80,13 +81,17 @@ Artifacts:
 
 ## Sign-off block
 
+Record approvals in `policy/procedures/production-signoffs/registry.json` (and the
+matching template under that folder). The compliance runner treats
+`status: "approved"` with `approver` + `approvedAt` as checklist passes.
+
 | Role | Name | Date | Reference |
 | --- | --- | --- | --- |
-| Legal |  |  |  |
-| Security |  |  |  |
-| Data governance |  |  |  |
-| Operations |  |  |  |
-| Release lead |  |  |  |
+| Legal |  |  | GOV-005 |
+| Security |  |  | BND-005 |
+| Data governance |  |  | GOV-006 |
+| Operations |  |  | OPS-004 / OPS-005 |
+| Release lead |  |  | CFG-005 / INF-005 |
 
 ## Related documents
 

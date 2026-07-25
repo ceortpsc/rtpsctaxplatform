@@ -52,6 +52,13 @@ export const CHECKLIST_SECTIONS = Object.freeze([
         mode: 'manual',
         severity: 'blocker',
         evidence: 'Data governance review record'
+      },
+      {
+        id: 'GOV-007',
+        title: 'Production sign-off pack and registry present',
+        mode: 'automated',
+        severity: 'blocker',
+        evidence: 'policy/procedures/production-signoffs/registry.json'
       }
     ]
   },

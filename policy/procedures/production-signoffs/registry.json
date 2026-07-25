@@ -1,0 +1,88 @@
+{
+  "version": "1.0.0",
+  "product": "RTPSC Tax Platform",
+  "description": "Production go-live sign-off registry. Set status to approved only after real human approval with evidence.",
+  "updatedAt": "2026-07-25T00:00:00.000Z",
+  "signoffs": {
+    "GOV-005": {
+      "id": "GOV-005",
+      "role": "Legal",
+      "title": "Legal approval for each production integration",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/GOV-005-legal-approval.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Required before enabling any live IRS-adjacent or taxpayer-data integration."
+    },
+    "GOV-006": {
+      "id": "GOV-006",
+      "role": "Data governance",
+      "title": "Taxpayer retention and masking review",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/GOV-006-data-governance.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Confirm retention windows, masking, and redaction before live exchange."
+    },
+    "BND-005": {
+      "id": "BND-005",
+      "role": "Security",
+      "title": "Tunnel, credential, and data-handling security review",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/BND-005-security-review.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Required before replacing the secure-tunnel stub."
+    },
+    "CFG-004": {
+      "id": "CFG-004",
+      "role": "Security / Platform",
+      "title": "Production secrets provisioned in approved secret manager",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/CFG-004-secret-manager.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Inventory API/TDS/tunnel secrets; never commit values."
+    },
+    "CFG-005": {
+      "id": "CFG-005",
+      "role": "Release / Platform",
+      "title": "APP_ENV=prod and NODE_ENV=production confirmed",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/CFG-005-runtime-env.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Confirm live deploy runtime metadata after cutover."
+    },
+    "INF-005": {
+      "id": "INF-005",
+      "role": "Architecture / Platform",
+      "title": "Terraform prod placeholders populated after sign-off",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/INF-005-terraform-prod.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Populate infra/terraform/env/prod only after architecture approval."
+    },
+    "OPS-004": {
+      "id": "OPS-004",
+      "role": "Operations",
+      "title": "Worker scheduling and incident playbook sign-off",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/OPS-004-operations.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Confirm SEV playbooks and worker --once replay procedures."
+    },
+    "OPS-005": {
+      "id": "OPS-005",
+      "role": "Operations",
+      "title": "SEV-1/2/3 escalation contacts for live window",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/OPS-005-oncall.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Fill on-call roster before the live window opens."
+    }
+  }
+}

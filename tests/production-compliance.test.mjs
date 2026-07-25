@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile, mkdir, readFile } from 'node:fs/promises';
+import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import {
@@ -13,7 +13,9 @@ import {
   formatMarkdownReport,
   formatChecklistLog,
   exitCodeForReport,
-  runCli
+  runCli,
+  evaluateManualSignoff,
+  loadSignoffRegistry
 } from '../packages/production-compliance/src/index.mjs';
 
 const root = process.cwd();
@@ -26,25 +28,60 @@ test('checklist enumerates automated, manual, and live items', () => {
   assert.ok(summary.byMode.manual > 0);
   assert.ok(summary.byMode.live > 0);
   assert.ok(listChecklistItems().some((item) => item.id === 'BND-001'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'GOV-007'));
 });
 
 test('compliance checks pass scaffold automated gates with skip-gates', async () => {
-  const { results } = await runComplianceChecks(root, { skipGates: true, live: false });
+  const { results, signoffRegistry } = await runComplianceChecks(root, { skipGates: true, live: false });
+  assert.ok(signoffRegistry);
   const automated = results.filter((item) => item.mode === 'automated');
   const failures = automated.filter((item) => item.status === 'fail');
   assert.equal(failures.length, 0, JSON.stringify(failures, null, 2));
 
   const manual = results.filter((item) => item.mode === 'manual');
   assert.ok(manual.every((item) => item.status === 'pending_signoff'));
+  assert.ok(manual.every((item) => String(item.message).includes('Sign-off pack registered')));
 
   const live = results.filter((item) => item.mode === 'live');
   assert.ok(live.every((item) => item.status === 'skipped'));
 });
 
+test('sign-off registry marks approved entries as pass', () => {
+  const item = { id: 'GOV-005', title: 'Legal', mode: 'manual', severity: 'blocker', evidence: 'x' };
+  const approved = evaluateManualSignoff(item, {
+    signoffs: {
+      'GOV-005': {
+        status: 'approved',
+        approver: 'Legal Lead <legal@example.com>',
+        approvedAt: '2026-07-25T00:00:00.000Z',
+        evidenceRef: 'policy/procedures/production-signoffs/GOV-005-legal-approval.md'
+      }
+    }
+  });
+  assert.equal(approved.status, 'pass');
+
+  const open = evaluateManualSignoff(item, {
+    signoffs: {
+      'GOV-005': {
+        status: 'open',
+        approver: null,
+        approvedAt: null,
+        evidenceRef: 'policy/procedures/production-signoffs/GOV-005-legal-approval.md'
+      }
+    }
+  });
+  assert.equal(open.status, 'pending_signoff');
+});
+
+test('loadSignoffRegistry reads production pack', async () => {
+  const registry = await loadSignoffRegistry(root);
+  assert.equal(registry.version, '1.0.0');
+  assert.ok(registry.signoffs['OPS-005']);
+});
+
 test('report artifacts and checklist log are written', async () => {
   const tmp = await mkdtemp(path.join(os.tmpdir(), 'prodcheck-'));
   try {
-    // Minimal fake tree is not needed — write artifacts into temp by monkeying root paths via writeReportArtifacts
     const { results } = await runComplianceChecks(root, { skipGates: true });
     const report = buildReport({
       root: tmp,

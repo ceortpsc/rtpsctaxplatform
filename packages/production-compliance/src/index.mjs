@@ -21,3 +21,5 @@ export {
 } from './report.mjs';
 
 export { runCli } from './cli.mjs';
+
+export { loadSignoffRegistry, evaluateManualSignoff, SIGNOFF_REGISTRY_PATH } from './signoffs.mjs';

@@ -35,17 +35,16 @@ Each checklist item is classified as:
 - `manual` — requires human sign-off evidence
 - `live` — HTTP health probes (opt-in with `--live`)
 
-## Overall verdicts
+## Sign-off registry
 
-| Verdict | Meaning |
-| --- | --- |
-| `pass` | All checks passed, including no pending sign-offs |
-| `ready_scaffold` | Automated scaffold gates passed; manual sign-offs still open |
-| `warn` | Completed with warning-severity findings |
-| `fail` | Blocker findings must be resolved |
+Manual checklist items are tracked in
+`policy/procedures/production-signoffs/registry.json`.
 
-For the current stub scaffold, `ready_scaffold` is the expected healthy state
-until legal, security, data-governance, and operations sign-offs are recorded.
+- `status: "open"` → `pending_signoff` (or `fail` with `--strict-production`)
+- `status: "approved"` with `approver` + `approvedAt` → `pass`
+
+Never mark a sign-off approved without a real dated human approval.
+
 
 ## Artifacts and retention
 
