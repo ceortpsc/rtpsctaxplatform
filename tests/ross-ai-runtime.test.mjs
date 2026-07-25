@@ -175,10 +175,10 @@ describe('Ross AI Runtime Platform', () => {
         assert.match(page.body, /rel="canonical"/);
       }
 
-      const market = await fetchText(`${base}/marketplace`);
-      assert.equal(market.status, 200);
-      assert.match(market.body, /index,follow/);
-      assert.match(market.body, /Membership Marketplace|membership tiers/i);
+      const marketplacePublic = await fetchText(`${base}/marketplace`);
+      assert.equal(marketplacePublic.status, 200);
+      assert.match(marketplacePublic.body, /index,follow/);
+      assert.match(marketplacePublic.body, /Membership Marketplace|membership tiers/i);
 
       const dashAnon = await fetchResponse(`${base}/dashboard`);
       assert.equal(dashAnon.status, 303);
