@@ -31,6 +31,7 @@ The repository is organized as a lightweight monorepo with executable Node.js se
 - 24/7 worker skeletons for TDS, transcript pulls, and live-source fetch orchestration.
 - Transmission, masterfile, and refund-status pipeline starters.
 - Secure tunnel adapter scaffold with compliance checkpoints and TODO markers.
+- Production compliance package (`@rtp/production-compliance`) with full live checklist, report, and audit log.
 - CI placeholder workflows with lint, test, and build quality gates.
 
 ## Security and Compliance Boundaries
@@ -131,6 +132,8 @@ Key placeholders include:
 - `/docs/api-spec-overview.md`
 - `/docs/operations-runbook.md`
 - `/docs/compliance-and-governance.md`
+- `/docs/live-production-checklist.md`
+- `/docs/production-compliance-report.md`
 - `/docs/irm-aligned-handbook.md`
 
 ## Suggested Next Milestones

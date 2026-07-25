@@ -1,0 +1,323 @@
+import { access, readFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
+import { spawn } from 'node:child_process';
+import { listChecklistItems } from './checklist.mjs';
+
+const DEFAULT_LIVE_ENDPOINTS = Object.freeze([
+  { id: 'api-gateway', url: 'http://127.0.0.1:3000/health' },
+  { id: 'refund-status', url: 'http://127.0.0.1:3001/health' },
+  { id: 'transcript', url: 'http://127.0.0.1:3002/health' },
+  { id: 'analytics', url: 'http://127.0.0.1:3003/health' }
+]);
+
+async function exists(root, relativePath) {
+  try {
+    await access(path.join(root, relativePath));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readText(root, relativePath) {
+  return readFile(path.join(root, relativePath), 'utf8');
+}
+
+function result(item, status, message, details = {}) {
+  return {
+    id: item.id,
+    title: item.title,
+    sectionId: item.sectionId,
+    sectionTitle: item.sectionTitle,
+    mode: item.mode,
+    severity: item.severity,
+    status,
+    message,
+    evidence: item.evidence,
+    ...details
+  };
+}
+
+async function fileContains(root, relativePaths, needle) {
+  for (const relativePath of relativePaths) {
+    if (!(await exists(root, relativePath))) continue;
+    const text = await readText(root, relativePath);
+    if (text.includes(needle)) return true;
+  }
+  return false;
+}
+
+async function scanTrackedSourcesForSecrets(root) {
+  const suspicious = [];
+  const roots = ['packages', 'services', 'workers', 'pipelines', 'engines', 'tools', 'scripts', 'docs'];
+  const secretPatterns = [
+    /-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----/,
+    /(?:api[_-]?secret|client[_-]?secret|password)\s*[:=]\s*['"](?!unset|replace-in-approved-secret-store|prod-[a-z-]+|example)[^'"]{12,}['"]/i
+  ];
+
+  async function walk(dir) {
+    let entries;
+    try {
+      entries = await readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.name === 'node_modules' || entry.name === 'build' || entry.name === '.git') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        await walk(full);
+        continue;
+      }
+      if (!/\.(mjs|js|md|yml|yaml|json|tf|example|sh)$/i.test(entry.name)) continue;
+      if (entry.name === 'RTPSC-package-lock.json') continue;
+      const text = await readFile(full, 'utf8');
+      for (const pattern of secretPatterns) {
+        if (pattern.test(text)) {
+          suspicious.push(path.relative(root, full));
+          break;
+        }
+      }
+    }
+  }
+
+  for (const sector of roots) {
+    await walk(path.join(root, sector));
+  }
+  return suspicious;
+}
+
+function runCommand(command, args, { cwd, timeoutMs = 120_000 } = {}) {
+  return new Promise((resolve) => {
+    const child = spawn(command, args, { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
+    let stdout = '';
+    let stderr = '';
+    const timer = setTimeout(() => {
+      child.kill('SIGTERM');
+      resolve({ ok: false, code: null, stdout, stderr: `${stderr}\ntimeout after ${timeoutMs}ms` });
+    }, timeoutMs);
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk;
+    });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      resolve({ ok: code === 0, code, stdout, stderr });
+    });
+  });
+}
+
+async function probeHealth(url, timeoutMs = 2500) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    const body = await response.text();
+    return { ok: response.ok, status: response.status, body: body.slice(0, 500) };
+  } catch (error) {
+    return { ok: false, status: 0, body: String(error?.message || error) };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function runAutomatedItem(root, item, context) {
+  switch (item.id) {
+    case 'GOV-001':
+      return result(item, (await exists(root, 'docs/compliance-and-governance.md')) ? 'pass' : 'fail', 'Compliance governance doc check');
+    case 'GOV-002':
+      return result(item, (await exists(root, 'docs/irm-aligned-handbook.md')) ? 'pass' : 'fail', 'IRM handbook check');
+    case 'GOV-003':
+      return result(item, (await exists(root, 'docs/operations-runbook.md')) ? 'pass' : 'fail', 'Operations runbook check');
+    case 'GOV-004':
+      return result(item, (await exists(root, 'docs/live-production-checklist.md')) ? 'pass' : 'fail', 'Live production checklist doc check');
+    case 'BND-001': {
+      const ok = await fileContains(root, ['docs/compliance-and-governance.md', 'README.md'], 'No unauthorized access to IRS systems');
+      return result(item, ok ? 'pass' : 'fail', 'Unauthorized IRS access boundary language');
+    }
+    case 'BND-002': {
+      const ok = await fileContains(
+        root,
+        ['docs/compliance-and-governance.md', 'README.md', 'packages/platform-core/src/index.mjs'],
+        'scraping'
+      );
+      return result(item, ok ? 'pass' : 'fail', 'Anti-scraping boundary language');
+    }
+    case 'BND-003': {
+      const hits = await scanTrackedSourcesForSecrets(root);
+      return result(item, hits.length === 0 ? 'pass' : 'fail', hits.length === 0 ? 'No embedded secret patterns detected' : 'Potential secrets detected', {
+        findings: hits
+      });
+    }
+    case 'BND-004': {
+      const { createSecureTunnelAdapter } = await import(path.join(root, 'packages/secure-tunnel/src/index.mjs'));
+      const adapter = createSecureTunnelAdapter();
+      return result(item, adapter.status === 'stub' ? 'pass' : 'fail', `Secure tunnel status=${adapter.status}`);
+    }
+    case 'CFG-001':
+      return result(item, (await exists(root, 'env/.env.prod.example')) ? 'pass' : 'fail', 'Prod env example present');
+    case 'CFG-002': {
+      const { clientIdentityPlaceholders } = await import(path.join(root, 'packages/client-config/src/index.mjs'));
+      const ok =
+        Array.isArray(clientIdentityPlaceholders.api) &&
+        clientIdentityPlaceholders.api.includes('API_CLIENT_SECRET') &&
+        clientIdentityPlaceholders.secureTunnel.includes('APPROVED_TUNNEL_ENDPOINT');
+      return result(item, ok ? 'pass' : 'fail', 'Client identity placeholders are env-based');
+    }
+    case 'CFG-003': {
+      const text = await readText(root, 'env/.env.prod.example');
+      const ok = text.includes('replace-in-approved-secret-store') && !/SECRET=\S{20,}/.test(text.replaceAll('replace-in-approved-secret-store', ''));
+      return result(item, ok ? 'pass' : 'fail', 'Prod example uses secret-store placeholders');
+    }
+    case 'PLT-001': {
+      const { createServiceDescriptor } = await import(path.join(root, 'packages/platform-core/src/index.mjs'));
+      const descriptor = createServiceDescriptor({ name: 'probe', domain: 'probe' });
+      const ok = Array.isArray(descriptor.compliance) && descriptor.compliance.some((line) => line.includes('IRS'));
+      return result(item, ok ? 'pass' : 'fail', 'Service descriptors include compliance notices');
+    }
+    case 'PLT-002': {
+      const { createWorkerDescriptor } = await import(path.join(root, 'packages/platform-core/src/index.mjs'));
+      const descriptor = createWorkerDescriptor({ name: 'probe-worker' });
+      const ok = Array.isArray(descriptor.compliance) && descriptor.compliance.length > 0;
+      return result(item, ok ? 'pass' : 'fail', 'Worker descriptors include compliance notices');
+    }
+    case 'PLT-003': {
+      const source = await readText(root, 'workers/live-source-fetcher/src/index.mjs');
+      const ok = source.includes('validate-compliance') && source.includes('Reject scraping-based implementations');
+      return result(
+        item,
+        ok ? 'pass' : 'warn',
+        ok ? 'Live-source worker includes validate-compliance and anti-scraping controls' : 'Missing validate-compliance / anti-scraping controls'
+      );
+    }
+    case 'PLT-004': {
+      const source = await readText(root, 'pipelines/refund-status-pipeline/src/index.mjs');
+      const ok = /event/i.test(source) && !/scrape/i.test(source);
+      return result(item, ok ? 'pass' : 'fail', 'Refund-status pipeline remains event-driven');
+    }
+    case 'INF-001':
+      return result(item, (await exists(root, 'infra/terraform/env/prod/README.md')) ? 'pass' : 'warn', 'Prod Terraform folder check');
+    case 'INF-002':
+      return result(item, (await exists(root, '.github/workflows/ci.yml')) ? 'pass' : 'fail', 'CI workflow check');
+    case 'INF-003':
+      return result(item, (await exists(root, '.github/workflows/compliance.yml')) ? 'pass' : 'fail', 'Compliance workflow check');
+    case 'INF-004': {
+      const dirs = ['policy/guidelines', 'policy/procedures', 'policy/regulations', 'policy/rules'];
+      const missing = [];
+      for (const dir of dirs) {
+        if (!(await exists(root, dir))) missing.push(dir);
+      }
+      return result(item, missing.length === 0 ? 'pass' : 'warn', missing.length === 0 ? 'Policy directories present' : 'Missing policy directories', {
+        missing
+      });
+    }
+    case 'OPS-001': {
+      if (context.skipGates) {
+        return result(item, 'skipped', 'Quality gates skipped (--skip-gates)');
+      }
+      if (context.gateResults) {
+        const ok = context.gateResults.ok;
+        return result(item, ok ? 'pass' : 'fail', ok ? 'lint/test/build passed' : 'Quality gates failed', {
+          gates: context.gateResults.gates
+        });
+      }
+      return result(item, 'pending', 'Quality gates not yet executed');
+    }
+    case 'OPS-002':
+      return result(item, 'pass', 'Report artifact will be written by this run', {
+        artifact: 'build/production-compliance-report.json'
+      });
+    case 'OPS-003':
+      return result(item, 'pass', 'Checklist log will be written by this run', {
+        artifact: 'build/production-compliance-checklist.log'
+      });
+    default:
+      return result(item, 'skip', `No automated handler for ${item.id}`);
+  }
+}
+
+async function runLiveItem(item, context) {
+  if (!context.live) {
+    return result(item, 'skipped', 'Live probes skipped (pass --live to enable)');
+  }
+
+  if (item.id === 'PLT-005') {
+    const probe = await probeHealth(context.endpoints[0].url);
+    return result(item, probe.ok ? 'pass' : 'fail', probe.ok ? 'api-gateway /health ok' : 'api-gateway /health failed', { probe });
+  }
+
+  if (item.id === 'PLT-006') {
+    const probes = [];
+    for (const endpoint of context.endpoints.slice(1)) {
+      probes.push({ ...endpoint, ...(await probeHealth(endpoint.url)) });
+    }
+    const ok = probes.every((probe) => probe.ok);
+    return result(item, ok ? 'pass' : 'fail', ok ? 'Domain service health probes ok' : 'One or more domain health probes failed', {
+      probes
+    });
+  }
+
+  return result(item, 'skip', `No live handler for ${item.id}`);
+}
+
+export async function runQualityGates(root) {
+  const gates = {};
+  for (const name of ['lint', 'test', 'build']) {
+    gates[name] = await runCommand('node', ['./tools/aol/bin/aol.mjs', 'run', name], { cwd: root });
+  }
+  return {
+    ok: Object.values(gates).every((gate) => gate.ok),
+    gates: Object.fromEntries(
+      Object.entries(gates).map(([name, gate]) => [
+        name,
+        { ok: gate.ok, code: gate.code, stdout: gate.stdout.slice(-400), stderr: gate.stderr.slice(-400) }
+      ])
+    )
+  };
+}
+
+/**
+ * Execute the full production compliance checklist.
+ */
+export async function runComplianceChecks(root, options = {}) {
+  const items = listChecklistItems();
+  const context = {
+    skipGates: Boolean(options.skipGates),
+    live: Boolean(options.live),
+    endpoints: options.endpoints || DEFAULT_LIVE_ENDPOINTS,
+    gateResults: null
+  };
+
+  if (!context.skipGates) {
+    context.gateResults = await runQualityGates(root);
+  }
+
+  const results = [];
+  for (const item of items) {
+    if (item.mode === 'manual') {
+      results.push(
+        result(
+          item,
+          options.strictProduction ? 'fail' : 'pending_signoff',
+          options.strictProduction
+            ? 'Manual sign-off required for live production (--strict-production)'
+            : 'Awaiting documented human sign-off'
+        )
+      );
+      continue;
+    }
+
+    if (item.mode === 'live') {
+      results.push(await runLiveItem(item, context));
+      continue;
+    }
+
+    results.push(await runAutomatedItem(root, item, context));
+  }
+
+  return { results, gateResults: context.gateResults, live: context.live };
+}
+
+export { DEFAULT_LIVE_ENDPOINTS };

@@ -12,6 +12,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - run: test -f docs/compliance-and-governance.md
       - run: test -f docs/irm-aligned-handbook.md
+      - run: test -f docs/live-production-checklist.md
+      - run: test -f docs/production-compliance-report.md
       - run: grep -R "No unauthorized access to IRS systems" docs README.md
+      - name: AOL install
+        run: node ./tools/aol/bin/aol.mjs install
+      - name: Production compliance report
+        run: node ./tools/aol/bin/aol.mjs run compliance -- --skip-gates
+      - name: Verify report artifacts
+        run: |
+          test -f build/production-compliance-report.json
+          test -f build/production-compliance-report.md
+          test -f build/production-compliance-checklist.log
