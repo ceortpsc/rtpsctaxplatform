@@ -26,7 +26,7 @@ Equivalent: `node ./tools/aol/bin/aol.mjs <cmd>` or `make setup|lint|test|build|
 
 Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
 `docs/aol-intellectual-property.md`, `docs/live-production-checklist.md`,
-`docs/production-compliance-report.md`.
+`docs/enterprise-tax-software-checklist.md`, `docs/production-compliance-report.md`.
 
 Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 `aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`.

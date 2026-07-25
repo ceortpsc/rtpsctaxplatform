@@ -21,11 +21,20 @@ const root = process.cwd();
 test('checklist enumerates automated, manual, and live items', () => {
   const summary = checklistSummary();
   assert.equal(summary.version, CHECKLIST_VERSION);
-  assert.ok(summary.items >= 20);
+  assert.equal(summary.version, '2.0.0');
+  assert.ok(summary.items >= 60);
+  assert.ok(summary.sections >= 10);
   assert.ok(summary.byMode.automated > 0);
   assert.ok(summary.byMode.manual > 0);
   assert.ok(summary.byMode.live > 0);
   assert.ok(listChecklistItems().some((item) => item.id === 'BND-001'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'IRS-001'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'TDS-001'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'AIA-001'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'RFD-001'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'EFL-001'));
+  assert.ok(summary.bySection.irs_api_credentials >= 1);
+  assert.ok(summary.bySection.efile_transmission >= 1);
 });
 
 test('compliance checks pass scaffold automated gates with skip-gates', async () => {

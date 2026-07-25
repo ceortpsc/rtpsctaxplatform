@@ -3,10 +3,20 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-24T09:17:46.816Z",
-  "count": 18,
+  "createdAt": "2026-07-25T19:13:34.101Z",
+  "count": 19,
   "ok": true,
   "footprints": [
+    {
+      "name": "@rtp/ai-assist",
+      "version": "0.1.0",
+      "location": "packages/ai-assist",
+      "sector": "packages",
+      "footprint": "cc444c69e4927073",
+      "fingerprint": "cc444c69e4927073",
+      "integrity": "sha256-cc444c69e492707366a79be8430b2e2585530e59c8d4b6da4a10552de8700cf4",
+      "status": "sealed"
+    },
     {
       "name": "@rtp/analytics-center",
       "version": "0.1.0",

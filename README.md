@@ -133,6 +133,7 @@ Key placeholders include:
 - `/docs/operations-runbook.md`
 - `/docs/compliance-and-governance.md`
 - `/docs/live-production-checklist.md`
+- `/docs/enterprise-tax-software-checklist.md`
 - `/docs/production-compliance-report.md`
 - `/docs/irm-aligned-handbook.md`
 

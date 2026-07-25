@@ -6,6 +6,7 @@ const modules = [
   '../packages/client-config/src/index.mjs',
   '../packages/secure-tunnel/src/index.mjs',
   '../packages/production-compliance/src/index.mjs',
+  '../packages/ai-assist/src/index.mjs',
   '../services/api-gateway/src/index.mjs',
   '../services/refund-status-service/src/index.mjs',
   '../services/transcript-service/src/index.mjs',
