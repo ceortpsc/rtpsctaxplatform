@@ -18,14 +18,18 @@ from ross_ai.events import EventBus
 from ross_ai.hardening import (
     RateLimiter,
     apply_security_headers,
+    clear_mfa_cookie,
     clear_session_cookie,
     hardening_report,
+    mfa_pending_cookie,
     parse_cookies,
     session_cookie,
 )
 from ross_ai.inventory import build_inventory
 from ross_ai.legal import ZERO_REFUND_BANNER, acceptance_checklist, all_sections
+from ross_ai.mailer import send_code_email, smtp_configured
 from ross_ai.membership import get_tier, list_tiers, validate_tier_id
+from ross_ai.otp import OtpService, otpauth_uri, verify_totp
 from ross_ai.paths import DEFAULT_HOST, DEFAULT_PORT, dist_path, plans_path
 from ross_ai.store import JsonStore
 from ross_ai.web import pages
@@ -42,6 +46,7 @@ class AppState:
         self.store = JsonStore(root / DATA_DIR_NAME / "control-plane.json")
         self.auth = AuthService(self.store)
         self.billing = BillingService(self.store)
+        self.otp = OtpService(self.store)
         self.bus = EventBus()
         self.hub = WebSocketHub()
         self.limiter = RateLimiter(limit=120, window_sec=60)
@@ -177,6 +182,27 @@ class RossHandler(BaseHTTPRequestHandler):
 
         self.state.store.update(mutate)
 
+    def _issue_email_code(self, email: str, purpose: str) -> tuple[str, dict]:
+        code, meta = self.state.otp.issue(email, purpose)
+        delivery = send_code_email(to_email=email, purpose=purpose, code=code)
+        self.state.bus.publish(
+            f"otp.{purpose}",
+            email=email,
+            message=f"6-digit code issued via {delivery.get('channel')}",
+        )
+        return code, delivery
+
+    def _onboarding_destination(self, user: dict | None) -> str:
+        if not user:
+            return "/signin"
+        if not user.get("emailVerified"):
+            return "/verify-email"
+        if not user.get("mfaEnabled"):
+            return "/setup-mfa"
+        if not user.get("membershipActive"):
+            return "/membership"
+        return "/dashboard"
+
     # --- routing ---
     def do_HEAD(self) -> None:  # noqa: N802
         self.do_GET(head_only=True)
@@ -255,11 +281,8 @@ class RossHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/":
-            if user and user.get("membershipActive"):
-                self._redirect("/dashboard")
-                return
-            if user and not user.get("membershipActive"):
-                self._redirect("/membership")
+            if user:
+                self._redirect(self._onboarding_destination(user))
                 return
             self._html(200, pages.landing_page(user=user, csrf=csrf))
             return
@@ -281,11 +304,8 @@ class RossHandler(BaseHTTPRequestHandler):
             return
 
         if path in {"/login", "/signin", "/sign-in"}:
-            if user and user.get("membershipActive"):
-                self._redirect("/dashboard")
-                return
             if user:
-                self._redirect("/membership")
+                self._redirect(self._onboarding_destination(user))
                 return
             self._html(
                 200,
@@ -293,8 +313,8 @@ class RossHandler(BaseHTTPRequestHandler):
                     mode="signin",
                     action="/signin",
                     heading="Sign in",
-                    sub="Enter the operator console with your Ross access credentials.",
-                    submit="Sign in",
+                    sub="Password plus MFA / 2FA (authenticator or email 6-digit code).",
+                    submit="Continue",
                     csrf=csrf,
                     user=user,
                 ),
@@ -302,11 +322,8 @@ class RossHandler(BaseHTTPRequestHandler):
             return
 
         if path in {"/signup", "/sign-up", "/register"}:
-            if user and user.get("membershipActive"):
-                self._redirect("/dashboard")
-                return
             if user:
-                self._redirect("/membership")
+                self._redirect(self._onboarding_destination(user))
                 return
             self._html(
                 200,
@@ -314,8 +331,8 @@ class RossHandler(BaseHTTPRequestHandler):
                     mode="signup",
                     action="/signup",
                     heading="Create account",
-                    sub="Step 01 — create credentials. Next: membership election, then payment method on file. Zero refunds.",
-                    submit="Continue to membership",
+                    sub="Step 01 — credentials. Next: email 6-digit verification, MFA/2FA, membership, payment. Zero refunds.",
+                    submit="Continue to email verification",
                     csrf=csrf,
                     user=user,
                 ),
@@ -337,15 +354,100 @@ class RossHandler(BaseHTTPRequestHandler):
             "/payment",
             "/billing",
             "/users",
+            "/verify-email",
+            "/setup-mfa",
         }
         if path in protected and not user:
             self._redirect("/signin")
             return
 
-        membership_gated = protected - {"/membership", "/payment"}
-        if path in membership_gated and user and not user.get("membershipActive"):
-            self._redirect("/membership")
+        if path == "/mfa":
+            cookies = parse_cookies(self.headers.get("Cookie"))
+            challenge = self.state.auth.get_mfa_challenge(cookies.get("ross_mfa"))
+            if not challenge:
+                self._redirect("/signin")
+                return
+            self._html(
+                200,
+                pages.mfa_challenge_page(
+                    email=challenge["email"],
+                    csrf="",
+                    dev_code=self.state.otp.latest_dev_code(challenge["email"], "login_mfa")
+                    if not smtp_configured()
+                    else None,
+                    user=None,
+                ),
+            )
             return
+
+        if user and path == "/verify-email":
+            if user.get("emailVerified"):
+                self._redirect(self._onboarding_destination(user))
+                return
+            # ensure a code exists
+            if not self.state.otp.latest_dev_code(user["email"], "email_verify"):
+                self._issue_email_code(user["email"], "email_verify")
+            self._html(
+                200,
+                pages.verify_email_page(
+                    email=user["email"],
+                    csrf=csrf,
+                    dev_code=None
+                    if smtp_configured()
+                    else self.state.otp.latest_dev_code(user["email"], "email_verify"),
+                    delivery_detail="Dev inbox (configure ROSS_SMTP_* for real email).",
+                    user=user,
+                ),
+            )
+            return
+
+        if user and path == "/setup-mfa":
+            if not user.get("emailVerified"):
+                self._redirect("/verify-email")
+                return
+            if user.get("mfaEnabled"):
+                self._redirect(self._onboarding_destination(user))
+                return
+            secret = self.state.auth.mfa_secret_for(user["email"]) or self.state.auth.begin_mfa_enrollment(
+                user["email"]
+            )
+            self._html(
+                200,
+                pages.setup_mfa_page(
+                    email=user["email"],
+                    secret=secret,
+                    otpauth=otpauth_uri(secret, user["email"]),
+                    csrf=csrf,
+                    user=user,
+                ),
+            )
+            return
+
+        membership_gated = {
+            "/dashboard",
+            "/modules",
+            "/engines",
+            "/systems",
+            "/infrastructure",
+            "/packages",
+            "/deploy",
+            "/runtime",
+            "/foundation",
+            "/membership",
+            "/payment",
+            "/billing",
+            "/users",
+        }
+        if path in membership_gated and user:
+            if not user.get("emailVerified"):
+                self._redirect("/verify-email")
+                return
+            if not user.get("mfaEnabled"):
+                self._redirect("/setup-mfa")
+                return
+            if path not in {"/membership", "/payment"} and not user.get("membershipActive"):
+                self._redirect("/membership")
+                return
 
         if path == "/membership":
             qs = parse_qs(parsed.query)
@@ -574,43 +676,200 @@ class RossHandler(BaseHTTPRequestHandler):
                         mode="signup",
                         action="/signup",
                         heading="Create account",
-                        sub="Step 01 — create credentials. Next: membership election, then payment method on file. Zero refunds.",
-                        submit="Continue to membership",
+                        sub="Step 01 — credentials. Next: email 6-digit verification, MFA/2FA, membership, payment. Zero refunds.",
+                        submit="Continue to email verification",
                         csrf="",
                         error=msg,
                         user=None,
                     ),
                 )
                 return
-            self.state.bus.publish("signup", email=new_session.email, message="account created — elect membership")
+            self._issue_email_code(new_session.email, "email_verify")
+            self.state.bus.publish("signup", email=new_session.email, message="account created — verify email")
             cookie = session_cookie(new_session.token, secure=self._wants_secure_cookie())
-            self._redirect("/membership", [("Set-Cookie", cookie)])
+            self._redirect("/verify-email", [("Set-Cookie", cookie)])
             return
 
         if path in {"/signin", "/login", "/sign-in"}:
             if not self._require_rate(self.state.auth_limiter):
                 return
-            ok, msg, new_session = self.state.auth.login(form.get("email", ""), form.get("password", ""))
-            if not ok or not new_session:
+            ok, msg, new_session, mfa_challenge = self.state.auth.login(
+                form.get("email", ""), form.get("password", "")
+            )
+            if not ok:
                 self._html(
                     401,
                     pages.gate_page(
                         mode="signin",
                         action="/signin",
                         heading="Sign in",
-                        sub="Enter the operator console with your Ross access credentials.",
-                        submit="Sign in",
+                        sub="Password plus MFA / 2FA (authenticator or email 6-digit code).",
+                        submit="Continue",
                         csrf="",
                         error=msg,
                         user=None,
                     ),
                 )
                 return
-            self.state.bus.publish("login", email=new_session.email, message="operator signed in")
-            cookie = session_cookie(new_session.token, secure=self._wants_secure_cookie())
+            if mfa_challenge:
+                self._redirect(
+                    "/mfa",
+                    [
+                        (
+                            "Set-Cookie",
+                            mfa_pending_cookie(
+                                mfa_challenge["token"], secure=self._wants_secure_cookie()
+                            ),
+                        )
+                    ],
+                )
+                return
+            assert new_session is not None
             profile = self.state.auth.user_profile(new_session.email) or {}
-            dest = "/dashboard" if profile.get("membershipActive") else "/membership"
-            self._redirect(dest, [("Set-Cookie", cookie)])
+            cookie = session_cookie(new_session.token, secure=self._wants_secure_cookie())
+            self._redirect(self._onboarding_destination(profile), [("Set-Cookie", cookie)])
+            return
+
+        if path == "/verify-email":
+            if not user or not session:
+                self._redirect("/signin")
+                return
+            if not self.state.auth.validate_csrf(session, form.get("csrf")):
+                self._send(403, b'{"error":"csrf"}\n', "application/json; charset=utf-8")
+                return
+            ok, msg = self.state.otp.verify(user["email"], "email_verify", form.get("code", ""))
+            if not ok:
+                self._html(
+                    400,
+                    pages.verify_email_page(
+                        email=user["email"],
+                        csrf=session.csrf,
+                        error=msg,
+                        dev_code=None
+                        if smtp_configured()
+                        else self.state.otp.latest_dev_code(user["email"], "email_verify"),
+                        user=user,
+                    ),
+                )
+                return
+            self.state.auth.mark_email_verified(user["email"])
+            self.state.bus.publish("email.verified", email=user["email"], message="email verified")
+            self._redirect("/setup-mfa")
+            return
+
+        if path == "/verify-email/resend":
+            if not user or not session:
+                self._redirect("/signin")
+                return
+            if not self.state.auth.validate_csrf(session, form.get("csrf")):
+                self._send(403, b'{"error":"csrf"}\n', "application/json; charset=utf-8")
+                return
+            self._issue_email_code(user["email"], "email_verify")
+            self._html(
+                200,
+                pages.verify_email_page(
+                    email=user["email"],
+                    csrf=session.csrf,
+                    flash="A new 6-digit code was issued.",
+                    dev_code=None
+                    if smtp_configured()
+                    else self.state.otp.latest_dev_code(user["email"], "email_verify"),
+                    user=user,
+                ),
+            )
+            return
+
+        if path == "/setup-mfa":
+            if not user or not session:
+                self._redirect("/signin")
+                return
+            if not self.state.auth.validate_csrf(session, form.get("csrf")):
+                self._send(403, b'{"error":"csrf"}\n', "application/json; charset=utf-8")
+                return
+            ok, msg = self.state.auth.confirm_mfa_enrollment(user["email"], form.get("code", ""))
+            secret = self.state.auth.mfa_secret_for(user["email"]) or ""
+            if not ok:
+                self._html(
+                    400,
+                    pages.setup_mfa_page(
+                        email=user["email"],
+                        secret=secret,
+                        otpauth=otpauth_uri(secret, user["email"]) if secret else "",
+                        csrf=session.csrf,
+                        error=msg,
+                        user=user,
+                    ),
+                )
+                return
+            self.state.bus.publish("mfa.enabled", email=user["email"], message="MFA/2FA enabled")
+            self._redirect("/membership")
+            return
+
+        if path == "/mfa/email":
+            cookies = parse_cookies(self.headers.get("Cookie"))
+            challenge = self.state.auth.get_mfa_challenge(cookies.get("ross_mfa"))
+            if not challenge:
+                self._redirect("/signin")
+                return
+            self._issue_email_code(challenge["email"], "login_mfa")
+            self._html(
+                200,
+                pages.mfa_challenge_page(
+                    email=challenge["email"],
+                    flash="Email MFA code sent.",
+                    dev_code=None
+                    if smtp_configured()
+                    else self.state.otp.latest_dev_code(challenge["email"], "login_mfa"),
+                    user=None,
+                ),
+            )
+            return
+
+        if path == "/mfa":
+            cookies = parse_cookies(self.headers.get("Cookie"))
+            mfa_token = cookies.get("ross_mfa")
+            challenge = self.state.auth.get_mfa_challenge(mfa_token)
+            if not challenge:
+                self._redirect("/signin")
+                return
+            factor = form.get("factor") or "totp"
+            code = form.get("code", "")
+            email = challenge["email"]
+            ok = False
+            msg = "Invalid code."
+            if factor == "email":
+                ok, msg = self.state.otp.verify(email, "login_mfa", code)
+            else:
+                secret = self.state.auth.mfa_secret_for(email)
+                if secret and verify_totp(secret, code):
+                    ok, msg = True, "Verified."
+                else:
+                    ok, msg = False, "Invalid authenticator code."
+            if not ok:
+                self._html(
+                    401,
+                    pages.mfa_challenge_page(
+                        email=email,
+                        error=msg,
+                        dev_code=None
+                        if smtp_configured()
+                        else self.state.otp.latest_dev_code(email, "login_mfa"),
+                        user=None,
+                    ),
+                )
+                return
+            done_ok, done_msg, new_session = self.state.auth.complete_mfa_login(mfa_token or "")
+            if not done_ok or not new_session:
+                self._redirect("/signin")
+                return
+            profile = self.state.auth.user_profile(new_session.email) or {}
+            self._redirect(
+                self._onboarding_destination(profile),
+                [
+                    ("Set-Cookie", session_cookie(new_session.token, secure=self._wants_secure_cookie())),
+                    ("Set-Cookie", clear_mfa_cookie()),
+                ],
+            )
             return
 
         if path == "/membership":
@@ -742,7 +1001,10 @@ class RossHandler(BaseHTTPRequestHandler):
             self.state.auth.logout(session.token if session else None)
             if email:
                 self.state.bus.publish("logout", email=email, message="operator signed out")
-            self._redirect("/", [("Set-Cookie", clear_session_cookie())])
+            self._redirect(
+                "/",
+                [("Set-Cookie", clear_session_cookie()), ("Set-Cookie", clear_mfa_cookie())],
+            )
             return
 
         self._send(404, b'{"error":"not_found"}\n', "application/json; charset=utf-8")

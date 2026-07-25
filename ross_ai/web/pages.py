@@ -604,3 +604,143 @@ def legal_page(*, sections: list[dict], banner: str, **kwargs) -> str:
 </main>
 """
     return layout(title="Legal", body=body, nav="legal", **kwargs)
+
+
+def verify_email_page(
+    *,
+    email: str,
+    csrf: str,
+    dev_code: str | None = None,
+    delivery_detail: str = "",
+    error: str | None = None,
+    flash: str | None = None,
+    **kwargs,
+) -> str:
+    err = f'<p class="form-error">{esc(error)}</p>' if error else ""
+    flash_h = f'<p class="ok-msg">{esc(flash)}</p>' if flash else ""
+    dev = ""
+    if dev_code:
+        dev = f"""
+        <div class="dev-code panel-inline">
+          <strong>Development delivery</strong>
+          <p>SMTP is not configured. Your 6-digit verification code is:</p>
+          <p class="code-xl">{esc(dev_code)}</p>
+          <p class="muted">{esc(delivery_detail)}</p>
+        </div>
+        """
+    body = f"""
+<main class="console narrow">
+  <header class="console-head animate-in">
+    <div>
+      <p class="eyebrow">Step 01b · Email verification</p>
+      <h1>Verify your email</h1>
+      <p class="lede tight">We sent a <strong>6-digit code</strong> to <strong>{esc(email)}</strong>. Enter it to continue.</p>
+    </div>
+  </header>
+  {err}{flash_h}{dev}
+  <form method="post" action="/verify-email" class="panel gate-form animate-in delay-1">
+    <input type="hidden" name="csrf" value="{esc(csrf)}" />
+    <label>6-digit code
+      <input name="code" inputmode="numeric" pattern="[0-9]{{6}}" maxlength="6" minlength="6" required placeholder="123456" autocomplete="one-time-code" />
+    </label>
+    <button class="btn primary block" type="submit">Verify email</button>
+  </form>
+  <form method="post" action="/verify-email/resend" class="inline-resend animate-in delay-2">
+    <input type="hidden" name="csrf" value="{esc(csrf)}" />
+    <button class="btn ghost block" type="submit">Resend code</button>
+  </form>
+</main>
+"""
+    return layout(title="Verify email", body=body, nav="verify", csrf=csrf, **kwargs)
+
+
+def setup_mfa_page(
+    *,
+    email: str,
+    secret: str,
+    otpauth: str,
+    csrf: str,
+    error: str | None = None,
+    **kwargs,
+) -> str:
+    err = f'<p class="form-error">{esc(error)}</p>' if error else ""
+    body = f"""
+<main class="console narrow">
+  <header class="console-head animate-in">
+    <div>
+      <p class="eyebrow">Step 01c · MFA / 2FA enrollment</p>
+      <h1>Enable authenticator MFA</h1>
+      <p class="lede tight">Add Ross AI to your authenticator app (TOTP), then enter the <strong>6-digit</strong> code. Email OTP remains available as a backup factor at sign-in.</p>
+    </div>
+  </header>
+  {err}
+  <section class="panel animate-in delay-1">
+    <h2>Authenticator setup</h2>
+    <p class="muted">Account: {esc(email)}</p>
+    <p>Secret key:</p>
+    <p class="code-xl wrap">{esc(secret)}</p>
+    <p class="muted break">otpauth URI:</p>
+    <p class="mono-small break">{esc(otpauth)}</p>
+  </section>
+  <form method="post" action="/setup-mfa" class="panel gate-form animate-in delay-2">
+    <input type="hidden" name="csrf" value="{esc(csrf)}" />
+    <label>6-digit authenticator code
+      <input name="code" inputmode="numeric" pattern="[0-9]{{6}}" maxlength="6" minlength="6" required placeholder="123456" autocomplete="one-time-code" />
+    </label>
+    <button class="btn primary block" type="submit">Enable MFA / 2FA</button>
+  </form>
+</main>
+"""
+    return layout(title="Setup MFA", body=body, nav="mfa-setup", csrf=csrf, **kwargs)
+
+
+def mfa_challenge_page(
+    *,
+    email: str,
+    csrf: str = "",
+    dev_code: str | None = None,
+    error: str | None = None,
+    flash: str | None = None,
+    **kwargs,
+) -> str:
+    err = f'<p class="form-error">{esc(error)}</p>' if error else ""
+    flash_h = f'<p class="ok-msg">{esc(flash)}</p>' if flash else ""
+    dev = ""
+    if dev_code:
+        dev = f"""
+        <div class="dev-code panel-inline">
+          <strong>Development delivery</strong>
+          <p>Email MFA code:</p>
+          <p class="code-xl">{esc(dev_code)}</p>
+        </div>
+        """
+    body = f"""
+<main class="console narrow">
+  <header class="console-head animate-in">
+    <div>
+      <p class="eyebrow">MFA / 2FA challenge</p>
+      <h1>Confirm it is you</h1>
+      <p class="lede tight">Enter the <strong>6-digit</strong> code from your authenticator app, or request an email code for <strong>{esc(email)}</strong>.</p>
+    </div>
+  </header>
+  {err}{flash_h}{dev}
+  <form method="post" action="/mfa" class="panel gate-form animate-in delay-1">
+    <input type="hidden" name="csrf" value="{esc(csrf)}" />
+    <label>Factor
+      <select name="factor">
+        <option value="totp">Authenticator app (TOTP)</option>
+        <option value="email">Email 6-digit code</option>
+      </select>
+    </label>
+    <label>6-digit code
+      <input name="code" inputmode="numeric" pattern="[0-9]{{6}}" maxlength="6" minlength="6" required placeholder="123456" autocomplete="one-time-code" />
+    </label>
+    <button class="btn primary block" type="submit">Verify &amp; sign in</button>
+  </form>
+  <form method="post" action="/mfa/email" class="inline-resend animate-in delay-2">
+    <input type="hidden" name="csrf" value="{esc(csrf)}" />
+    <button class="btn ghost block" type="submit">Send email MFA code</button>
+  </form>
+</main>
+"""
+    return layout(title="MFA", body=body, nav="mfa", **kwargs)

@@ -21,6 +21,8 @@ const requiredPaths = [
   'ross_ai/membership.py',
   'ross_ai/billing.py',
   'ross_ai/legal.py',
+  'ross_ai/otp.py',
+  'ross_ai/mailer.py',
   'ross_ai/platform_server.py',
   'ross_ai/web/static/app.css',
   'ross_ai/web/static/app.js',

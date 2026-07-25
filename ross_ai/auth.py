@@ -75,6 +75,9 @@ class AuthService:
                 "password": _hash_password(password),
                 "role": "operator",
                 "createdAt": time.time(),
+                "emailVerified": False,
+                "mfaEnabled": False,
+                "mfaSecret": None,
             }
             data.setdefault("audit", []).append(
                 {"at": time.time(), "action": "signup", "email": email}
@@ -86,19 +89,124 @@ class AuthService:
         session = self._create_session(email)
         return True, "Account created.", session
 
-    def login(self, email: str, password: str) -> tuple[bool, str, Session | None]:
+    def login(self, email: str, password: str) -> tuple[bool, str, Session | None, dict[str, Any] | None]:
+        """Returns (ok, message, session_or_none, mfa_challenge_or_none)."""
         email = email.strip().lower()
         data = self.store.get()
         user = (data.get("users") or {}).get(email)
         if not user or not _verify_password(password, user.get("password", "")):
-            return False, "Invalid email or password.", None
+            return False, "Invalid email or password.", None, None
+
+        if user.get("mfaEnabled") and user.get("mfaSecret"):
+            challenge = self._create_mfa_challenge(email)
+
+            def mutate(d: dict[str, Any]) -> None:
+                d.setdefault("audit", []).append(
+                    {"at": time.time(), "action": "login.mfa_required", "email": email}
+                )
+
+            self.store.update(mutate)
+            return True, "MFA required.", None, challenge
+
         session = self._create_session(email)
 
         def mutate(d: dict[str, Any]) -> None:
             d.setdefault("audit", []).append({"at": time.time(), "action": "login", "email": email})
 
         self.store.update(mutate)
+        return True, "Signed in.", session, None
+
+    def complete_mfa_login(self, challenge_token: str) -> tuple[bool, str, Session | None]:
+        data = self.store.get()
+        challenges = data.get("mfaChallenges") or {}
+        raw = challenges.get(challenge_token)
+        if not raw:
+            return False, "MFA challenge expired. Sign in again.", None
+        if time.time() > float(raw.get("expires_at", 0)):
+            self.clear_mfa_challenge(challenge_token)
+            return False, "MFA challenge expired. Sign in again.", None
+        email = raw["email"]
+        self.clear_mfa_challenge(challenge_token)
+        session = self._create_session(email)
+
+        def mutate(d: dict[str, Any]) -> None:
+            d.setdefault("audit", []).append(
+                {"at": time.time(), "action": "login.mfa_ok", "email": email}
+            )
+
+        self.store.update(mutate)
         return True, "Signed in.", session
+
+    def get_mfa_challenge(self, token: str | None) -> dict[str, Any] | None:
+        if not token:
+            return None
+        raw = (self.store.get().get("mfaChallenges") or {}).get(token)
+        if not raw:
+            return None
+        if time.time() > float(raw.get("expires_at", 0)):
+            self.clear_mfa_challenge(token)
+            return None
+        return raw
+
+    def clear_mfa_challenge(self, token: str | None) -> None:
+        if not token:
+            return
+
+        def mutate(data: dict[str, Any]) -> None:
+            (data.setdefault("mfaChallenges", {})).pop(token, None)
+
+        self.store.update(mutate)
+
+    def mark_email_verified(self, email: str) -> None:
+        def mutate(data: dict[str, Any]) -> None:
+            user = data.setdefault("users", {}).get(email)
+            if user:
+                user["emailVerified"] = True
+                data.setdefault("audit", []).append(
+                    {"at": time.time(), "action": "email.verified", "email": email}
+                )
+
+        self.store.update(mutate)
+
+    def begin_mfa_enrollment(self, email: str) -> str:
+        secret = __import__("ross_ai.otp", fromlist=["new_totp_secret"]).new_totp_secret()
+
+        def mutate(data: dict[str, Any]) -> None:
+            user = data.setdefault("users", {}).get(email)
+            if not user:
+                raise KeyError(email)
+            user["mfaSecretPending"] = secret
+
+        self.store.update(mutate)
+        return secret
+
+    def confirm_mfa_enrollment(self, email: str, code: str) -> tuple[bool, str]:
+        from ross_ai.otp import verify_totp
+
+        user = (self.store.get().get("users") or {}).get(email) or {}
+        secret = user.get("mfaSecretPending") or user.get("mfaSecret")
+        if not secret:
+            return False, "Start MFA setup again."
+        if not verify_totp(secret, code):
+            return False, "Invalid authenticator code."
+
+        def mutate(data: dict[str, Any]) -> None:
+            u = data.setdefault("users", {}).get(email)
+            if not u:
+                return
+            u["mfaSecret"] = secret
+            u["mfaEnabled"] = True
+            u.pop("mfaSecretPending", None)
+            data.setdefault("audit", []).append(
+                {"at": time.time(), "action": "mfa.enabled", "email": email}
+            )
+
+        self.store.update(mutate)
+        return True, "MFA enabled."
+
+    def mfa_secret_for(self, email: str) -> str | None:
+        user = (self.store.get().get("users") or {}).get(email) or {}
+        return user.get("mfaSecret") or user.get("mfaSecretPending")
 
     def logout(self, token: str | None) -> None:
         if not token:
@@ -145,12 +253,30 @@ class AuthService:
             "membershipActive": bool(mem.get("status") == "active"),
             "tierId": mem.get("tierId"),
             "tierName": mem.get("tierName"),
+            "emailVerified": bool(user.get("emailVerified")),
+            "mfaEnabled": bool(user.get("mfaEnabled")),
         }
 
     def validate_csrf(self, session: Session | None, token: str | None) -> bool:
         if not session or not token:
             return False
         return hmac.compare_digest(session.csrf, token)
+
+    def _create_mfa_challenge(self, email: str) -> dict[str, Any]:
+        token = secrets.token_urlsafe(24)
+        expires = time.time() + 10 * 60
+        challenge = {"token": token, "email": email, "expires_at": expires}
+
+        def mutate(data: dict[str, Any]) -> None:
+            challenges = data.setdefault("mfaChallenges", {})
+            now = time.time()
+            for k, v in list(challenges.items()):
+                if float(v.get("expires_at", 0)) < now:
+                    challenges.pop(k, None)
+            challenges[token] = {"email": email, "expires_at": expires}
+
+        self.store.update(mutate)
+        return challenge
 
     def _create_session(self, email: str) -> Session:
         token = secrets.token_urlsafe(32)

@@ -397,16 +397,30 @@ table.data th, table.data td {
 }
 table.data th { color: var(--muted); font-weight: 600; }
 
-@media (max-width: 800px) {
-  .strip { grid-template-columns: 1fr 1fr; }
-  .grid-2 { grid-template-columns: 1fr; }
-  .console-head { flex-direction: column; }
-  .nav-link[href="/modules"],
-  .nav-link[href="/engines"],
-  .nav-link[href="/systems"],
-  .nav-link[href="/infrastructure"],
-  .nav-link[href="/users"] { display: none; }
+.dev-code {
+  margin-bottom: 1rem;
+  border: 1px dashed rgba(196, 163, 90, 0.5);
+  padding: 0.9rem 1rem;
+  background: rgba(196, 163, 90, 0.08);
 }
+.panel-inline { margin-bottom: 1rem; }
+.code-xl {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  letter-spacing: 0.28em;
+  margin: 0.4rem 0;
+  color: var(--gold);
+}
+.code-xl.wrap { letter-spacing: 0.08em; font-size: 1.1rem; word-break: break-all; }
+.mono-small {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  word-break: break-all;
+}
+.break { word-break: break-all; }
+.ok-msg { color: var(--ok); }
+.inline-resend { margin-top: 0.75rem; }
 @media (max-width: 520px) {
   .strip { grid-template-columns: 1fr; }
   .hero { padding-top: 6vh; }

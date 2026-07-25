@@ -46,6 +46,14 @@ python ross.py dev
 | `/health` `/metadata` | Probe endpoints |
 | `/api/inventory` `/api/hardening` `/api/events` | Auth JSON APIs |
 
+## Email verification & MFA / 2FA
+
+1. `/signup` → issues a **6-digit email verification code** (`/verify-email`)  
+2. `/setup-mfa` → enroll TOTP authenticator (RFC 6238) — required 2FA  
+3. `/signin` with MFA enabled → `/mfa` challenge (authenticator **or** email 6-digit code)
+
+Configure SMTP via `ROSS_SMTP_*` in `.env`. Without SMTP, codes appear in the on-page **Development delivery** panel (control-plane dev inbox).
+
 ## Membership, payment & zero refunds
 
 Account creation is a three-step gate:

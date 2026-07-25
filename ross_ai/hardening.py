@@ -70,8 +70,25 @@ def session_cookie(token: str, *, secure: bool = False, max_age: int = 43200) ->
     return "; ".join(parts)
 
 
+def mfa_pending_cookie(token: str, *, secure: bool = False, max_age: int = 600) -> str:
+    parts = [
+        f"ross_mfa={token}",
+        "Path=/",
+        "HttpOnly",
+        "SameSite=Lax",
+        f"Max-Age={max_age}",
+    ]
+    if secure:
+        parts.append("Secure")
+    return "; ".join(parts)
+
+
 def clear_session_cookie() -> str:
     return "ross_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+
+
+def clear_mfa_cookie() -> str:
+    return "ross_mfa=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
 
 
 def parse_cookies(header: str | None) -> dict[str, str]:

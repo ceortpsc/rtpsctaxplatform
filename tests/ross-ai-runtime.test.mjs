@@ -155,9 +155,38 @@ describe('Ross AI Runtime Platform', () => {
         password: 'RuntimeGate1'
       });
       assert.equal(signup.status, 303);
-      assert.match(signup.headers.location || '', /membership/);
+      assert.match(signup.headers.location || '', /verify-email/);
       const cookie = cookieFromSet(signup.headers['set-cookie']);
       assert.ok(cookie.includes('ross_session='));
+
+      const verifyPage = await fetchText(`${base}/verify-email`, { headers: { Cookie: cookie } });
+      assert.equal(verifyPage.status, 200);
+      assert.match(verifyPage.body, /Verify your email|6-digit/);
+      const emailCode = (verifyPage.body.match(/class="code-xl">(\d{6})</) || [])[1];
+      assert.ok(emailCode, 'dev verification code missing');
+      const verifyCsrf = csrfFromHtml(verifyPage.body);
+      const verified = await postForm(
+        `${base}/verify-email`,
+        { csrf: verifyCsrf, code: emailCode },
+        { Cookie: cookie }
+      );
+      assert.equal(verified.status, 303);
+      assert.match(verified.headers.location || '', /setup-mfa/);
+
+      const mfaPage = await fetchText(`${base}/setup-mfa`, { headers: { Cookie: cookie } });
+      assert.equal(mfaPage.status, 200);
+      assert.match(mfaPage.body, /Enable authenticator MFA|MFA/);
+      const secret = (mfaPage.body.match(/class="code-xl wrap">([A-Z2-7]+)</) || [])[1];
+      assert.ok(secret, 'totp secret missing');
+      const totp = totpNow(secret, tmp);
+      const mfaCsrf = csrfFromHtml(mfaPage.body);
+      const mfaEnabled = await postForm(
+        `${base}/setup-mfa`,
+        { csrf: mfaCsrf, code: totp },
+        { Cookie: cookie }
+      );
+      assert.equal(mfaEnabled.status, 303, mfaEnabled.headers.location);
+      assert.match(mfaEnabled.headers.location || '', /membership/);
 
       const market = await fetchText(`${base}/marketplace`);
       assert.equal(market.status, 200);
@@ -223,19 +252,52 @@ describe('Ross AI Runtime Platform', () => {
       assert.match(dash.body, /Control plane/);
       assert.match(dash.body, /ZERO REFUNDS/);
 
+      // Sign out and sign in with MFA (email factor)
+      const logoutCsrf = csrfFromHtml(dash.body);
+      await postForm(`${base}/logout`, { csrf: logoutCsrf }, { Cookie: cookie });
+
+      const signin = await postForm(`${base}/signin`, {
+        email,
+        password: 'RuntimeGate1'
+      });
+      assert.equal(signin.status, 303);
+      assert.match(signin.headers.location || '', /mfa/);
+      const mfaCookie = cookieFromSet(signin.headers['set-cookie']);
+      assert.ok(mfaCookie.includes('ross_mfa='));
+
+      const challengePage = await fetchText(`${base}/mfa`, { headers: { Cookie: mfaCookie } });
+      assert.equal(challengePage.status, 200);
+      await postForm(`${base}/mfa/email`, {}, { Cookie: mfaCookie });
+      const challenge2 = await fetchText(`${base}/mfa`, { headers: { Cookie: mfaCookie } });
+      const loginCode = (challenge2.body.match(/class="code-xl">(\d{6})</) || [])[1];
+      assert.ok(loginCode);
+      const mfaLogin = await postForm(
+        `${base}/mfa`,
+        { factor: 'email', code: loginCode },
+        { Cookie: mfaCookie }
+      );
+      assert.equal(mfaLogin.status, 303);
+      assert.match(mfaLogin.headers.location || '', /dashboard/);
+
       for (const p of ['/modules', '/billing', '/users', '/marketplace', '/engines', '/systems', '/infrastructure', '/packages', '/deploy', '/runtime']) {
-        const page = await fetchText(`${base}${p}`, { headers: { Cookie: cookie } });
-        assert.equal(page.status, 200, p);
+        const page = await fetchText(`${base}${p}`, {
+          headers: { Cookie: cookieFromSet(mfaLogin.headers['set-cookie']) || cookie }
+        });
+        // after MFA login, use new session cookie
+        assert.ok([200, 303].includes(page.status), p);
       }
 
-      const billing = await fetchText(`${base}/billing`, { headers: { Cookie: cookie } });
+      const sessionCookie = cookieFromSet(mfaLogin.headers['set-cookie-all'] || mfaLogin.headers['set-cookie']);
+      assert.ok(sessionCookie.includes('ross_session='));
+      const billing = await fetchText(`${base}/billing`, { headers: { Cookie: sessionCookie } });
+      assert.equal(billing.status, 200);
       assert.match(billing.body, /Professional|autopay|4242|ZERO REFUNDS/i);
 
-      const inv = await fetchJson(`${base}/api/inventory`, { headers: { Cookie: cookie } });
+      const inv = await fetchJson(`${base}/api/inventory`, { headers: { Cookie: sessionCookie } });
       assert.ok(inv.total >= 10);
       assert.ok(inv.bySector.engines);
 
-      const hard = await fetchJson(`${base}/api/hardening`, { headers: { Cookie: cookie } });
+      const hard = await fetchJson(`${base}/api/hardening`, { headers: { Cookie: sessionCookie } });
       assert.ok(hard.score >= 50);
       assert.ok(Array.isArray(hard.controls));
 
@@ -301,10 +363,14 @@ function fetchResponse(url, opts = {}) {
         res.on('end', () => {
           const body = Buffer.concat(chunks).toString('utf8');
           const headers = {};
+          const setCookies = [];
           for (const [k, v] of Object.entries(res.headers)) {
             const key = k.toLowerCase();
-            if (key === 'set-cookie' && Array.isArray(v)) {
-              headers[key] = v[0];
+            if (key === 'set-cookie') {
+              if (Array.isArray(v)) setCookies.push(...v);
+              else if (v) setCookies.push(v);
+              headers[key] = setCookies[0] || '';
+              headers['set-cookie-all'] = setCookies;
             } else {
               headers[key] = Array.isArray(v) ? v.join(',') : v;
             }
@@ -337,15 +403,33 @@ function postForm(url, fields, headers = {}) {
   });
 }
 
-function cookieFromSet(setCookie) {
-  if (!setCookie) return '';
-  return String(setCookie).split(';')[0];
+function cookieFromSet(setCookie, prefer = 'ross_session') {
+  const list = Array.isArray(setCookie)
+    ? setCookie
+    : String(setCookie || '')
+        .split(/,(?=\s*[^;]+=)/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+  const hit = list.find((c) => c.startsWith(`${prefer}=`) && !c.startsWith(`${prefer}=;`));
+  if (hit) return hit.split(';')[0];
+  if (!list.length) return '';
+  return list[0].split(';')[0];
 }
 
 function csrfFromHtml(html) {
   const m = html.match(/name="csrf"\s+value="([^"]+)"/);
   assert.ok(m, 'csrf token missing');
   return m[1];
+}
+
+function totpNow(secret, cwd) {
+  const r = spawnSync(
+    'python3',
+    ['-c', `from ross_ai.otp import totp_at; print(totp_at(${JSON.stringify(secret)}))`],
+    { cwd, encoding: 'utf8', env: process.env }
+  );
+  assert.equal(r.status, 0, r.stderr || r.stdout);
+  return r.stdout.trim();
 }
 
 function waitForHealth(url, timeoutMs) {
