@@ -10,9 +10,11 @@ package-lock.json
 npm-shrinkwrap.json
 yarn.lock
 pnpm-lock.yaml
+__pycache__/
+*.py[cod]
+.venv/
 
 # Ross AI Runtime Platform
-.venv/
 workspace/dist/*
 !workspace/dist/.gitkeep
 workspace/plans/*.json
