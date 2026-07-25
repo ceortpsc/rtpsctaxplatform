@@ -12,8 +12,10 @@
 1. Apply environment-specific Terraform placeholders after review.
 2. Provision secrets in the approved secret manager.
 3. Run CI quality gates: lint, test, build, compliance.
-4. Deploy services and workers with environment-specific configuration.
-5. Validate `/health` and `/metadata` endpoints.
+4. Run the live production compliance report and archive the checklist log:
+   `./scripts/aol run compliance` (add `-- --live` when services are up).
+5. Deploy services and workers with environment-specific configuration.
+6. Validate `/health` and `/metadata` endpoints.
 
 ## Incident Response
 
