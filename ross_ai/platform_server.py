@@ -15,6 +15,15 @@ from ross_ai import __brand__, __product__, __version__
 from ross_ai.auth import AuthService
 from ross_ai.billing import BillingService, tokenize_card
 from ross_ai.events import EventBus
+from ross_ai.execution import ExecutionService
+from ross_ai.github_oauth import (
+    authorize_url,
+    dev_simulate_profile,
+    exchange_code,
+    fetch_github_profile,
+    github_configured,
+    new_oauth_state,
+)
 from ross_ai.hardening import (
     RateLimiter,
     apply_security_headers,
@@ -31,6 +40,7 @@ from ross_ai.mailer import send_code_email, smtp_configured
 from ross_ai.membership import get_tier, list_tiers, validate_tier_id
 from ross_ai.otp import OtpService, otpauth_uri, verify_totp
 from ross_ai.paths import DEFAULT_HOST, DEFAULT_PORT, dist_path, plans_path
+from ross_ai.rbac import RbacService, rbac_matrix
 from ross_ai.store import JsonStore
 from ross_ai.web import pages
 from ross_ai.websocket import WebSocketHub, accept_key, decode_frames, encode_json
@@ -47,7 +57,10 @@ class AppState:
         self.auth = AuthService(self.store)
         self.billing = BillingService(self.store)
         self.otp = OtpService(self.store)
+        self.rbac = RbacService(self.store)
+        self.execution = ExecutionService(self.store, root)
         self.bus = EventBus()
+        self._oauth_states: dict[str, float] = {}
         self.hub = WebSocketHub()
         self.limiter = RateLimiter(limit=120, window_sec=60)
         self.auth_limiter = RateLimiter(limit=20, window_sec=60)
@@ -203,6 +216,31 @@ class RossHandler(BaseHTTPRequestHandler):
             return "/membership"
         return "/dashboard"
 
+    def _require_perm(self, user: dict | None, permission: str) -> bool:
+        if not user:
+            self._redirect("/signin")
+            return False
+        email = user["email"]
+        allowed = self.state.rbac.can(email, permission)
+        self.state.rbac.record_decision(email, permission, allowed)
+        if not allowed:
+            self._send(
+                403,
+                json.dumps(
+                    {
+                        "error": "forbidden",
+                        "permission": permission,
+                        "role": user.get("role"),
+                        "message": f"Missing permission: {permission}",
+                    },
+                    indent=2,
+                ).encode()
+                + b"\n",
+                "application/json; charset=utf-8",
+            )
+            return False
+        return True
+
     # --- routing ---
     def do_HEAD(self) -> None:  # noqa: N802
         self.do_GET(head_only=True)
@@ -356,6 +394,8 @@ class RossHandler(BaseHTTPRequestHandler):
             "/users",
             "/verify-email",
             "/setup-mfa",
+            "/rbac",
+            "/execute",
         }
         if path in protected and not user:
             self._redirect("/signin")
@@ -437,6 +477,8 @@ class RossHandler(BaseHTTPRequestHandler):
             "/payment",
             "/billing",
             "/users",
+            "/rbac",
+            "/execute",
         }
         if path in membership_gated and user:
             if not user.get("emailVerified"):
@@ -504,10 +546,120 @@ class RossHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/users":
+            if not self._require_perm(user, "users.read"):
+                return
+            members = self.state.billing.list_members()
+            # enrich roles
+            for m in members:
+                m["role"] = self.state.rbac.role_of(m["email"])
             self._html(
                 200,
-                pages.users_page(members=self.state.billing.list_members(), user=user, csrf=csrf),
+                pages.users_page(members=members, user=user, csrf=csrf),
             )
+            return
+
+        if path == "/rbac":
+            if not self._require_perm(user, "roles.read"):
+                return
+            members = self.state.billing.list_members()
+            for m in members:
+                m["role"] = self.state.rbac.role_of(m["email"])
+            self._html(
+                200,
+                pages.rbac_page(
+                    matrix=rbac_matrix(),
+                    decisions=self.state.rbac.recent_decisions(),
+                    members=members,
+                    csrf=csrf,
+                    user=user,
+                ),
+            )
+            return
+
+        if path == "/execute":
+            if not self._require_perm(user, "code.execute"):
+                return
+            self._html(
+                200,
+                pages.execute_page(
+                    scripts=self.state.execution.list_runnable(user["email"]),
+                    executions=self.state.execution.recent(
+                        None if self.state.rbac.can(user["email"], "admin.audit.read") else user["email"]
+                    ),
+                    csrf=csrf,
+                    user=user,
+                ),
+            )
+            return
+
+        if path == "/auth/github":
+            state = new_oauth_state()
+            self.state._oauth_states[state] = __import__("time").time() + 600
+            if not github_configured():
+                # Dev integration path — transparent scaffold without GitHub App secrets
+                self._redirect(f"/auth/github/callback?code=dev&state={state}")
+                return
+            self._redirect(authorize_url(state))
+            return
+
+        if path == "/auth/github/callback":
+            qs = parse_qs(parsed.query)
+            state = (qs.get("state") or [""])[0]
+            code = (qs.get("code") or [""])[0]
+            exp = self.state._oauth_states.pop(state, None)
+            if not exp or exp < __import__("time").time():
+                self._html(
+                    400,
+                    pages.gate_page(
+                        mode="signin",
+                        action="/signin",
+                        heading="Sign in",
+                        sub="GitHub state invalid or expired.",
+                        submit="Continue",
+                        error="GitHub OAuth state mismatch. Try again.",
+                        user=None,
+                    ),
+                )
+                return
+            try:
+                if not github_configured() and code == "dev":
+                    profile = dev_simulate_profile(login=f"ross-dev-{state[:6]}")
+                else:
+                    token_payload = exchange_code(code)
+                    access = token_payload.get("access_token")
+                    if not access:
+                        raise RuntimeError(token_payload.get("error_description") or "no access_token")
+                    profile = fetch_github_profile(access)
+                session, created = self.state.auth.upsert_github_user(profile)
+                self.state.bus.publish(
+                    "github.auth",
+                    email=session.email,
+                    message=("github account created" if created else "github sign-in")
+                    + f" · {profile.get('login')}",
+                )
+                cookie = session_cookie(session.token, secure=self._wants_secure_cookie())
+                profile_user = self.state.auth.user_profile(session.email) or {}
+                self._redirect(self._onboarding_destination(profile_user), [("Set-Cookie", cookie)])
+            except Exception as err:  # noqa: BLE001
+                self._html(
+                    400,
+                    pages.gate_page(
+                        mode="signin",
+                        action="/signin",
+                        heading="Sign in",
+                        sub="GitHub authentication failed.",
+                        submit="Continue",
+                        error=str(err),
+                        user=None,
+                    ),
+                )
+            return
+
+        if path == "/api/rbac":
+            if not user or not self._require_perm(user, "roles.read"):
+                return
+            code, body, ctype = _json_bytes(rbac_matrix())
+            self._send(code, body, ctype)
             return
 
         if path == "/dashboard":
@@ -991,6 +1143,86 @@ class RossHandler(BaseHTTPRequestHandler):
                 message=f"{tier['name']} · ${amount} · ****{method.get('last4')} · zero refunds",
             )
             self._redirect("/dashboard")
+            return
+
+        if path == "/rbac/assign":
+            if not user or not session:
+                self._redirect("/signin")
+                return
+            if not self.state.auth.validate_csrf(session, form.get("csrf")):
+                self._send(403, b'{"error":"csrf"}\n', "application/json; charset=utf-8")
+                return
+            if not self._require_perm(user, "roles.assign"):
+                return
+            ok, msg = self.state.rbac.assign_role(user["email"], form.get("email", ""), form.get("role", ""))
+            members = self.state.billing.list_members()
+            for m in members:
+                m["role"] = self.state.rbac.role_of(m["email"])
+            self._html(
+                200 if ok else 403,
+                pages.rbac_page(
+                    matrix=rbac_matrix(),
+                    decisions=self.state.rbac.recent_decisions(),
+                    members=members,
+                    csrf=session.csrf,
+                    user=user,
+                    flash=msg,
+                ),
+            )
+            return
+
+        if path == "/execute":
+            if not user or not session:
+                self._redirect("/signin")
+                return
+            if not self.state.auth.validate_csrf(session, form.get("csrf")):
+                self._send(403, b'{"error":"csrf"}\n', "application/json; charset=utf-8")
+                return
+            if not self._require_perm(user, "code.execute"):
+                return
+            result = self.state.execution.execute(user["email"], form.get("scriptId", ""))
+            self.state.bus.publish(
+                "code.execute",
+                email=user["email"],
+                message=f"{result.get('scriptId')} ok={result.get('ok')}",
+            )
+            self._html(
+                200,
+                pages.execute_page(
+                    scripts=self.state.execution.list_runnable(user["email"]),
+                    executions=self.state.execution.recent(
+                        None if self.state.rbac.can(user["email"], "admin.audit.read") else user["email"]
+                    ),
+                    csrf=session.csrf,
+                    result=result,
+                    user=user,
+                ),
+            )
+            return
+
+        if path == "/execute/save":
+            if not user or not session:
+                self._redirect("/signin")
+                return
+            if not self.state.auth.validate_csrf(session, form.get("csrf")):
+                self._send(403, b'{"error":"csrf"}\n', "application/json; charset=utf-8")
+                return
+            if not self._require_perm(user, "code.scripts.write"):
+                return
+            ok, msg, _path = self.state.execution.save_personal_script(
+                user["email"], form.get("name", ""), form.get("source", "")
+            )
+            self._html(
+                200 if ok else 400,
+                pages.execute_page(
+                    scripts=self.state.execution.list_runnable(user["email"]),
+                    executions=self.state.execution.recent(user["email"]),
+                    csrf=session.csrf,
+                    flash=msg if ok else None,
+                    error=None if ok else msg,
+                    user=user,
+                ),
+            )
             return
 
         if path == "/logout":

@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from ross_ai.store import JsonStore
+from ross_ai.rbac import DEFAULT_ROLE
 
 PBKDF2_ITERATIONS = 210_000
 SESSION_TTL_SEC = 60 * 60 * 12  # 12h
@@ -73,11 +74,12 @@ class AuthService:
                 "email": email,
                 "name": name,
                 "password": _hash_password(password),
-                "role": "operator",
+                "role": DEFAULT_ROLE,
                 "createdAt": time.time(),
                 "emailVerified": False,
                 "mfaEnabled": False,
                 "mfaSecret": None,
+                "authProviders": ["password"],
             }
             data.setdefault("audit", []).append(
                 {"at": time.time(), "action": "signup", "email": email}
@@ -94,7 +96,7 @@ class AuthService:
         email = email.strip().lower()
         data = self.store.get()
         user = (data.get("users") or {}).get(email)
-        if not user or not _verify_password(password, user.get("password", "")):
+        if not user or not user.get("password") or not _verify_password(password, user.get("password", "")):
             return False, "Invalid email or password.", None, None
 
         if user.get("mfaEnabled") and user.get("mfaSecret"):
@@ -248,14 +250,65 @@ class AuthService:
         return {
             "email": user["email"],
             "name": user.get("name") or email,
-            "role": user.get("role", "operator"),
+            "role": user.get("role", DEFAULT_ROLE),
             "membership": mem or None,
             "membershipActive": bool(mem.get("status") == "active"),
             "tierId": mem.get("tierId"),
             "tierName": mem.get("tierName"),
             "emailVerified": bool(user.get("emailVerified")),
             "mfaEnabled": bool(user.get("mfaEnabled")),
+            "github": user.get("github"),
+            "authProviders": list(user.get("authProviders") or ["password"]),
         }
+
+    def upsert_github_user(self, profile: dict[str, Any]) -> tuple[Session, bool]:
+        """Create or link a GitHub-authenticated user. Returns (session, created)."""
+        email = (profile.get("email") or "").strip().lower()
+        if not email:
+            raise ValueError("GitHub profile missing email")
+        created = {"flag": False}
+
+        def mutate(data: dict[str, Any]) -> None:
+            users = data.setdefault("users", {})
+            user = users.get(email)
+            gh = {
+                "id": str(profile.get("id")),
+                "login": profile.get("login"),
+                "avatarUrl": profile.get("avatarUrl"),
+                "htmlUrl": profile.get("htmlUrl"),
+            }
+            if not user:
+                created["flag"] = True
+                users[email] = {
+                    "email": email,
+                    "name": profile.get("name") or profile.get("login") or email,
+                    "password": None,
+                    "role": DEFAULT_ROLE,
+                    "createdAt": time.time(),
+                    "emailVerified": True,  # GitHub verified email path
+                    "mfaEnabled": False,
+                    "mfaSecret": None,
+                    "github": gh,
+                    "authProviders": ["github"],
+                }
+                action = "signup.github"
+            else:
+                user["github"] = gh
+                providers = set(user.get("authProviders") or [])
+                providers.add("github")
+                # GitHub verified emails count as verified
+                if not user.get("emailVerified"):
+                    user["emailVerified"] = True
+                user["authProviders"] = sorted(providers)
+                if not user.get("name"):
+                    user["name"] = profile.get("name") or profile.get("login")
+                action = "login.github"
+            data.setdefault("audit", []).append(
+                {"at": time.time(), "action": action, "email": email, "github": gh.get("login")}
+            )
+
+        self.store.update(mutate)
+        return self._create_session(email), bool(created["flag"])
 
     def validate_csrf(self, session: Session | None, token: str | None) -> bool:
         if not session or not token:

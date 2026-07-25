@@ -25,13 +25,13 @@ def layout(
         mem_label = esc(user.get("tierName") or "Pending membership")
         auth_links = f"""
         <a class="nav-link" href="/dashboard">Control Plane</a>
+        <a class="nav-link" href="/execute">Execute</a>
+        <a class="nav-link" href="/rbac">RBAC</a>
         <a class="nav-link" href="/marketplace">Marketplace</a>
         <a class="nav-link" href="/billing">Billing</a>
         <a class="nav-link" href="/users">Users</a>
         <a class="nav-link" href="/legal">Policy</a>
-        <a class="nav-link" href="/modules">System</a>
-        <a class="nav-link" href="/infrastructure">Foundation</a>
-        <span class="nav-user">{esc(user.get('name'))} · {mem_label}</span>
+        <span class="nav-user">{esc(user.get('name'))} · {mem_label} · {esc(user.get('role'))}</span>
         <form class="inline" method="post" action="/logout">
           <input type="hidden" name="csrf" value="{esc(csrf)}" />
           <button type="submit" class="nav-link btn-link">Sign out</button>
@@ -135,6 +135,7 @@ def gate_page(
       </label>
       <button class="btn primary block" type="submit">{esc(submit)}</button>
     </form>
+    <a class="btn ghost block github-btn" href="/auth/github">Continue with GitHub</a>
     {alt}
   </div>
 </main>
@@ -744,3 +745,130 @@ def mfa_challenge_page(
 </main>
 """
     return layout(title="MFA", body=body, nav="mfa", **kwargs)
+
+
+def rbac_page(*, matrix: dict, decisions: list, members: list, csrf: str, **kwargs) -> str:
+    role_cards = []
+    for r in matrix.get("roles") or []:
+        perms = "".join(f"<li><code>{esc(p)}</code></li>" for p in (r.get("permissions") or [])[:8])
+        more = len(r.get("permissions") or []) - 8
+        extra = f"<li class='muted'>+{more} more</li>" if more > 0 else ""
+        role_cards.append(
+            f"""
+            <article class="mod">
+              <header><h3>{esc(r.get('id'))}</h3><span class="tag">{esc(r.get('permissionCount'))} perms</span></header>
+              <p>{esc(r.get('description'))}</p>
+              <ul class="list">{perms}{extra}</ul>
+            </article>
+            """
+        )
+    discipline = "".join(f"<li>{esc(d)}</li>" for d in matrix.get("discipline") or [])
+    dec = "".join(
+        f"<li><code>{'allow' if d.get('allowed') else 'deny'}</code> {esc(d.get('email') or d.get('actor'))} · {esc(d.get('permission'))} · {esc(d.get('detail') or '')}</li>"
+        for d in decisions[::-1][:20]
+    ) or "<li class='muted'>No RBAC decisions yet</li>"
+    options = "".join(f"<option value='{esc(r['id'])}'>{esc(r['id'])}</option>" for r in matrix.get("roles") or [])
+    user_opts = "".join(f"<option value='{esc(m.get('email'))}'>{esc(m.get('email'))} ({esc(m.get('role'))})</option>" for m in members)
+    body = f"""
+<main class="console">
+  <header class="console-head animate-in">
+    <div>
+      <p class="eyebrow">RBAC</p>
+      <h1>Roles &amp; permissions</h1>
+      <p class="lede tight">Strict, disciplined, deny-by-default access control. Transparent decision log.</p>
+    </div>
+  </header>
+  <section class="panel animate-in delay-1">
+    <h2>Discipline</h2>
+    <ul class="legal-list">{discipline}</ul>
+  </section>
+  <div class="mod-grid animate-in delay-2">{''.join(role_cards)}</div>
+  <section class="panel animate-in delay-3">
+    <h2>Assign role</h2>
+    <form method="post" action="/rbac/assign" class="gate-form">
+      <input type="hidden" name="csrf" value="{esc(csrf)}" />
+      <label>User<select name="email" required>{user_opts}</select></label>
+      <label>Role<select name="role" required>{options}</select></label>
+      <button class="btn primary" type="submit">Assign</button>
+    </form>
+  </section>
+  <section class="panel">
+    <h2>Recent RBAC decisions</h2>
+    <ul class="feed">{dec}</ul>
+  </section>
+</main>
+"""
+    return layout(title="RBAC", body=body, nav="rbac", csrf=csrf, **kwargs)
+
+
+def execute_page(
+    *,
+    scripts: list,
+    executions: list,
+    csrf: str,
+    result: dict | None = None,
+    error: str | None = None,
+    flash: str | None = None,
+    **kwargs,
+) -> str:
+    opts = "".join(
+        f"<option value='{esc(s.get('id'))}'>{esc(s.get('scope'))}: {esc(s.get('name'))}</option>"
+        for s in scripts
+    ) or "<option value=''>No scripts available</option>"
+    err = f'<p class="form-error">{esc(error)}</p>' if error else ""
+    flash_h = f'<p class="ok-msg">{esc(flash)}</p>' if flash else ""
+    result_h = ""
+    if result:
+        result_h = f"""
+        <section class="panel">
+          <h2>Last execution (transparent)</h2>
+          <ul class="list">
+            <li>ok: <strong>{esc(result.get('ok'))}</strong></li>
+            <li>script: {esc(result.get('scriptId'))}</li>
+            <li>path: {esc(result.get('path'))}</li>
+            <li>duration: {esc(result.get('durationMs'))} ms</li>
+            <li>policy: {esc(result.get('policy') or 'clean')}</li>
+          </ul>
+          <h3>stdout</h3>
+          <pre class="exec-out">{esc(result.get('stdout') or '(empty)')}</pre>
+          <h3>stderr</h3>
+          <pre class="exec-out">{esc(result.get('stderr') or '(empty)')}</pre>
+        </section>
+        """
+    hist = "".join(
+        f"<li><code>{'ok' if e.get('ok') else 'fail'}</code> {esc(e.get('scriptId'))} · {esc(e.get('durationMs'))}ms · {esc(e.get('email'))}</li>"
+        for e in executions[::-1][:15]
+    ) or "<li class='muted'>No executions yet</li>"
+    body = f"""
+<main class="console">
+  <header class="console-head animate-in">
+    <div>
+      <p class="eyebrow">Transparent code execution</p>
+      <h1>Run scripts for your purposes</h1>
+      <p class="lede tight">RBAC-gated execution with AST policy checks. Every run is audited with full stdout/stderr visibility.</p>
+    </div>
+  </header>
+  {err}{flash_h}
+  <div class="grid-2 animate-in delay-1">
+    <form method="post" action="/execute" class="panel gate-form">
+      <input type="hidden" name="csrf" value="{esc(csrf)}" />
+      <h2>Execute</h2>
+      <label>Script<select name="scriptId" required>{opts}</select></label>
+      <button class="btn primary block" type="submit">Execute transparently</button>
+    </form>
+    <form method="post" action="/execute/save" class="panel gate-form">
+      <input type="hidden" name="csrf" value="{esc(csrf)}" />
+      <h2>Save personal script</h2>
+      <label>Name<input name="name" required placeholder="my_job.py" /></label>
+      <label>Source<textarea name="source" rows="10" required placeholder="print('hello from my script')"></textarea></label>
+      <button class="btn ghost block" type="submit">Save for my use</button>
+    </form>
+  </div>
+  {result_h}
+  <section class="panel animate-in delay-2">
+    <h2>Execution audit</h2>
+    <ul class="feed">{hist}</ul>
+  </section>
+</main>
+"""
+    return layout(title="Execute", body=body, nav="execute", csrf=csrf, **kwargs)

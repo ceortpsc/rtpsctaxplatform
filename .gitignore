@@ -19,4 +19,5 @@ workspace/dist/*
 !workspace/dist/.gitkeep
 workspace/plans/*.json
 workspace/data/
+workspace/user-scripts/
 !workspace/**/.gitkeep

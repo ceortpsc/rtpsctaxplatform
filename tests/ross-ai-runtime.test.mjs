@@ -279,16 +279,16 @@ describe('Ross AI Runtime Platform', () => {
       assert.equal(mfaLogin.status, 303);
       assert.match(mfaLogin.headers.location || '', /dashboard/);
 
-      for (const p of ['/modules', '/billing', '/users', '/marketplace', '/engines', '/systems', '/infrastructure', '/packages', '/deploy', '/runtime']) {
-        const page = await fetchText(`${base}${p}`, {
-          headers: { Cookie: cookieFromSet(mfaLogin.headers['set-cookie']) || cookie }
-        });
-        // after MFA login, use new session cookie
-        assert.ok([200, 303].includes(page.status), p);
-      }
-
       const sessionCookie = cookieFromSet(mfaLogin.headers['set-cookie-all'] || mfaLogin.headers['set-cookie']);
       assert.ok(sessionCookie.includes('ross_session='));
+
+      for (const p of ['/modules', '/billing', '/users', '/marketplace', '/engines', '/systems', '/infrastructure', '/packages', '/deploy', '/runtime', '/execute', '/rbac']) {
+        const page = await fetchText(`${base}${p}`, {
+          headers: { Cookie: sessionCookie }
+        });
+        assert.equal(page.status, 200, p);
+      }
+
       const billing = await fetchText(`${base}/billing`, { headers: { Cookie: sessionCookie } });
       assert.equal(billing.status, 200);
       assert.match(billing.body, /Professional|autopay|4242|ZERO REFUNDS/i);
@@ -303,6 +303,37 @@ describe('Ross AI Runtime Platform', () => {
 
       const css = await fetchResponse(`${base}/static/app.css`);
       assert.equal(css.status, 200);
+
+      // Transparent execution
+      const execPage = await fetchText(`${base}/execute`, { headers: { Cookie: sessionCookie } });
+      assert.equal(execPage.status, 200);
+      assert.match(execPage.body, /Transparent code execution|Execute/);
+      const execCsrf = csrfFromHtml(execPage.body);
+      const ran = await postForm(
+        `${base}/execute`,
+        { csrf: execCsrf, scriptId: 'shared:hello.py' },
+        { Cookie: sessionCookie }
+      );
+      assert.equal(ran.status, 200);
+      assert.match(ran.headers['content-type'] || '', /html/);
+      const ranBody = await ran.text();
+      assert.match(ranBody, /hello from Ross|Last execution|stdout/i);
+
+      // RBAC matrix
+      const rbac = await fetchText(`${base}/rbac`, { headers: { Cookie: sessionCookie } });
+      assert.equal(rbac.status, 200);
+      assert.match(rbac.body, /Roles|operator|permissions/i);
+      const rbacApi = await fetchJson(`${base}/api/rbac`, { headers: { Cookie: sessionCookie } });
+      assert.ok(rbacApi.roles.length >= 6);
+      assert.equal(rbacApi.defaultRole, 'operator');
+
+      // GitHub create-account integration (dev simulate)
+      const gh = await fetchResponse(`${base}/auth/github`, { method: 'GET' });
+      assert.equal(gh.status, 303);
+      assert.match(gh.headers.location || '', /auth\/github\/callback/);
+      const cb = await fetchResponse(`${base}${gh.headers.location}`);
+      assert.equal(cb.status, 303);
+      assert.ok(cookieFromSet(cb.headers['set-cookie-all'] || cb.headers['set-cookie']).includes('ross_session='));
     } finally {
       if (child && !child.killed) {
         child.kill('SIGTERM');

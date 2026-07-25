@@ -420,7 +420,27 @@ table.data th { color: var(--muted); font-weight: 600; }
 }
 .break { word-break: break-all; }
 .ok-msg { color: var(--ok); }
-.inline-resend { margin-top: 0.75rem; }
+.exec-out {
+  background: rgba(0,0,0,0.45);
+  border: 1px solid var(--line);
+  padding: 0.75rem;
+  overflow: auto;
+  max-height: 240px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+}
+textarea {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  padding: 0.7rem 0.75rem;
+  border-radius: 2px;
+  font: inherit;
+  font-family: var(--font-mono);
+  width: 100%;
+}
+.github-btn { margin-top: 0.75rem; text-align: center; }
 @media (max-width: 520px) {
   .strip { grid-template-columns: 1fr; }
   .hero { padding-top: 6vh; }

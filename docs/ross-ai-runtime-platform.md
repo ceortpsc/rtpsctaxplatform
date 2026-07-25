@@ -46,6 +46,22 @@ python ross.py dev
 | `/health` `/metadata` | Probe endpoints |
 | `/api/inventory` `/api/hardening` `/api/events` | Auth JSON APIs |
 
+## GitHub account integration
+
+- `/auth/github` starts OAuth (or local **dev simulate** when `ROSS_GITHUB_*` is unset)
+- `/auth/github/callback` creates/links the account (email verified via GitHub)
+- MFA enrollment still required after GitHub create/sign-in
+
+## RBAC (strict)
+
+Roles: `viewer` → `operator` → `billing` → `engineer` → `admin` → `owner`  
+Deny-by-default permissions; decisions logged. UI: `/rbac` · API: `/api/rbac`
+
+## Transparent code execution
+
+`/execute` — run shared or personal scripts for your own purposes under AST policy.  
+Stdout/stderr/duration always audited. Save personal scripts with `code.scripts.write`.
+
 ## Email verification & MFA / 2FA
 
 1. `/signup` → issues a **6-digit email verification code** (`/verify-email`)  
