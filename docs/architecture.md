@@ -64,5 +64,6 @@ Local/Dev/Stage/Prod
     |
     +-- Terraform env folder -> platform-service module -> compute/network/secret placeholders
     +-- CI workflow -> lint/test/build/compliance checks
+    +-- Production compliance runner -> checklist report + audit log
     +-- Docker Compose -> local Postgres/Redis placeholders for iterative development
 ```
