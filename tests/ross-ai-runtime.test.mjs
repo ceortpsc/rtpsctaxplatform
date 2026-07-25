@@ -155,19 +155,81 @@ describe('Ross AI Runtime Platform', () => {
         password: 'RuntimeGate1'
       });
       assert.equal(signup.status, 303);
-      assert.match(signup.headers.location || '', /dashboard/);
+      assert.match(signup.headers.location || '', /membership/);
       const cookie = cookieFromSet(signup.headers['set-cookie']);
       assert.ok(cookie.includes('ross_session='));
+
+      const market = await fetchText(`${base}/marketplace`);
+      assert.equal(market.status, 200);
+      assert.match(market.body, /Starter/);
+      assert.match(market.body, /Professional/);
+      assert.match(market.body, /Firm/);
+      assert.match(market.body, /Enterprise/);
+      assert.match(market.body, /ZERO REFUNDS/);
+
+      const legal = await fetchText(`${base}/legal`);
+      assert.equal(legal.status, 200);
+      assert.match(legal.body, /Disclosures/);
+      assert.match(legal.body, /ABSOLUTELY ZERO/);
+
+      const memPage = await fetchText(`${base}/membership`, { headers: { Cookie: cookie } });
+      assert.equal(memPage.status, 200);
+      assert.match(memPage.body, /Membership election|Choose your tier/);
+      const csrf = csrfFromHtml(memPage.body);
+
+      const elect = await postForm(
+        `${base}/membership`,
+        {
+          csrf,
+          tierId: 'professional',
+          cadence: 'monthly',
+          accept_0: '1',
+          accept_1: '1',
+          accept_2: '1',
+          accept_3: '1',
+          zeroRefunds: '1'
+        },
+        { Cookie: cookie }
+      );
+      assert.equal(elect.status, 303);
+      assert.match(elect.headers.location || '', /payment/);
+
+      const payPage = await fetchText(`${base}/payment`, { headers: { Cookie: cookie } });
+      assert.equal(payPage.status, 200);
+      assert.match(payPage.body, /Payment method on file/);
+      const payCsrf = csrfFromHtml(payPage.body);
+
+      const pay = await postForm(
+        `${base}/payment`,
+        {
+          csrf: payCsrf,
+          cardName: 'Ops Lead',
+          cardNumber: '4242424242424242',
+          expMonth: '12',
+          expYear: '2030',
+          cvc: '123',
+          zip: '10001',
+          autopay: '1',
+          zeroRefunds: '1',
+          disclosures: '1'
+        },
+        { Cookie: cookie }
+      );
+      assert.equal(pay.status, 303, await pay.text?.() || pay.headers.location);
+      assert.match(pay.headers.location || '', /dashboard/);
 
       const dash = await fetchText(`${base}/dashboard`, { headers: { Cookie: cookie } });
       assert.equal(dash.status, 200);
       assert.match(dash.body, /Control plane/);
-      assert.match(dash.body, /Live stream/);
+      assert.match(dash.body, /ZERO REFUNDS/);
 
-      for (const p of ['/modules', '/engines', '/systems', '/infrastructure', '/packages', '/deploy', '/runtime']) {
+      for (const p of ['/modules', '/billing', '/users', '/marketplace', '/engines', '/systems', '/infrastructure', '/packages', '/deploy', '/runtime']) {
         const page = await fetchText(`${base}${p}`, { headers: { Cookie: cookie } });
         assert.equal(page.status, 200, p);
       }
+
+      const billing = await fetchText(`${base}/billing`, { headers: { Cookie: cookie } });
+      assert.match(billing.body, /Professional|autopay|4242|ZERO REFUNDS/i);
 
       const inv = await fetchJson(`${base}/api/inventory`, { headers: { Cookie: cookie } });
       assert.ok(inv.total >= 10);
@@ -262,13 +324,14 @@ function fetchResponse(url, opts = {}) {
   });
 }
 
-function postForm(url, fields) {
+function postForm(url, fields, headers = {}) {
   const body = new URLSearchParams(fields).toString();
   return fetchResponse(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': Buffer.byteLength(body)
+      'Content-Length': Buffer.byteLength(body),
+      ...headers
     },
     body
   });
@@ -276,7 +339,13 @@ function postForm(url, fields) {
 
 function cookieFromSet(setCookie) {
   if (!setCookie) return '';
-  return String(setCookie).split(',')[0].split(';')[0];
+  return String(setCookie).split(';')[0];
+}
+
+function csrfFromHtml(html) {
+  const m = html.match(/name="csrf"\s+value="([^"]+)"/);
+  assert.ok(m, 'csrf token missing');
+  return m[1];
 }
 
 function waitForHealth(url, timeoutMs) {

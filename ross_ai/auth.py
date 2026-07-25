@@ -136,10 +136,15 @@ class AuthService:
         user = (self.store.get().get("users") or {}).get(email)
         if not user:
             return None
+        mem = user.get("membership") or {}
         return {
             "email": user["email"],
             "name": user.get("name") or email,
             "role": user.get("role", "operator"),
+            "membership": mem or None,
+            "membershipActive": bool(mem.get("status") == "active"),
+            "tierId": mem.get("tierId"),
+            "tierName": mem.get("tierName"),
         }
 
     def validate_csrf(self, session: Session | None, token: str | None) -> bool:

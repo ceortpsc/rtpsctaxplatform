@@ -13,6 +13,7 @@ from urllib.parse import parse_qs, urlparse
 
 from ross_ai import __brand__, __product__, __version__
 from ross_ai.auth import AuthService
+from ross_ai.billing import BillingService, tokenize_card
 from ross_ai.events import EventBus
 from ross_ai.hardening import (
     RateLimiter,
@@ -23,6 +24,8 @@ from ross_ai.hardening import (
     session_cookie,
 )
 from ross_ai.inventory import build_inventory
+from ross_ai.legal import ZERO_REFUND_BANNER, acceptance_checklist, all_sections
+from ross_ai.membership import get_tier, list_tiers, validate_tier_id
 from ross_ai.paths import DEFAULT_HOST, DEFAULT_PORT, dist_path, plans_path
 from ross_ai.store import JsonStore
 from ross_ai.web import pages
@@ -38,6 +41,7 @@ class AppState:
         self.manifest = manifest
         self.store = JsonStore(root / DATA_DIR_NAME / "control-plane.json")
         self.auth = AuthService(self.store)
+        self.billing = BillingService(self.store)
         self.bus = EventBus()
         self.hub = WebSocketHub()
         self.limiter = RateLimiter(limit=120, window_sec=60)
@@ -148,6 +152,31 @@ class RossHandler(BaseHTTPRequestHandler):
         self._send(429, b'{"error":"rate_limited"}\n', "application/json; charset=utf-8")
         return False
 
+    def _pending_election(self, email: str) -> dict | None:
+        user = (self.state.store.get().get("users") or {}).get(email) or {}
+        return user.get("pendingElection")
+
+    def _save_pending_election(self, email: str, *, tier_id: str, cadence: str) -> None:
+        def mutate(data: dict) -> None:
+            user = data.setdefault("users", {}).get(email)
+            if not user:
+                raise KeyError(email)
+            user["pendingElection"] = {
+                "tierId": tier_id,
+                "cadence": cadence,
+                "zeroRefundAccepted": True,
+            }
+
+        self.state.store.update(mutate)
+
+    def _clear_pending_election(self, email: str) -> None:
+        def mutate(data: dict) -> None:
+            user = data.setdefault("users", {}).get(email)
+            if user:
+                user.pop("pendingElection", None)
+
+        self.state.store.update(mutate)
+
     # --- routing ---
     def do_HEAD(self) -> None:  # noqa: N802
         self.do_GET(head_only=True)
@@ -226,15 +255,37 @@ class RossHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/":
-            if user:
+            if user and user.get("membershipActive"):
                 self._redirect("/dashboard")
+                return
+            if user and not user.get("membershipActive"):
+                self._redirect("/membership")
                 return
             self._html(200, pages.landing_page(user=user, csrf=csrf))
             return
 
+        if path == "/marketplace":
+            self._html(200, pages.marketplace_page(tiers=list_tiers(), user=user, csrf=csrf))
+            return
+
+        if path in {"/legal", "/policy", "/disclosures", "/rules"}:
+            self._html(
+                200,
+                pages.legal_page(
+                    sections=all_sections(),
+                    banner=ZERO_REFUND_BANNER,
+                    user=user,
+                    csrf=csrf,
+                ),
+            )
+            return
+
         if path in {"/login", "/signin", "/sign-in"}:
-            if user:
+            if user and user.get("membershipActive"):
                 self._redirect("/dashboard")
+                return
+            if user:
+                self._redirect("/membership")
                 return
             self._html(
                 200,
@@ -251,17 +302,20 @@ class RossHandler(BaseHTTPRequestHandler):
             return
 
         if path in {"/signup", "/sign-up", "/register"}:
-            if user:
+            if user and user.get("membershipActive"):
                 self._redirect("/dashboard")
+                return
+            if user:
+                self._redirect("/membership")
                 return
             self._html(
                 200,
                 pages.gate_page(
                     mode="signup",
                     action="/signup",
-                    heading="Create access",
-                    sub="Provision an operator account for the Ross AI Runtime Platform.",
-                    submit="Create access",
+                    heading="Create account",
+                    sub="Step 01 — create credentials. Next: membership election, then payment method on file. Zero refunds.",
+                    submit="Continue to membership",
                     csrf=csrf,
                     user=user,
                 ),
@@ -279,9 +333,79 @@ class RossHandler(BaseHTTPRequestHandler):
             "/deploy",
             "/runtime",
             "/foundation",
+            "/membership",
+            "/payment",
+            "/billing",
+            "/users",
         }
         if path in protected and not user:
             self._redirect("/signin")
+            return
+
+        membership_gated = protected - {"/membership", "/payment"}
+        if path in membership_gated and user and not user.get("membershipActive"):
+            self._redirect("/membership")
+            return
+
+        if path == "/membership":
+            qs = parse_qs(parsed.query)
+            selected = (qs.get("tier") or ["professional"])[0]
+            pending = self._pending_election(user["email"]) if user else None
+            if pending and pending.get("tierId"):
+                selected = pending["tierId"]
+            self._html(
+                200,
+                pages.membership_election_page(
+                    tiers=list_tiers(),
+                    checklist=acceptance_checklist(),
+                    csrf=csrf,
+                    selected_tier=selected if validate_tier_id(selected) else "professional",
+                    user=user,
+                ),
+            )
+            return
+
+        if path == "/payment":
+            pending = self._pending_election(user["email"]) if user else None
+            if not pending or not pending.get("tierId"):
+                self._redirect("/membership")
+                return
+            tier = get_tier(pending["tierId"])
+            if not tier:
+                self._redirect("/membership")
+                return
+            cadence = pending.get("cadence") or "monthly"
+            amount = tier["priceAnnual"] if cadence == "annual" else tier["priceMonthly"]
+            self._html(
+                200,
+                pages.payment_page(
+                    tier=tier,
+                    cadence=cadence,
+                    amount=amount,
+                    csrf=csrf,
+                    user=user,
+                ),
+            )
+            return
+
+        if path == "/billing":
+            self._html(
+                200,
+                pages.billing_page(
+                    membership=self.state.billing.membership_for(user["email"]),
+                    payment_method=self.state.billing.payment_method_for(user["email"]),
+                    charges=self.state.billing.charges_for(user["email"]),
+                    user=user,
+                    csrf=csrf,
+                ),
+            )
+            return
+
+        if path == "/users":
+            self._html(
+                200,
+                pages.users_page(members=self.state.billing.list_members(), user=user, csrf=csrf),
+            )
             return
 
         if path == "/dashboard":
@@ -449,18 +573,18 @@ class RossHandler(BaseHTTPRequestHandler):
                     pages.gate_page(
                         mode="signup",
                         action="/signup",
-                        heading="Create access",
-                        sub="Provision an operator account for the Ross AI Runtime Platform.",
-                        submit="Create access",
+                        heading="Create account",
+                        sub="Step 01 — create credentials. Next: membership election, then payment method on file. Zero refunds.",
+                        submit="Continue to membership",
                         csrf="",
                         error=msg,
                         user=None,
                     ),
                 )
                 return
-            self.state.bus.publish("signup", email=new_session.email, message="operator enrolled")
+            self.state.bus.publish("signup", email=new_session.email, message="account created — elect membership")
             cookie = session_cookie(new_session.token, secure=self._wants_secure_cookie())
-            self._redirect("/dashboard", [("Set-Cookie", cookie)])
+            self._redirect("/membership", [("Set-Cookie", cookie)])
             return
 
         if path in {"/signin", "/login", "/sign-in"}:
@@ -484,7 +608,130 @@ class RossHandler(BaseHTTPRequestHandler):
                 return
             self.state.bus.publish("login", email=new_session.email, message="operator signed in")
             cookie = session_cookie(new_session.token, secure=self._wants_secure_cookie())
-            self._redirect("/dashboard", [("Set-Cookie", cookie)])
+            profile = self.state.auth.user_profile(new_session.email) or {}
+            dest = "/dashboard" if profile.get("membershipActive") else "/membership"
+            self._redirect(dest, [("Set-Cookie", cookie)])
+            return
+
+        if path == "/membership":
+            if not user or not session:
+                self._redirect("/signin")
+                return
+            if not self.state.auth.validate_csrf(session, form.get("csrf")):
+                self._send(403, b'{"error":"csrf"}\n', "application/json; charset=utf-8")
+                return
+            tier_id = form.get("tierId", "")
+            if not validate_tier_id(tier_id):
+                self._html(
+                    400,
+                    pages.membership_election_page(
+                        tiers=list_tiers(),
+                        checklist=acceptance_checklist(),
+                        csrf=session.csrf,
+                        selected_tier="professional",
+                        error="Select a valid membership tier.",
+                        user=user,
+                    ),
+                )
+                return
+            if form.get("zeroRefunds") != "1":
+                self._html(
+                    400,
+                    pages.membership_election_page(
+                        tiers=list_tiers(),
+                        checklist=acceptance_checklist(),
+                        csrf=session.csrf,
+                        selected_tier=tier_id,
+                        error="You must accept ZERO REFUNDS — ABSOLUTELY ZERO.",
+                        user=user,
+                    ),
+                )
+                return
+            for i, _ in enumerate(acceptance_checklist()):
+                if form.get(f"accept_{i}") != "1":
+                    self._html(
+                        400,
+                        pages.membership_election_page(
+                            tiers=list_tiers(),
+                            checklist=acceptance_checklist(),
+                            csrf=session.csrf,
+                            selected_tier=tier_id,
+                            error="Accept all membership disclosures to continue.",
+                            user=user,
+                        ),
+                    )
+                    return
+            cadence = form.get("cadence") or "monthly"
+            self._save_pending_election(user["email"], tier_id=tier_id, cadence=cadence)
+            self.state.bus.publish(
+                "membership.elect",
+                email=user["email"],
+                message=f"elected {tier_id} ({cadence})",
+            )
+            self._redirect("/payment")
+            return
+
+        if path == "/payment":
+            if not user or not session:
+                self._redirect("/signin")
+                return
+            if not self.state.auth.validate_csrf(session, form.get("csrf")):
+                self._send(403, b'{"error":"csrf"}\n', "application/json; charset=utf-8")
+                return
+            pending = self._pending_election(user["email"])
+            tier = get_tier((pending or {}).get("tierId", ""))
+            if not pending or not tier:
+                self._redirect("/membership")
+                return
+            cadence = pending.get("cadence") or "monthly"
+            amount = tier["priceAnnual"] if cadence == "annual" else tier["priceMonthly"]
+
+            def payment_error(msg: str) -> None:
+                self._html(
+                    400,
+                    pages.payment_page(
+                        tier=tier,
+                        cadence=cadence,
+                        amount=amount,
+                        csrf=session.csrf,
+                        error=msg,
+                        user=user,
+                    ),
+                )
+
+            if form.get("zeroRefunds") != "1" or form.get("disclosures") != "1":
+                payment_error("Accept disclosures and the absolute zero-refund policy.")
+                return
+            tok_ok, tok_msg, method = tokenize_card(
+                number=form.get("cardNumber", ""),
+                exp_month=form.get("expMonth", ""),
+                exp_year=form.get("expYear", ""),
+                cvc=form.get("cvc", ""),
+                name=form.get("cardName", ""),
+                zip_code=form.get("zip", ""),
+            )
+            if not tok_ok or not method:
+                payment_error(tok_msg)
+                return
+            bill_ok, bill_msg = self.state.billing.attach_membership(
+                user["email"],
+                tier_id=tier["id"],
+                cadence=cadence,
+                autopay=form.get("autopay") == "1",
+                payment_method=method,
+                zero_refund_accepted=True,
+                disclosures_accepted=True,
+            )
+            if not bill_ok:
+                payment_error(bill_msg)
+                return
+            self._clear_pending_election(user["email"])
+            self.state.bus.publish(
+                "payment.captured",
+                email=user["email"],
+                message=f"{tier['name']} · ${amount} · ****{method.get('last4')} · zero refunds",
+            )
+            self._redirect("/dashboard")
             return
 
         if path == "/logout":

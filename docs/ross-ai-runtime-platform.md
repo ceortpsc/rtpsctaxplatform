@@ -46,7 +46,18 @@ python ross.py dev
 | `/health` `/metadata` | Probe endpoints |
 | `/api/inventory` `/api/hardening` `/api/events` | Auth JSON APIs |
 
-## Hardening
+## Membership, payment & zero refunds
+
+Account creation is a three-step gate:
+
+1. `/signup` — create credentials  
+2. `/membership` — elect one of **four tiers** (Starter / Professional / Firm / Enterprise)  
+3. `/payment` — place a **payment method on file**, enable **autopay**, accept disclosures  
+
+**ZERO REFUNDS — ABSOLUTELY ZERO.** All charges are final (`refundable: false`).
+
+Public legal surface: `/legal` (Rules, Regulations, Policy, Disclaimers, Disclosures).  
+Marketplace: `/marketplace`. Billing roster: `/billing`, `/users`.
 
 - PBKDF2-SHA256 passwords (210k iterations)
 - HttpOnly + SameSite session cookies (Secure behind TLS / `X-Forwarded-Proto`)
