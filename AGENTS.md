@@ -33,14 +33,15 @@ Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 
 ### Running services / commands
 
+- `./scripts/aol run start:all` (or `make start-all`) launches the **entire platform** under
+  tmux: api-gateway `:3000`, refund-status `:3001`, transcript `:3002`, analytics `:3003`,
+  then runs workers once (`tds`, `transcript-pull`, `live-source`). Status:
+  `build/platform-runtime-status.json`. Health: `./scripts/aol run start:check`.
 - `./scripts/aol run start` launches only the **api-gateway** on port `3000` and blocks
-  (long-running). Start it in a background terminal/tmux session. Verify with
-  `curl http://localhost:3000/health` and `curl http://localhost:3000/metadata`.
-- Other services are independent HTTP stubs on fixed ports: refund-status `3001`,
-  transcript `3002`, analytics `3003`
-  (`./scripts/aol run start:refund-status`, `start:transcript`, `start:analytics`).
-- Workers run one-shot and print a JSON descriptor + planned steps, then exit
-  (`./scripts/aol run worker:tds`, `worker:transcript-pull`, `worker:live-source`).
+  (long-running). Verify with `curl http://localhost:3000/health`.
+- Individual services: `start:refund-status`, `start:transcript`, `start:analytics`.
+- Workers one-shot: `worker:tds`, `worker:transcript-pull`, `worker:live-source`.
+- Docker Compose (Postgres/Redis) is optional and unused by stubs.
 - Production compliance: `./scripts/aol run compliance:checklist`,
   `./scripts/aol run compliance -- --skip-gates`,
   `./scripts/aol run compliance -- --live`,

@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 AOL := node ./tools/aol/bin/aol.mjs
 
-.PHONY: setup lint test build start gateway workers bench aol compliance compliance-checklist compliance-log
+.PHONY: setup lint test build start start-all start-check gateway workers bench aol compliance compliance-checklist compliance-log
 
 setup:
 	./scripts/setup.sh
@@ -17,6 +17,12 @@ build:
 
 start:
 	./scripts/start.sh
+
+start-all:
+	./scripts/start-all.sh
+
+start-check:
+	node ./scripts/start-all.mjs --check-only
 
 gateway:
 	$(AOL) run start:gateway

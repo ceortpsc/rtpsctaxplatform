@@ -48,16 +48,22 @@ The repository is organized as a lightweight monorepo with executable Node.js se
 ./scripts/aol run lint
 ./scripts/aol run test
 ./scripts/aol run build
-./scripts/aol run start
+./scripts/aol run start:all    # entire platform (tmux)
+./scripts/aol run start:check  # health probe all services
 ```
 
-Default gateway health check:
+Or foreground supervisor: `./scripts/aol run start:all:fg`.
+
+Default health checks:
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:3000/health   # api-gateway
+curl http://localhost:3001/health   # refund-status
+curl http://localhost:3002/health   # transcript
+curl http://localhost:3003/health   # analytics
 ```
 
-Run workers in one-shot mode:
+Workers also run once during `start:all`. Manual one-shot:
 
 ```bash
 ./scripts/aol run worker:tds
