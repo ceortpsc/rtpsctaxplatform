@@ -41,6 +41,7 @@ The platform provides a governed baseline for tax operations, secure integration
 - **Workers**: long-running or one-shot execution shells for TDS, transcript pulls, and approved live-source ingestion.
 - **Pipelines**: model stage-by-stage processing for transmission, masterfile normalization, and refund status events.
 - **Engines**: analytical and rules-oriented modules for refund intelligence, analytics center coordination, and TC code lookups.
+- **Ross AI Runtime Platform** (`ross.py` / `ross_ai/`): Python stdlib control plane for command packages (`.rpkg`), script runtime, deploy plans, and a local HTTP surface on port `8787`.
 
 ## Component Responsibilities
 

@@ -1,0 +1,29 @@
+{
+  "name": "application",
+  "version": "0.1.0",
+  "product": "Ross AI Runtime Platform",
+  "brand": "Ross Tax Software",
+  "runtime": {
+    "python": ">=3.11",
+    "entry": "ross.py",
+    "platform": {
+      "host": "127.0.0.1",
+      "port": 8787
+    }
+  },
+  "scripts": {
+    "hello": "workspace/scripts/hello.py"
+  },
+  "package": {
+    "artifact": "application.rpkg",
+    "include": [
+      "ross.py",
+      "ross_ai",
+      "ross.json",
+      "workspace/scripts",
+      "requirements.txt",
+      ".env.example"
+    ]
+  },
+  "rossVersion": "0.1.0"
+}

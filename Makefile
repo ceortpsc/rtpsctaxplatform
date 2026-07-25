@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 AOL := node ./tools/aol/bin/aol.mjs
 
-.PHONY: setup lint test build start gateway workers bench aol
+.PHONY: setup lint test build start gateway workers bench aol ross ross-dev ross-doctor
 
 setup:
 	./scripts/setup.sh
@@ -29,3 +29,12 @@ bench:
 
 aol:
 	$(AOL) $(ARGS)
+
+ross:
+	python3 ./ross.py $(ARGS)
+
+ross-doctor:
+	python3 ./ross.py doctor
+
+ross-dev:
+	python3 ./ross.py dev

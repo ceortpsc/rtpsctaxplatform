@@ -18,6 +18,23 @@ built for workspace velocity. Instant Messenger soul, next-level speed.
 
 See [`docs/aol-package-manager.md`](docs/aol-package-manager.md).
 
+## Ross AI Runtime Platform
+
+Command package toolkit (`ross.py`) — init, doctor, local platform on
+**http://127.0.0.1:8787**, `.rpkg` packaging, and multi-target deploy plans.
+
+```bash
+python3 ross.py init
+python3 ross.py doctor
+python3 ross.py package build      # → workspace/dist/application.rpkg
+python3 ross.py runtime run hello
+python3 ross.py deploy plan local  # also: docker, kubernetes, aws-lambda, …
+python3 ross.py dev                # open http://127.0.0.1:8787
+```
+
+Docker: `docker compose -f docker-compose.ross.yml up --build`.  
+Details: [`docs/ross-ai-runtime-platform.md`](docs/ross-ai-runtime-platform.md).
+
 ## Platform Overview
 
 The repository is organized as a lightweight monorepo with executable Node.js service and worker skeletons, shared packages for runtime configuration and secure tunnel interfaces, Terraform placeholders, CI scaffolding, and operations/compliance documentation.
@@ -69,6 +86,7 @@ Run workers in one-shot mode:
 ```text
 tools/
   aol/                   Adaptive Optimized Linker (package manager)
+ross.py / ross_ai/       Ross AI Runtime Platform (packages, runtime, deploy)
 packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
@@ -125,6 +143,7 @@ Key placeholders include:
 - `/docs/aol-package-manager.md`
 - `/docs/aol-api-and-config.md`
 - `/docs/aol-intellectual-property.md`
+- `/docs/ross-ai-runtime-platform.md`
 - `/docs/rtpsc-package-lock.md`
 - `/docs/architecture.md`
 - `/docs/engineering-standards.md`

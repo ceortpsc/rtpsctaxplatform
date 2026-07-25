@@ -1,0 +1,22 @@
+# Ross AI Runtime Platform — container image
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    ROSS_HOST=0.0.0.0 \
+    ROSS_PORT=8787 \
+    ROSS_ENV=docker
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt || true
+
+COPY ross.py .
+COPY ross_ai ./ross_ai
+COPY ross.json* ./
+COPY workspace ./workspace
+
+EXPOSE 8787
+
+CMD ["python", "ross.py", "dev", "--host", "0.0.0.0", "--port", "8787"]

@@ -26,7 +26,13 @@
     "worker:transcript-pull": "node ./tools/aol/bin/aol.mjs run -w @rtp/transcript-pull-worker start -- --once",
     "worker:live-source": "node ./tools/aol/bin/aol.mjs run -w @rtp/live-source-fetcher start -- --once",
     "bench:aol": "node ./tools/aol/bin/aol.mjs bench",
-    "aol": "node ./tools/aol/bin/aol.mjs"
+    "aol": "node ./tools/aol/bin/aol.mjs",
+    "ross": "python3 ./ross.py",
+    "ross:init": "python3 ./ross.py init",
+    "ross:doctor": "python3 ./ross.py doctor",
+    "ross:dev": "python3 ./ross.py dev",
+    "ross:package": "python3 ./ross.py package build",
+    "ross:hello": "python3 ./ross.py runtime run hello"
   },
   "engines": {
     "node": ">=22"

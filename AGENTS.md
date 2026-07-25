@@ -29,6 +29,23 @@ Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
 Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 `aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`.
 
+### Ross AI Runtime Platform
+
+Python stdlib CLI (`ross.py`) for command packages, local runtime, `.rpkg`
+builds, and deploy plans. Docs: `docs/ross-ai-runtime-platform.md`.
+
+```bash
+python3 ross.py init
+python3 ross.py doctor
+python3 ross.py package build
+python3 ross.py runtime run hello
+python3 ross.py deploy plan docker
+python3 ross.py dev                 # http://127.0.0.1:8787
+# or: make ross-dev / ./scripts/aol run ross:dev
+```
+
+Docker (optional): `cp .env.example .env && docker compose -f docker-compose.ross.yml up --build`.
+
 ### Running services / commands
 
 - `./scripts/aol run start` launches only the **api-gateway** on port `3000` and blocks
