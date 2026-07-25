@@ -117,6 +117,76 @@ describe('Ross AI Runtime Platform', () => {
       await rm(tmp, { recursive: true, force: true });
     }
   });
+
+  it('landing, access gates, signup → dashboard, protected APIs', async () => {
+    const tmp = await mkdtemp(path.join(os.tmpdir(), 'ross-auth-'));
+    let child;
+    const port = await freePort();
+    try {
+      await copyPlatformTo(tmp);
+      assert.equal(ross(['init'], tmp).status, 0);
+      child = spawn(
+        'python3',
+        [path.join(tmp, 'ross.py'), 'dev', '--host', '127.0.0.1', '--port', String(port)],
+        { cwd: tmp, stdio: ['ignore', 'pipe', 'pipe'] }
+      );
+      const base = `http://127.0.0.1:${port}`;
+      await waitForHealth(`${base}/health`, 15000);
+
+      const home = await fetchText(`${base}/`);
+      assert.match(home.body, /Ross/);
+      assert.match(home.body, /Runtime Platform/);
+      assert.equal(home.status, 200);
+
+      for (const p of ['/signin', '/login', '/signup']) {
+        const page = await fetchText(`${base}${p}`);
+        assert.equal(page.status, 200, p);
+        assert.match(page.body, /Access gate|password/i);
+      }
+
+      const dashAnon = await fetchResponse(`${base}/dashboard`);
+      assert.equal(dashAnon.status, 303);
+      assert.match(dashAnon.headers.location || '', /signin/);
+
+      const email = `ops_${port}@rosstaxsoftware.com`;
+      const signup = await postForm(`${base}/signup`, {
+        name: 'Ops Lead',
+        email,
+        password: 'RuntimeGate1'
+      });
+      assert.equal(signup.status, 303);
+      assert.match(signup.headers.location || '', /dashboard/);
+      const cookie = cookieFromSet(signup.headers['set-cookie']);
+      assert.ok(cookie.includes('ross_session='));
+
+      const dash = await fetchText(`${base}/dashboard`, { headers: { Cookie: cookie } });
+      assert.equal(dash.status, 200);
+      assert.match(dash.body, /Control plane/);
+      assert.match(dash.body, /Live stream/);
+
+      for (const p of ['/modules', '/engines', '/systems', '/infrastructure', '/packages', '/deploy', '/runtime']) {
+        const page = await fetchText(`${base}${p}`, { headers: { Cookie: cookie } });
+        assert.equal(page.status, 200, p);
+      }
+
+      const inv = await fetchJson(`${base}/api/inventory`, { headers: { Cookie: cookie } });
+      assert.ok(inv.total >= 10);
+      assert.ok(inv.bySector.engines);
+
+      const hard = await fetchJson(`${base}/api/hardening`, { headers: { Cookie: cookie } });
+      assert.ok(hard.score >= 50);
+      assert.ok(Array.isArray(hard.controls));
+
+      const css = await fetchResponse(`${base}/static/app.css`);
+      assert.equal(css.status, 200);
+    } finally {
+      if (child && !child.killed) {
+        child.kill('SIGTERM');
+        await new Promise((r) => child.once('exit', r));
+      }
+      await rm(tmp, { recursive: true, force: true });
+    }
+  });
 });
 
 function freePort() {
@@ -129,33 +199,84 @@ function freePort() {
     srv.on('error', reject);
   });
 }
-function fetchJson(url) {
-  return new Promise((resolve, reject) => {
-    http
-      .get(url, (res) => {
-        let data = '';
-        res.on('data', (c) => (data += c));
-        res.on('end', () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch (err) {
-            reject(err);
-          }
-        });
-      })
-      .on('error', reject);
+
+function fetchJson(url, opts = {}) {
+  return fetchResponse(url, opts).then(async (res) => {
+    const text = await res.text();
+    return JSON.parse(text);
   });
 }
 
+function fetchText(url, opts = {}) {
+  return fetchResponse(url, opts).then(async (res) => ({
+    status: res.status,
+    body: await res.text(),
+    headers: res.headers
+  }));
+}
+
 function fetchStatus(url) {
-  return new Promise((resolve, reject) => {
-    http
-      .get(url, (res) => {
-        res.resume();
-        res.on('end', () => resolve(res.statusCode));
-      })
-      .on('error', reject);
+  return fetchResponse(url).then((res) => {
+    res.resume?.();
+    return res.status;
   });
+}
+
+function fetchResponse(url, opts = {}) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const req = http.request(
+      {
+        hostname: u.hostname,
+        port: u.port,
+        path: u.pathname + u.search,
+        method: opts.method || 'GET',
+        headers: opts.headers || {}
+      },
+      (res) => {
+        const chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => {
+          const body = Buffer.concat(chunks).toString('utf8');
+          const headers = {};
+          for (const [k, v] of Object.entries(res.headers)) {
+            const key = k.toLowerCase();
+            if (key === 'set-cookie' && Array.isArray(v)) {
+              headers[key] = v[0];
+            } else {
+              headers[key] = Array.isArray(v) ? v.join(',') : v;
+            }
+          }
+          resolve({
+            status: res.statusCode,
+            headers,
+            text: async () => body,
+            resume() {}
+          });
+        });
+      }
+    );
+    req.on('error', reject);
+    if (opts.body) req.write(opts.body);
+    req.end();
+  });
+}
+
+function postForm(url, fields) {
+  const body = new URLSearchParams(fields).toString();
+  return fetchResponse(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': Buffer.byteLength(body)
+    },
+    body
+  });
+}
+
+function cookieFromSet(setCookie) {
+  if (!setCookie) return '';
+  return String(setCookie).split(',')[0].split(';')[0];
 }
 
 function waitForHealth(url, timeoutMs) {

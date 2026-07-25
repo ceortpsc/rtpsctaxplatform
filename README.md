@@ -20,8 +20,9 @@ See [`docs/aol-package-manager.md`](docs/aol-package-manager.md).
 
 ## Ross AI Runtime Platform
 
-Command package toolkit (`ross.py`) — init, doctor, local platform on
-**http://127.0.0.1:8787**, `.rpkg` packaging, and multi-target deploy plans.
+Operator control plane (`ross.py`) — landing, access gates, dashboards, module
+inventory, hardening, WebSockets, `.rpkg` packaging, and deploy plans on
+**http://127.0.0.1:8787**.
 
 ```bash
 python3 ross.py init
@@ -30,6 +31,7 @@ python3 ross.py package build      # → workspace/dist/application.rpkg
 python3 ross.py runtime run hello
 python3 ross.py deploy plan local  # also: docker, kubernetes, aws-lambda, …
 python3 ross.py dev                # open http://127.0.0.1:8787
+# Create access at /signup → operator console at /dashboard
 ```
 
 Docker: `docker compose -f docker-compose.ross.yml up --build`.  

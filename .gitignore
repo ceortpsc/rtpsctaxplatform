@@ -18,4 +18,5 @@ __pycache__/
 workspace/dist/*
 !workspace/dist/.gitkeep
 workspace/plans/*.json
+workspace/data/
 !workspace/**/.gitkeep
