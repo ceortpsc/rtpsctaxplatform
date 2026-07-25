@@ -24,11 +24,11 @@ async function copyPlatformTo(tmp) {
   }
 }
 
-describe('Ross AI Runtime Platform', () => {
+describe('Ross Tax Pro Software Co | RunTime AI Assist', () => {
   it('prints help and version', () => {
     const help = ross(['help']);
     assert.equal(help.status, 0);
-    assert.match(help.stdout, /Ross AI Runtime Platform/);
+    assert.match(help.stdout, /RunTime AI Assist/);
     assert.match(help.stdout, /package build/);
 
     const version = ross(['version']);
@@ -59,7 +59,7 @@ describe('Ross AI Runtime Platform', () => {
 
       const hello = ross(['runtime', 'run', 'hello'], tmp);
       assert.equal(hello.status, 0, hello.stderr || hello.stdout);
-      assert.match(hello.stdout, /hello from Ross AI Runtime Platform/);
+      assert.match(hello.stdout, /hello from Ross Tax Pro Software Co \| RunTime AI Assist/);
 
       for (const target of [
         'local',
@@ -104,7 +104,7 @@ describe('Ross AI Runtime Platform', () => {
       assert.equal(health.status, 'ok');
 
       const meta = await fetchJson(`${base}/metadata`);
-      assert.match(String(meta.product), /Ross AI Runtime Platform/);
+      assert.match(String(meta.product), /RunTime AI Assist/);
       assert.ok(meta.scripts.includes('hello'));
 
       const missing = await fetchStatus(`${base}/nope`);
@@ -135,9 +135,9 @@ describe('Ross AI Runtime Platform', () => {
 
       const home = await fetchText(`${base}/`);
       assert.equal(home.status, 200);
-      assert.match(home.body, /ROSS/);
-      assert.match(home.body, /Ross AI Runtime Platform/);
-      assert.match(home.body, /Ross Tax Software/);
+      assert.match(home.body, /RunTime AI Assist/);
+      assert.match(home.body, /Ross Tax Pro Software Co/);
+      assert.match(home.body, /Ross Tax Pro Software Co \| RunTime AI Assist/);
       assert.match(home.body, /application\/ld\+json/);
       assert.match(home.body, /SoftwareApplication/);
       assert.match(home.body, /BreadcrumbList/);
@@ -161,11 +161,11 @@ describe('Ross AI Runtime Platform', () => {
       assert.match(sitemap.body, /legal/);
 
       const manifest = await fetchJson(`${base}/site.webmanifest`);
-      assert.equal(manifest.short_name, 'ROSS');
-      assert.match(String(manifest.name), /Ross AI Runtime Platform/);
+      assert.equal(manifest.short_name, 'RunTime');
+      assert.match(String(manifest.name), /Ross Tax Pro Software Co \| RunTime AI Assist/);
 
       const metaBrand = await fetchJson(`${base}/metadata`);
-      assert.equal(metaBrand.appName, 'ROSS');
+      assert.equal(metaBrand.appName, 'RunTime AI Assist');
       assert.equal(metaBrand.seo.sitemap, '/sitemap.xml');
 
       for (const p of ['/signin', '/login', '/signup']) {

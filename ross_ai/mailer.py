@@ -21,7 +21,7 @@ def send_code_email(*, to_email: str, purpose: str, code: str) -> dict[str, Any]
     }
     subject = subject_map.get(purpose, "Ross AI — security code")
     body = (
-        f"Your Ross AI Runtime Platform 6-digit code is: {code}\n\n"
+        f"Your Ross Tax Pro Software Co | RunTime AI Assist 6-digit code is: {code}\n\n"
         f"Purpose: {purpose}\n"
         "This code expires in 10 minutes.\n"
         "If you did not request this, secure your account immediately.\n"

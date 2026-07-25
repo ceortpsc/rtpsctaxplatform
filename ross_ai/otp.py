@@ -60,7 +60,7 @@ def verify_totp(secret: str, code: str, window: int = TOTP_WINDOW) -> bool:
     return False
 
 
-def otpauth_uri(secret: str, email: str, issuer: str = "Ross AI Runtime") -> str:
+def otpauth_uri(secret: str, email: str, issuer: str = "RunTime AI Assist") -> str:
     label = quote(f"{issuer}:{email}")
     iss = quote(issuer)
     # Re-pad secret for URI consumers

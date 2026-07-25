@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Ross AI Runtime Platform — command entrypoint.
+"""Ross Tax Pro Software Co | RunTime AI Assist — command entrypoint.
 
 Usage examples:
   python ross.py init

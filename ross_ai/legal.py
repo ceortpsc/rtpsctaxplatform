@@ -17,7 +17,7 @@ SECTIONS: dict[str, dict[str, Any]] = {
     "rules": {
         "id": "rules",
         "title": "Platform Rules",
-        "summary": "Operator conduct and acceptable use for the Ross AI Runtime Platform.",
+        "summary": "Operator conduct and acceptable use for the Ross Tax Pro Software Co | RunTime AI Assist.",
         "body": [
             "Operators must authenticate with individual credentials; shared passwords are prohibited.",
             "Use is limited to lawful tax-practice operations and approved integration patterns only.",
@@ -60,7 +60,7 @@ SECTIONS: dict[str, dict[str, Any]] = {
         "summary": "No warranties; scaffold and demo payment surfaces.",
         "body": [
             "THE PLATFORM IS PROVIDED AS-IS WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED.",
-            "Ross Tax Software does not warrant uninterrupted availability, error-free operation, or fitness for a particular purpose.",
+            "Ross Tax Pro Software Co does not warrant uninterrupted availability, error-free operation, or fitness for a particular purpose.",
             "Payment method capture in this control plane is a tokenized scaffold; production card processing requires an approved processor integration.",
             "Dashboard metrics and inventory reflect local monorepo state and operator activity — not tax-authority acknowledgements.",
             "No outcome regarding refunds, transcripts, or filings is guaranteed by use of this software.",
@@ -72,7 +72,7 @@ SECTIONS: dict[str, dict[str, Any]] = {
         "title": "Disclosures",
         "summary": "Material disclosures presented at membership election and payment selection.",
         "body": [
-            "You authorize Ross Tax Software (or its processor) to store a payment method on file for membership dues.",
+            "You authorize Ross Tax Pro Software Co (or its processor) to store a payment method on file for membership dues.",
             "You authorize recurring autopay charges for your elected tier until you cancel prospectively per policy.",
             "Cancellation stops future renewals only; it does not entitle you to any refund of amounts already charged.",
             "Displayed prices are USD list prices and exclude applicable taxes unless stated on an order form.",

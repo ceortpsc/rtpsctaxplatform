@@ -20,15 +20,15 @@ HELLO_SCRIPT = '''#!/usr/bin/env python3
 """Sample Ross runtime script."""
 
 def main() -> None:
-    print("hello from Ross AI Runtime Platform")
-    print({"ok": True, "script": "hello", "product": "Ross AI Runtime Platform"})
+    print("hello from Ross Tax Pro Software Co | RunTime AI Assist")
+    print({"ok": True, "script": "hello", "product": "Ross Tax Pro Software Co | RunTime AI Assist"})
 
 
 if __name__ == "__main__":
     main()
 '''
 
-ENV_EXAMPLE_BODY = """# Ross AI Runtime Platform
+ENV_EXAMPLE_BODY = """# Ross Tax Pro Software Co | RunTime AI Assist
 ROSS_HOST=127.0.0.1
 ROSS_PORT=8787
 ROSS_ENV=local

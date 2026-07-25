@@ -29,9 +29,10 @@ Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
 Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 `aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`.
 
-### Ross AI Runtime Platform (ROSS)
+### Ross Tax Pro Software Co | RunTime AI Assist
 
-**ROSS** is the product name for the Ross AI Runtime Platform control plane
+**RunTime AI Assist** (full name: **Ross Tax Pro Software Co | RunTime AI Assist**)
+is the operator control plane
 (landing, access gates, dashboards, inventory, hardening, WebSockets, RBAC,
 GitHub auth, transparent execution) on port `8787`, with advanced SEO
 (`/robots.txt`, `/sitemap.xml`, JSON-LD). Docs: `docs/ross-ai-runtime-platform.md`.

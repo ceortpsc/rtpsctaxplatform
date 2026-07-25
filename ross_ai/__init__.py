@@ -1,4 +1,4 @@
-"""Ross AI Runtime Platform — package, runtime, and deploy toolkit."""
+"""Ross Tax Pro Software Co | RunTime AI Assist — package, runtime, and deploy toolkit."""
 
 from ross_ai.brand import APP_FULL_NAME, APP_NAME, COMPANY, TAGLINE
 

@@ -1,4 +1,4 @@
-"""Filesystem layout helpers for the Ross AI Runtime Platform."""
+"""Filesystem layout helpers for the Ross Tax Pro Software Co | RunTime AI Assist."""
 
 from __future__ import annotations
 

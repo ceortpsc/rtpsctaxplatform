@@ -13,6 +13,7 @@ from ross_ai import __version__
 from ross_ai.brand import (
     APP_FULL_NAME,
     APP_NAME,
+    APP_SHORT_NAME,
     APPLICATION_CATEGORY,
     COMPANY,
     COMPANY_LEGAL,
@@ -180,7 +181,7 @@ def structured_data(seo: dict[str, Any]) -> str:
         "@id": f"{base}/#website",
         "url": base,
         "name": APP_FULL_NAME,
-        "alternateName": [APP_NAME, "Ross Runtime", COMPANY],
+        "alternateName": [APP_NAME, APP_SHORT_NAME, COMPANY, "Ross Runtime"],
         "description": DESCRIPTION,
         "publisher": {"@id": f"{base}/#organization"},
         "inLanguage": "en-US",
@@ -307,7 +308,7 @@ def sitemap_xml() -> str:
 def webmanifest() -> dict[str, Any]:
     return {
         "name": APP_FULL_NAME,
-        "short_name": APP_NAME,
+        "short_name": APP_SHORT_NAME,
         "description": DESCRIPTION,
         "start_url": "/",
         "display": "standalone",

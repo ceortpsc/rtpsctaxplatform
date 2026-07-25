@@ -727,11 +727,11 @@ def set_password_page(
     if github_login:
         gh_note = (
             f'<p class="ok-msg">GitHub account <strong>@{esc(github_login)}</strong> is linked. '
-            "Create a local ROSS password to continue — required even with GitHub sign-in.</p>"
+            f"Create a local {esc(APP_NAME)} password to continue — required even with GitHub sign-in.</p>"
         )
     else:
         gh_note = (
-            '<p class="ok-msg">Create a local ROSS password. Required for console access and '
+            f'<p class="ok-msg">Create a local {esc(APP_NAME)} password. Required for console access and '
             "password sign-in alongside any linked providers.</p>"
         )
     body = f"""
@@ -740,7 +740,7 @@ def set_password_page(
     <div>
       <p class="eyebrow">Step 01b · Local password</p>
       <h1>Create your password</h1>
-      <p class="lede tight">Account <strong>{esc(email)}</strong> must have a ROSS password before MFA and membership.</p>
+      <p class="lede tight">Account <strong>{esc(email)}</strong> must have a {esc(APP_NAME)} password before MFA and membership.</p>
     </div>
   </header>
   {err}{gh_note}
@@ -775,7 +775,7 @@ def setup_mfa_page(
     <div>
       <p class="eyebrow">Step 01c · MFA / 2FA enrollment</p>
       <h1>Enable authenticator MFA</h1>
-      <p class="lede tight">Add Ross AI to your authenticator app (TOTP), then enter the <strong>6-digit</strong> code. Email OTP remains available as a backup factor at sign-in.</p>
+      <p class="lede tight">Add {esc(APP_NAME)} to your authenticator app (TOTP), then enter the <strong>6-digit</strong> code. Email OTP remains available as a backup factor at sign-in.</p>
     </div>
   </header>
   {err}

@@ -28,7 +28,7 @@ TIERS: dict[str, dict[str, Any]] = {
             "auditRetentionDays": 30,
         },
         "explanation": (
-            "Starter is for a single licensed operator who needs the Ross AI Runtime "
+            "Starter is for a single licensed operator who needs the RunTime AI Assist "
             "Platform control plane, package tooling, and foundational hardening without "
             "multi-seat collaboration or cloud deploy fabric. Ideal for evaluation and "
             "small practices that already hold required tax-software credentials elsewhere."

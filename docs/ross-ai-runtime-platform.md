@@ -1,6 +1,6 @@
-# Ross AI Runtime Platform
+# Ross Tax Pro Software Co | RunTime AI Assist
 
-Command package toolkit and **operator control plane** for **Ross Tax Software** —
+Command package toolkit and **operator control plane** for **Ross Tax Pro Software Co** —
 init, doctor, local runtime, `.rpkg` packaging, multi-target deploy plans, access
 gates, dashboards, module inventory, hardening, and WebSockets. Python 3 **stdlib
 only** (no required pip dependencies).
@@ -48,9 +48,9 @@ python ross.py dev
 
 ## Product identity & SEO
 
-**Application name:** **ROSS**  
-**Full name:** Ross AI Runtime Platform  
-**Company:** Ross Tax Software  
+**Application name:** **RunTime AI Assist**  
+**Full name:** Ross Tax Pro Software Co | RunTime AI Assist  
+**Company:** Ross Tax Pro Software Co  
 
 Advanced SEO surfaces:
 - Canonical + Open Graph + Twitter cards on every page

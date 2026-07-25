@@ -5,27 +5,29 @@ from __future__ import annotations
 from typing import Any
 
 # Canonical product identity
-APP_NAME = "ROSS"
-APP_FULL_NAME = "Ross AI Runtime Platform"
-APP_SHORT_NAME = "ROSS"
-COMPANY = "Ross Tax Software"
-COMPANY_LEGAL = "Ross Tax Software Co."
+# Full name: Ross Tax Pro Software Co | RunTime AI Assist
+APP_NAME = "RunTime AI Assist"
+APP_FULL_NAME = "Ross Tax Pro Software Co | RunTime AI Assist"
+APP_SHORT_NAME = "RunTime"
+COMPANY = "Ross Tax Pro Software Co"
+COMPANY_LEGAL = "Ross Tax Pro Software Co"
 TAGLINE = "Command packages. Live runtime. Governed control."
 DESCRIPTION = (
-    "ROSS is the Ross AI Runtime Platform from Ross Tax Software — "
+    "RunTime AI Assist from Ross Tax Pro Software Co — "
     "a hardened operator control plane for command package development, "
     "membership, deploy plans, RBAC, and transparent script execution."
 )
 LONG_DESCRIPTION = (
-    "ROSS (Ross AI Runtime Platform) gives tax-software operators a branded "
-    "control plane to build .rpkg command packages, elect membership tiers, "
-    "run deploy plans, enforce MFA and RBAC, and execute personal scripts "
+    "Ross Tax Pro Software Co | RunTime AI Assist gives tax-software operators "
+    "a branded control plane to build .rpkg command packages, elect membership "
+    "tiers, run deploy plans, enforce MFA and RBAC, and execute personal scripts "
     "with full audit transparency — without scraping or unapproved channels."
 )
 KEYWORDS = [
-    "ROSS",
-    "Ross AI Runtime Platform",
-    "Ross Tax Software",
+    "RunTime AI Assist",
+    "Ross Tax Pro Software Co",
+    "Ross Tax Pro Software Co | RunTime AI Assist",
+    "RunTime",
     "tax software platform",
     "command packages",
     "rpkg",

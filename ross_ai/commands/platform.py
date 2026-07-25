@@ -1,4 +1,4 @@
-"""Start the Ross AI Runtime Platform HTTP server (dev / start)."""
+"""Start the Ross Tax Pro Software Co | RunTime AI Assist HTTP server (dev / start)."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def run_dev(root: Path, argv: Sequence[str]) -> int:
         if arg == "--port" and i + 1 < len(argv):
             port = int(argv[i + 1])
 
-    ok(f"Starting {man.get('product') or 'Ross AI Runtime Platform'}")
+    ok(f"Starting {man.get('product') or 'Ross Tax Pro Software Co | RunTime AI Assist'}")
     info(f"Open http://{host}:{port}")
     info("Ctrl+C to stop")
     serve(root, host=host, port=port, manifest=man)

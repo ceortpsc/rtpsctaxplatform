@@ -1,4 +1,4 @@
-"""Ross AI Runtime Platform — HTTP + WebSocket control plane (stdlib only)."""
+"""Ross Tax Pro Software Co | RunTime AI Assist — HTTP + WebSocket control plane (stdlib only)."""
 
 from __future__ import annotations
 

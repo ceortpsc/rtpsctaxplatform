@@ -18,9 +18,10 @@ built for workspace velocity. Instant Messenger soul, next-level speed.
 
 See [`docs/aol-package-manager.md`](docs/aol-package-manager.md).
 
-## Ross AI Runtime Platform (ROSS)
+## Ross Tax Pro Software Co | RunTime AI Assist
 
-**ROSS** is the product name for the **Ross AI Runtime Platform** by Ross Tax Software —
+**RunTime AI Assist** is the product from **Ross Tax Pro Software Co**
+(full name: **Ross Tax Pro Software Co | RunTime AI Assist**) —
 landing, access gates, dashboards, membership, RBAC, GitHub sign-in, transparent
 execution, and advanced SEO on **http://127.0.0.1:8787**.
 
@@ -31,7 +32,7 @@ python3 ross.py package build      # → workspace/dist/application.rpkg
 python3 ross.py runtime run hello
 python3 ross.py deploy plan local
 python3 ross.py dev                # open http://127.0.0.1:8787
-# Create ROSS account → verify email → MFA → membership → payment
+# Create account → verify email → MFA → membership → payment
 ```
 
 SEO: `/robots.txt`, `/sitemap.xml`, `/site.webmanifest` (set `ROSS_PUBLIC_URL` in production).
@@ -90,7 +91,7 @@ Run workers in one-shot mode:
 ```text
 tools/
   aol/                   Adaptive Optimized Linker (package manager)
-ross.py / ross_ai/       Ross AI Runtime Platform (packages, runtime, deploy)
+ross.py / ross_ai/       Ross Tax Pro Software Co | RunTime AI Assist (packages, runtime, deploy)
 packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
