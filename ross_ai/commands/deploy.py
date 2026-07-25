@@ -9,7 +9,7 @@ from typing import Any, Sequence
 
 from ross_ai.manifest import load_manifest
 from ross_ai.paths import plans_path
-from ross_ai.util import ensure_dir, fail, ok
+from ross_ai.util import ensure_dir, eprint, fail
 
 TARGETS = (
     "local",
@@ -139,6 +139,6 @@ def run(root: Path, argv: Sequence[str]) -> int:
     out_dir = ensure_dir(plans_path(root))
     out = out_dir / f"{target}.json"
     out.write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
-    ok(f"Wrote {out.relative_to(root)}")
+    eprint(f"✓ Wrote {out.relative_to(root)}")
     print(json.dumps(plan, indent=2))
     return 0
