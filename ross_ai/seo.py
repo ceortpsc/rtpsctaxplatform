@@ -272,6 +272,7 @@ def robots_txt() -> str:
         "Disallow: /membership\n"
         "Disallow: /payment\n"
         "Disallow: /verify-email\n"
+        "Disallow: /set-password\n"
         "Disallow: /setup-mfa\n"
         "Disallow: /mfa\n"
         "Disallow: /api/\n"

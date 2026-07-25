@@ -49,6 +49,14 @@ def _verify_password(password: str, encoded: str) -> bool:
         return False
 
 
+def _validate_password(password: str) -> str | None:
+    if len(password) < MIN_PASSWORD_LEN:
+        return f"Password must be at least {MIN_PASSWORD_LEN} characters."
+    if not any(c.isalpha() for c in password) or not any(c.isdigit() for c in password):
+        return "Password must include letters and numbers."
+    return None
+
+
 class AuthService:
     def __init__(self, store: JsonStore) -> None:
         self.store = store
@@ -58,10 +66,9 @@ class AuthService:
         name = (name or "").strip() or email.split("@")[0]
         if "@" not in email or "." not in email.split("@")[-1]:
             return False, "Enter a valid email address.", None
-        if len(password) < MIN_PASSWORD_LEN:
-            return False, f"Password must be at least {MIN_PASSWORD_LEN} characters.", None
-        if not any(c.isalpha() for c in password) or not any(c.isdigit() for c in password):
-            return False, "Password must include letters and numbers.", None
+        pwd_err = _validate_password(password)
+        if pwd_err:
+            return False, pwd_err, None
 
         created: dict[str, Any] = {}
 
@@ -257,9 +264,49 @@ class AuthService:
             "tierName": mem.get("tierName"),
             "emailVerified": bool(user.get("emailVerified")),
             "mfaEnabled": bool(user.get("mfaEnabled")),
+            "passwordSet": bool(user.get("password")),
             "github": user.get("github"),
             "authProviders": list(user.get("authProviders") or ["password"]),
         }
+
+    def set_password(
+        self, email: str, password: str, confirm: str = ""
+    ) -> tuple[bool, str]:
+        """Require a local password for GitHub (and other passwordless) accounts."""
+        email = email.strip().lower()
+        if confirm and password != confirm:
+            return False, "Passwords do not match."
+        pwd_err = _validate_password(password)
+        if pwd_err:
+            return False, pwd_err
+
+        result: dict[str, Any] = {}
+
+        def mutate(data: dict[str, Any]) -> None:
+            user = data.setdefault("users", {}).get(email)
+            if not user:
+                result["err"] = "Account not found."
+                return
+            if user.get("password"):
+                result["err"] = "A password is already set for this account."
+                return
+            user["password"] = _hash_password(password)
+            providers = set(user.get("authProviders") or [])
+            providers.add("password")
+            user["authProviders"] = sorted(providers)
+            data.setdefault("audit", []).append(
+                {
+                    "at": time.time(),
+                    "action": "password.set",
+                    "email": email,
+                    "via": "github" if user.get("github") else "onboarding",
+                }
+            )
+
+        self.store.update(mutate)
+        if result.get("err"):
+            return False, str(result["err"])
+        return True, "Password created."
 
     def upsert_github_user(self, profile: dict[str, Any]) -> tuple[Session, bool]:
         """Create or link a GitHub-authenticated user. Returns (session, created)."""
@@ -282,7 +329,7 @@ class AuthService:
                 users[email] = {
                     "email": email,
                     "name": profile.get("name") or profile.get("login") or email,
-                    "password": None,
+                    "password": None,  # must create via /set-password
                     "role": DEFAULT_ROLE,
                     "createdAt": time.time(),
                     "emailVerified": True,  # GitHub verified email path

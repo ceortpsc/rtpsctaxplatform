@@ -212,6 +212,8 @@ class RossHandler(BaseHTTPRequestHandler):
             return "/signin"
         if not user.get("emailVerified"):
             return "/verify-email"
+        if not user.get("passwordSet"):
+            return "/set-password"
         if not user.get("mfaEnabled"):
             return "/setup-mfa"
         if not user.get("membershipActive"):
@@ -418,6 +420,7 @@ class RossHandler(BaseHTTPRequestHandler):
             "/billing",
             "/users",
             "/verify-email",
+            "/set-password",
             "/setup-mfa",
             "/rbac",
             "/execute",
@@ -466,9 +469,31 @@ class RossHandler(BaseHTTPRequestHandler):
             )
             return
 
+        if user and path == "/set-password":
+            if not user.get("emailVerified"):
+                self._redirect("/verify-email")
+                return
+            if user.get("passwordSet"):
+                self._redirect(self._onboarding_destination(user))
+                return
+            gh = user.get("github") or {}
+            self._html(
+                200,
+                pages.set_password_page(
+                    email=user["email"],
+                    csrf=csrf,
+                    github_login=gh.get("login"),
+                    user=user,
+                ),
+            )
+            return
+
         if user and path == "/setup-mfa":
             if not user.get("emailVerified"):
                 self._redirect("/verify-email")
+                return
+            if not user.get("passwordSet"):
+                self._redirect("/set-password")
                 return
             if user.get("mfaEnabled"):
                 self._redirect(self._onboarding_destination(user))
@@ -508,6 +533,9 @@ class RossHandler(BaseHTTPRequestHandler):
         if path in membership_gated and user:
             if not user.get("emailVerified"):
                 self._redirect("/verify-email")
+                return
+            if not user.get("passwordSet"):
+                self._redirect("/set-password")
                 return
             if not user.get("mfaEnabled"):
                 self._redirect("/setup-mfa")
@@ -931,7 +959,8 @@ class RossHandler(BaseHTTPRequestHandler):
                 return
             self.state.auth.mark_email_verified(user["email"])
             self.state.bus.publish("email.verified", email=user["email"], message="email verified")
-            self._redirect("/setup-mfa")
+            profile = self.state.auth.user_profile(user["email"]) or {}
+            self._redirect(self._onboarding_destination(profile))
             return
 
         if path == "/verify-email/resend":
@@ -956,9 +985,51 @@ class RossHandler(BaseHTTPRequestHandler):
             )
             return
 
+        if path == "/set-password":
+            if not user or not session:
+                self._redirect("/signin")
+                return
+            if not self.state.auth.validate_csrf(session, form.get("csrf")):
+                self._send(403, b'{"error":"csrf"}\n', "application/json; charset=utf-8")
+                return
+            if not user.get("emailVerified"):
+                self._redirect("/verify-email")
+                return
+            if user.get("passwordSet"):
+                self._redirect(self._onboarding_destination(user))
+                return
+            ok, msg = self.state.auth.set_password(
+                user["email"], form.get("password", ""), form.get("confirm", "")
+            )
+            gh = user.get("github") or {}
+            if not ok:
+                self._html(
+                    400,
+                    pages.set_password_page(
+                        email=user["email"],
+                        csrf=session.csrf,
+                        github_login=gh.get("login"),
+                        error=msg,
+                        user=user,
+                    ),
+                )
+                return
+            self.state.bus.publish(
+                "password.set",
+                email=user["email"],
+                message="local password created"
+                + (f" · github:{gh.get('login')}" if gh.get("login") else ""),
+            )
+            profile = self.state.auth.user_profile(user["email"]) or {}
+            self._redirect(self._onboarding_destination(profile))
+            return
+
         if path == "/setup-mfa":
             if not user or not session:
                 self._redirect("/signin")
+                return
+            if not user.get("passwordSet"):
+                self._redirect("/set-password")
                 return
             if not self.state.auth.validate_csrf(session, form.get("csrf")):
                 self._send(403, b'{"error":"csrf"}\n', "application/json; charset=utf-8")

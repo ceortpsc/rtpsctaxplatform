@@ -63,7 +63,8 @@ Advanced SEO surfaces:
 
 - `/auth/github` starts OAuth (or local **dev simulate** when `ROSS_GITHUB_*` is unset)
 - `/auth/github/callback` creates/links the account (email verified via GitHub)
-- MFA enrollment still required after GitHub create/sign-in
+- **Local password is still required** — GitHub users land on `/set-password` before MFA
+- MFA enrollment still required after password creation
 
 ## RBAC (strict)
 
@@ -78,6 +79,7 @@ Stdout/stderr/duration always audited. Save personal scripts with `code.scripts.
 ## Email verification & MFA / 2FA
 
 1. `/signup` → issues a **6-digit email verification code** (`/verify-email`)  
+   — or `/auth/github` → **create local password** (`/set-password`)  
 2. `/setup-mfa` → enroll TOTP authenticator (RFC 6238) — required 2FA  
 3. `/signin` with MFA enabled → `/mfa` challenge (authenticator **or** email 6-digit code)
 

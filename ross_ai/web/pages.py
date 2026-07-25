@@ -714,6 +714,51 @@ def verify_email_page(
     return layout(title="Verify email", body=body, nav="verify", csrf=csrf, **kwargs)
 
 
+def set_password_page(
+    *,
+    email: str,
+    csrf: str,
+    github_login: str | None = None,
+    error: str | None = None,
+    **kwargs,
+) -> str:
+    err = f'<p class="form-error">{esc(error)}</p>' if error else ""
+    gh_note = ""
+    if github_login:
+        gh_note = (
+            f'<p class="ok-msg">GitHub account <strong>@{esc(github_login)}</strong> is linked. '
+            "Create a local ROSS password to continue — required even with GitHub sign-in.</p>"
+        )
+    else:
+        gh_note = (
+            '<p class="ok-msg">Create a local ROSS password. Required for console access and '
+            "password sign-in alongside any linked providers.</p>"
+        )
+    body = f"""
+<main class="console narrow">
+  <header class="console-head animate-in">
+    <div>
+      <p class="eyebrow">Step 01b · Local password</p>
+      <h1>Create your password</h1>
+      <p class="lede tight">Account <strong>{esc(email)}</strong> must have a ROSS password before MFA and membership.</p>
+    </div>
+  </header>
+  {err}{gh_note}
+  <form method="post" action="/set-password" class="panel gate-form animate-in delay-1">
+    <input type="hidden" name="csrf" value="{esc(csrf)}" />
+    <label>Password
+      <input type="password" name="password" required autocomplete="new-password" minlength="10" placeholder="At least 10 characters · letters + numbers" />
+    </label>
+    <label>Confirm password
+      <input type="password" name="confirm" required autocomplete="new-password" minlength="10" placeholder="Re-enter password" />
+    </label>
+    <button class="btn primary block" type="submit">Save password &amp; continue</button>
+  </form>
+</main>
+"""
+    return layout(title="Create password", body=body, nav="set-password", csrf=csrf, **kwargs)
+
+
 def setup_mfa_page(
     *,
     email: str,

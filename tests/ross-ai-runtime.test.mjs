@@ -363,13 +363,35 @@ describe('Ross AI Runtime Platform', () => {
       assert.ok(rbacApi.roles.length >= 6);
       assert.equal(rbacApi.defaultRole, 'operator');
 
-      // GitHub create-account integration (dev simulate)
+      // GitHub create-account integration (dev simulate) — still requires local password
       const gh = await fetchResponse(`${base}/auth/github`, { method: 'GET' });
       assert.equal(gh.status, 303);
       assert.match(gh.headers.location || '', /auth\/github\/callback/);
       const cb = await fetchResponse(`${base}${gh.headers.location}`);
       assert.equal(cb.status, 303);
-      assert.ok(cookieFromSet(cb.headers['set-cookie-all'] || cb.headers['set-cookie']).includes('ross_session='));
+      assert.match(cb.headers.location || '', /set-password/);
+      const ghCookie = cookieFromSet(cb.headers['set-cookie-all'] || cb.headers['set-cookie']);
+      assert.ok(ghCookie.includes('ross_session='));
+
+      const beforePwd = await fetchResponse(`${base}/dashboard`, { headers: { Cookie: ghCookie } });
+      assert.equal(beforePwd.status, 303);
+      assert.match(beforePwd.headers.location || '', /set-password/);
+
+      const setPwdPage = await fetchText(`${base}/set-password`, { headers: { Cookie: ghCookie } });
+      assert.equal(setPwdPage.status, 200);
+      assert.match(setPwdPage.body, /Create your password|GitHub account/i);
+      const setPwdCsrf = csrfFromHtml(setPwdPage.body);
+      const setPwd = await postForm(
+        `${base}/set-password`,
+        { csrf: setPwdCsrf, password: 'GithubGate1', confirm: 'GithubGate1' },
+        { Cookie: ghCookie }
+      );
+      assert.equal(setPwd.status, 303);
+      assert.match(setPwd.headers.location || '', /setup-mfa/);
+
+      const afterPwd = await fetchResponse(`${base}/dashboard`, { headers: { Cookie: ghCookie } });
+      assert.equal(afterPwd.status, 303);
+      assert.match(afterPwd.headers.location || '', /setup-mfa/);
     } finally {
       if (child && !child.killed) {
         child.kill('SIGTERM');
