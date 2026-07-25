@@ -1,9 +1,12 @@
-"""Shared HTML chrome and page renderers for Ross operator console."""
+"""Shared HTML chrome and page renderers for ROSS operator console."""
 
 from __future__ import annotations
 
 import html
 from typing import Any
+
+from ross_ai.brand import APP_FULL_NAME, APP_NAME, COMPANY, TAGLINE
+from ross_ai.seo import page_seo, render_head
 
 
 def esc(value: Any) -> str:
@@ -19,7 +22,23 @@ def layout(
     nav: str = "landing",
     flash: str | None = None,
     scripts: str = "",
+    description: str | None = None,
+    path: str = "/",
+    index: bool | None = None,
+    breadcrumbs: list[tuple[str, str]] | None = None,
 ) -> str:
+    # Authenticated / app surfaces stay out of search indexes by default
+    if index is None:
+        index = nav in {"landing", "marketplace", "legal", "gate"} and not user
+
+    seo = page_seo(
+        title=f"{title} · {APP_NAME}" if title != APP_NAME else f"{APP_NAME} — {APP_FULL_NAME}",
+        description=description,
+        path=path,
+        index=index,
+        breadcrumbs=breadcrumbs,
+    )
+
     auth_links = ""
     if user:
         mem_label = esc(user.get("tierName") or "Pending membership")
@@ -46,23 +65,34 @@ def layout(
         """
 
     flash_html = f'<div class="flash" role="status">{esc(flash)}</div>' if flash else ""
+    head = render_head(seo)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{esc(title)} · Ross AI Runtime Platform</title>
-  <link rel="stylesheet" href="/static/app.css" />
+{head}
 </head>
-<body data-nav="{esc(nav)}" data-authed="{1 if user else 0}">
+<body data-nav="{esc(nav)}" data-authed="{1 if user else 0}" data-app="{esc(APP_NAME)}">
   <div class="atmosphere" aria-hidden="true"></div>
   <header class="topbar">
-    <a class="mark" href="/">Ross <em>AI</em></a>
-    <nav class="nav">{auth_links}</nav>
+    <a class="mark" href="/" aria-label="{esc(APP_FULL_NAME)} home"><strong>{esc(APP_NAME)}</strong> <em>{esc(COMPANY)}</em></a>
+    <nav class="nav" aria-label="Primary">{auth_links}</nav>
   </header>
   {flash_html}
   {body}
+  <footer class="site-footer">
+    <div>
+      <strong>{esc(APP_NAME)}</strong> — {esc(APP_FULL_NAME)}
+      <span>{esc(TAGLINE)}</span>
+    </div>
+    <div>
+      <a href="/marketplace">Marketplace</a>
+      <a href="/legal">Policy</a>
+      <a href="/robots.txt">robots</a>
+      <a href="/sitemap.xml">sitemap</a>
+    </div>
+    <p>© {esc(COMPANY)}. All rights reserved. ZERO REFUNDS — ABSOLUTELY ZERO.</p>
+  </footer>
   <script src="/static/app.js" defer></script>
   {scripts}
 </body>
@@ -71,18 +101,23 @@ def layout(
 
 
 def landing_page(**kwargs) -> str:
-    body = """
-<main class="hero">
-  <p class="eyebrow animate-in">Ross Tax Software</p>
-  <h1 class="brand-hero animate-in delay-1">Ross <span>AI</span><br/>Runtime Platform</h1>
-  <p class="lede animate-in delay-2">Command packages, live runtime, deploy plans, and the operator control plane — on one hardened host.</p>
+    body = f"""
+<main class="hero" itemscope itemtype="https://schema.org/SoftwareApplication">
+  <p class="eyebrow animate-in" itemprop="author">{esc(COMPANY)}</p>
+  <h1 class="brand-hero animate-in delay-1" itemprop="name"><span class="app-mark">{esc(APP_NAME)}</span><br/><span class="app-full">{esc(APP_FULL_NAME)}</span></h1>
+  <p class="lede animate-in delay-2" itemprop="description">{esc(TAGLINE)} Hardened operator control for command packages, membership, RBAC, and transparent execution.</p>
+  <meta itemprop="applicationCategory" content="FinanceApplication" />
   <div class="cta-row animate-in delay-3">
-    <a class="btn primary" href="/signup">Create account</a>
+    <a class="btn primary" href="/signup">Create {esc(APP_NAME)} account</a>
     <a class="btn ghost" href="/marketplace">View membership tiers</a>
-    <a class="btn ghost" href="/signin">Sign in</a>
+    <a class="btn ghost" href="/auth/github">Continue with GitHub</a>
   </div>
   <p class="zero-banner animate-in delay-3">ZERO REFUNDS — ABSOLUTELY ZERO. All membership fees are final.</p>
 </main>
+<section class="presence animate-in delay-2" aria-label="Product presence">
+  <h2>Built for operators who need governed runtime power</h2>
+  <p>{esc(APP_NAME)} is the production control plane from {esc(COMPANY)} — not a generic dashboard template. One brand composition: packages, runtime, membership, and disciplined access.</p>
+</section>
 <section class="strip" aria-label="Platform pillars">
   <div><strong>Packages</strong><span>.rpkg build + checksum seal</span></div>
   <div><strong>Runtime</strong><span>Script runner + live WS feed</span></div>
@@ -90,7 +125,16 @@ def landing_page(**kwargs) -> str:
   <div><strong>Policy</strong><span>Absolute zero refunds</span></div>
 </section>
 """
-    return layout(title="Home", body=body, nav="landing", **kwargs)
+    return layout(
+        title=APP_NAME,
+        body=body,
+        nav="landing",
+        path="/",
+        index=True,
+        breadcrumbs=[("Home", "/")],
+        description=f"{APP_FULL_NAME} by {COMPANY}. {TAGLINE}",
+        **kwargs,
+    )
 
 
 def gate_page(
@@ -140,7 +184,22 @@ def gate_page(
   </div>
 </main>
 """
-    return layout(title=heading, body=body, nav="gate", csrf=csrf, **kwargs)
+    path = "/signup" if mode == "signup" else "/signin"
+    return layout(
+        title=heading,
+        body=body,
+        nav="gate",
+        csrf=csrf,
+        path=path,
+        index=True,
+        breadcrumbs=[("Home", "/"), (heading, path)],
+        description=(
+            f"Create your {APP_NAME} account at {COMPANY}."
+            if mode == "signup"
+            else f"Sign in to {APP_NAME} — {APP_FULL_NAME}."
+        ),
+        **kwargs,
+    )
 
 
 def dashboard_page(
@@ -354,7 +413,7 @@ def marketplace_page(*, tiers: list[dict], **kwargs) -> str:
   </section>
 </main>
 """
-    return layout(title="Marketplace", body=body, nav="marketplace", **kwargs)
+    return layout(title="Marketplace", body=body, nav="marketplace", path="/marketplace", index=True, breadcrumbs=[("Home", "/"), ("Marketplace", "/marketplace")], description=f"{APP_NAME} membership tiers — Starter, Professional, Firm, Enterprise. Payment on file and autopay. Zero refunds.", **kwargs)
 
 
 def membership_election_page(
@@ -604,7 +663,7 @@ def legal_page(*, sections: list[dict], banner: str, **kwargs) -> str:
   <div class="animate-in delay-2">{''.join(blocks)}</div>
 </main>
 """
-    return layout(title="Legal", body=body, nav="legal", **kwargs)
+    return layout(title="Legal", body=body, nav="legal", path="/legal", index=True, breadcrumbs=[("Home", "/"), ("Legal", "/legal")], description=f"{APP_NAME} rules, regulations, policy, disclaimers, and disclosures. Absolute zero refunds.", **kwargs)
 
 
 def verify_email_page(

@@ -29,11 +29,12 @@ Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
 Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 `aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`.
 
-### Ross AI Runtime Platform
+### Ross AI Runtime Platform (ROSS)
 
-Python stdlib CLI (`ross.py`) plus operator control plane (landing, access gates,
-dashboards, inventory, hardening, WebSockets) on port `8787`.
-Docs: `docs/ross-ai-runtime-platform.md`.
+**ROSS** is the product name for the Ross AI Runtime Platform control plane
+(landing, access gates, dashboards, inventory, hardening, WebSockets, RBAC,
+GitHub auth, transparent execution) on port `8787`, with advanced SEO
+(`/robots.txt`, `/sitemap.xml`, JSON-LD). Docs: `docs/ross-ai-runtime-platform.md`.
 
 ```bash
 python3 ross.py init

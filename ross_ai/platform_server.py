@@ -41,6 +41,8 @@ from ross_ai.membership import get_tier, list_tiers, validate_tier_id
 from ross_ai.otp import OtpService, otpauth_uri, verify_totp
 from ross_ai.paths import DEFAULT_HOST, DEFAULT_PORT, dist_path, plans_path
 from ross_ai.rbac import RbacService, rbac_matrix
+from ross_ai.seo import robots_txt, sitemap_xml, webmanifest
+from ross_ai.brand import brand_dict, APP_NAME, APP_FULL_NAME
 from ross_ai.store import JsonStore
 from ross_ai.web import pages
 from ross_ai.websocket import WebSocketHub, accept_key, decode_frames, encode_json
@@ -263,6 +265,21 @@ class RossHandler(BaseHTTPRequestHandler):
         user = self._user(session)
         csrf = session.csrf if session else ""
 
+        if path == "/robots.txt":
+            body = robots_txt().encode("utf-8")
+            self._send(200, body, "text/plain; charset=utf-8")
+            return
+
+        if path == "/sitemap.xml":
+            body = sitemap_xml().encode("utf-8")
+            self._send(200, body, "application/xml; charset=utf-8")
+            return
+
+        if path == "/site.webmanifest":
+            code, body, ctype = _json_bytes(webmanifest())
+            self._send(code, body, "application/manifest+json; charset=utf-8")
+            return
+
         if path == "/health":
             code, body, ctype = _json_bytes(
                 {
@@ -280,7 +297,10 @@ class RossHandler(BaseHTTPRequestHandler):
             code, body, ctype = _json_bytes(
                 {
                     "product": self.state.manifest.get("product") or __product__,
+                    "appName": APP_NAME,
+                    "fullName": APP_FULL_NAME,
                     "brand": self.state.manifest.get("brand") or __brand__,
+                    "branding": brand_dict(),
                     "name": self.state.manifest.get("name"),
                     "version": self.state.manifest.get("version"),
                     "rossVersion": __version__,
@@ -289,6 +309,11 @@ class RossHandler(BaseHTTPRequestHandler):
                     "modules": inv["total"],
                     "env": os.environ.get("ROSS_ENV", "local"),
                     "authenticated": bool(user),
+                    "seo": {
+                        "robots": "/robots.txt",
+                        "sitemap": "/sitemap.xml",
+                        "manifest": "/site.webmanifest",
+                    },
                 }
             )
             self._send(code, body, ctype)

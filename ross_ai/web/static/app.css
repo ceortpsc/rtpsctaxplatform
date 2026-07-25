@@ -52,14 +52,31 @@ body {
   z-index: 20;
   background: rgba(7, 18, 14, 0.72);
 }
-.mark {
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  color: var(--paper);
-  text-decoration: none;
-  letter-spacing: -0.02em;
+.mark strong { color: var(--paper); font-weight: 700; letter-spacing: 0.04em; }
+.mark em { color: var(--gold); font-style: normal; font-size: 0.72em; margin-left: 0.35rem; font-family: var(--font-ui); letter-spacing: 0.02em; }
+.presence {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2.5rem;
 }
-.mark em { color: var(--gold); font-style: normal; }
+.presence h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  margin: 0 0 0.6rem;
+}
+.presence p { color: var(--muted); max-width: 52ch; line-height: 1.45; margin: 0; }
+.site-footer {
+  border-top: 1px solid var(--line);
+  padding: 1.4rem 1.4rem 2rem;
+  display: grid;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.site-footer strong { color: var(--paper); }
+.site-footer span { display: block; margin-top: 0.2rem; }
+.site-footer a { color: var(--gold); margin-right: 0.85rem; text-decoration: none; }
+.site-footer p { margin: 0.4rem 0 0; font-size: 0.78rem; }
 .nav { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 .nav-link, .btn-link {
   color: var(--muted);
@@ -99,7 +116,15 @@ body {
   margin: 0 0 1rem;
   font-weight: 600;
 }
-.brand-hero span { color: var(--gold); }
+.brand-hero .app-mark { color: var(--gold); }
+.brand-hero .app-full {
+  font-size: 0.42em;
+  display: inline-block;
+  margin-top: 0.35rem;
+  color: var(--paper);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.16em;

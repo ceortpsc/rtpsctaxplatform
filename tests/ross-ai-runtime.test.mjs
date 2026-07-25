@@ -134,15 +134,51 @@ describe('Ross AI Runtime Platform', () => {
       await waitForHealth(`${base}/health`, 15000);
 
       const home = await fetchText(`${base}/`);
-      assert.match(home.body, /Ross/);
-      assert.match(home.body, /Runtime Platform/);
       assert.equal(home.status, 200);
+      assert.match(home.body, /ROSS/);
+      assert.match(home.body, /Ross AI Runtime Platform/);
+      assert.match(home.body, /Ross Tax Software/);
+      assert.match(home.body, /application\/ld\+json/);
+      assert.match(home.body, /SoftwareApplication/);
+      assert.match(home.body, /BreadcrumbList/);
+      assert.match(home.body, /og:title/);
+      assert.match(home.body, /twitter:card/);
+      assert.match(home.body, /canonical/);
+      assert.match(home.body, /googlebot/);
+      assert.match(home.body, /bingbot/);
+
+      const robots = await fetchText(`${base}/robots.txt`);
+      assert.equal(robots.status, 200);
+      assert.match(robots.body, /Sitemap:/);
+      assert.match(robots.body, /Disallow: \/dashboard/);
+      assert.match(robots.body, /Allow: \/marketplace/);
+
+      const sitemap = await fetchText(`${base}/sitemap.xml`);
+      assert.equal(sitemap.status, 200);
+      assert.match(sitemap.body, /<urlset/);
+      assert.match(sitemap.body, /marketplace/);
+      assert.match(sitemap.body, /signup/);
+      assert.match(sitemap.body, /legal/);
+
+      const manifest = await fetchJson(`${base}/site.webmanifest`);
+      assert.equal(manifest.short_name, 'ROSS');
+      assert.match(String(manifest.name), /Ross AI Runtime Platform/);
+
+      const metaBrand = await fetchJson(`${base}/metadata`);
+      assert.equal(metaBrand.appName, 'ROSS');
+      assert.equal(metaBrand.seo.sitemap, '/sitemap.xml');
 
       for (const p of ['/signin', '/login', '/signup']) {
         const page = await fetchText(`${base}${p}`);
         assert.equal(page.status, 200, p);
         assert.match(page.body, /Access gate|password/i);
+        assert.match(page.body, /rel="canonical"/);
       }
+
+      const market = await fetchText(`${base}/marketplace`);
+      assert.equal(market.status, 200);
+      assert.match(market.body, /index,follow/);
+      assert.match(market.body, /Membership Marketplace|membership tiers/i);
 
       const dashAnon = await fetchResponse(`${base}/dashboard`);
       assert.equal(dashAnon.status, 303);

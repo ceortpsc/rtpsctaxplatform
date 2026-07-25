@@ -18,21 +18,23 @@ built for workspace velocity. Instant Messenger soul, next-level speed.
 
 See [`docs/aol-package-manager.md`](docs/aol-package-manager.md).
 
-## Ross AI Runtime Platform
+## Ross AI Runtime Platform (ROSS)
 
-Operator control plane (`ross.py`) — landing, access gates, dashboards, module
-inventory, hardening, WebSockets, `.rpkg` packaging, and deploy plans on
-**http://127.0.0.1:8787**.
+**ROSS** is the product name for the **Ross AI Runtime Platform** by Ross Tax Software —
+landing, access gates, dashboards, membership, RBAC, GitHub sign-in, transparent
+execution, and advanced SEO on **http://127.0.0.1:8787**.
 
 ```bash
 python3 ross.py init
 python3 ross.py doctor
 python3 ross.py package build      # → workspace/dist/application.rpkg
 python3 ross.py runtime run hello
-python3 ross.py deploy plan local  # also: docker, kubernetes, aws-lambda, …
+python3 ross.py deploy plan local
 python3 ross.py dev                # open http://127.0.0.1:8787
-# Create access at /signup → operator console at /dashboard
+# Create ROSS account → verify email → MFA → membership → payment
 ```
+
+SEO: `/robots.txt`, `/sitemap.xml`, `/site.webmanifest` (set `ROSS_PUBLIC_URL` in production).
 
 Docker: `docker compose -f docker-compose.ross.yml up --build`.  
 Details: [`docs/ross-ai-runtime-platform.md`](docs/ross-ai-runtime-platform.md).

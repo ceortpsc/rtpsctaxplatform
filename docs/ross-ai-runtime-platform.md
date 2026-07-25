@@ -46,6 +46,19 @@ python ross.py dev
 | `/health` `/metadata` | Probe endpoints |
 | `/api/inventory` `/api/hardening` `/api/events` | Auth JSON APIs |
 
+## Product identity & SEO
+
+**Application name:** **ROSS**  
+**Full name:** Ross AI Runtime Platform  
+**Company:** Ross Tax Software  
+
+Advanced SEO surfaces:
+- Canonical + Open Graph + Twitter cards on every page
+- JSON-LD (`Organization`, `WebSite`, `SoftwareApplication`, `WebPage`, `BreadcrumbList`)
+- `/robots.txt`, `/sitemap.xml`, `/site.webmanifest`
+- Public pages indexed; authenticated console routes `noindex`
+- Set `ROSS_PUBLIC_URL` for correct canonicals behind tunnels/production
+
 ## GitHub account integration
 
 - `/auth/github` starts OAuth (or local **dev simulate** when `ROSS_GITHUB_*` is unset)
