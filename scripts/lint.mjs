@@ -188,6 +188,13 @@ function assertEnvironmentShape(env) {
   if (typeof env.install !== 'string' || !env.install.includes('aol')) {
     throw new Error('.cursor/environment.json "install" must invoke AOL.');
   }
+  // Cursor resolves build.dockerfile relative to .cursor/ — "Dockerfile" → .cursor/Dockerfile.
+  if (env.build?.dockerfile !== 'Dockerfile') {
+    throw new Error(
+      '.cursor/environment.json build.dockerfile must be "Dockerfile" (path is relative to .cursor/). ' +
+        `Got ${JSON.stringify(env.build?.dockerfile)}.`
+    );
+  }
   if (!Array.isArray(env.ports) || env.ports.length === 0) {
     throw new Error('.cursor/environment.json must declare ports.');
   }

@@ -119,6 +119,31 @@ const CHECKS = [
         };
       }
     }
+  },
+  {
+    id: 'environment-dockerfile-path',
+    required: true,
+    description: 'build.dockerfile is relative to .cursor/ (must be "Dockerfile", not ".cursor/Dockerfile")',
+    resolve: async () => {
+      const file = path.join(repoRoot, '.cursor/environment.json');
+      try {
+        const { readFile } = await import('node:fs/promises');
+        const parsed = JSON.parse(await readFile(file, 'utf8'));
+        const dockerfile = parsed?.build?.dockerfile;
+        if (dockerfile === 'Dockerfile') return { ok: true, path: file };
+        return {
+          ok: false,
+          path: file,
+          detail: `got ${JSON.stringify(dockerfile)}; Cursor resolves paths relative to .cursor/`
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          path: file,
+          detail: error instanceof Error ? error.message : String(error)
+        };
+      }
+    }
   }
 ];
 

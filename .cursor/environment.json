@@ -1,7 +1,7 @@
 {
   "name": "RTPSC Enterprise Environment",
   "build": {
-    "dockerfile": ".cursor/Dockerfile",
+    "dockerfile": "Dockerfile",
     "context": ".."
   },
   "install": "command -v tmux && command -v git && ./scripts/aol install && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && node ./scripts/cloud-doctor.mjs",

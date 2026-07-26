@@ -7,7 +7,7 @@
 #   sudo     — Cursor Dockerfile guidance for privileged helpers
 #   locales  — computer-use / remote-desktop bootstrap on custom Ubuntu images
 #   xz-utils — Node tarball extract + desktop package tooling
-# Bump comment when forcing a Cloud environment rebuild: cloud-helpers-v1
+# Bump comment when forcing a Cloud environment rebuild: cloud-helpers-v2
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
