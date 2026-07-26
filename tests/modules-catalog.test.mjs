@@ -19,9 +19,18 @@ test('catalog summary totals match the catalog contents', () => {
 test('workflow modules are listed as background modules with trigger tags', () => {
   const workflows = buildModuleCatalog().find((group) => group.category === 'workflows');
   const names = workflows.modules.map((m) => m.name);
-  assert.deepEqual(names, ['refund-status-update', 'transcript-intake', 'transmission-cycle']);
+  assert.deepEqual(names, [
+    'refund-status-update',
+    'transcript-intake',
+    'transmission-cycle',
+    'agent-assignment-dispatch',
+    'agent-task-requested',
+    'agent-assignment-cycle'
+  ]);
   const refund = workflows.modules.find((m) => m.name === 'refund-status-update');
   assert.ok(refund.tags.some((tag) => tag.startsWith('event:')));
+  const agentEvent = workflows.modules.find((m) => m.name === 'agent-task-requested');
+  assert.ok(agentEvent.tags.some((tag) => tag === 'event:agent.task.requested'));
 });
 
 test('SERVICE_ENDPOINTS lists every HTTP service with a distinct port', () => {

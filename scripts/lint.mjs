@@ -75,7 +75,8 @@ const requiredPaths = [
   'docs/cursor-canvas.md',
   'packages/canvas-core/package.json',
   'packages/canvas-core/src/index.mjs',
-  '.cursor/skills/rtpsc-canvas/SKILL.md'
+  '.cursor/skills/rtpsc-canvas/SKILL.md',
+  'docs/CURSOR_TERMINAL_AGENT.md'
 ];
 
 const packageFiles = [
@@ -116,6 +117,7 @@ const packageFiles = [
   'workflows/refund-status-workflow/package.json',
   'workflows/transcript-intake-workflow/package.json',
   'workflows/transmission-workflow/package.json',
+  'workflows/agent-assignment-workflow/package.json',
   'engines/refund-optimization-engine/package.json',
   'engines/refund-intelligence-engine/package.json',
   'engines/ai-persona-runtime/package.json',

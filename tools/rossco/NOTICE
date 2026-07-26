@@ -1,8 +1,13 @@
-ROSS.CO — Infinite Transfer Rate (ITR) Package Manager
-Copyright (c) 2026 RTPSC / Ross Tax Software. All rights reserved where not licensed.
+ROSS.CO Infinite Package Manager / Infinite Transfer Rate
+Copyright (c) 2026 Ross Tax Pro Software Co. / RTPSC / Ross Tax Software.
 
-ROSS.CO and "Infinite Transfer Rate" are product marks of RTPSC / Ross Tax Software.
-Licensed under the MIT License (see repository LICENSE).
+This package is distributed under the MIT License — see the repository root
+LICENSE file and tools/rossco/src/ip.mjs (spdxLicense: MIT).
 
-AOL (Adaptive Optimized Linker) remains the underlying workspace linker.
-ROSS.CO ITR is the product lifecycle, transfer-rate, registration, and presence layer.
+ROSS.CO, Infinite Transfer Rate, ITR, and associated product branding are
+marks of Ross Tax Pro Software Co. Trademark rights are independent of the
+software copyright license. Federal trademark registration is not claimed
+unless supported by an official filing receipt or registration record. The ®
+symbol must not be used before registration issues.
+
+Contact: ceo@rosstaxsoftware.com

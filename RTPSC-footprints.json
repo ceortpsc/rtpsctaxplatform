@@ -3,10 +3,20 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-26T08:47:30.283Z",
-  "count": 53,
+  "createdAt": "2026-07-26T08:51:28.546Z",
+  "count": 54,
   "ok": true,
   "footprints": [
+    {
+      "name": "@rtp/agent-assignment-workflow",
+      "version": "0.1.0",
+      "location": "workflows/agent-assignment-workflow",
+      "sector": "workflows",
+      "footprint": "97a87b3788de368a",
+      "fingerprint": "97a87b3788de368a",
+      "integrity": "sha256-97a87b3788de368a170b34a1e2e974d04eda85607b5ae3f1d0d4facec85cd287",
+      "status": "sealed"
+    },
     {
       "name": "@rtp/agent-core",
       "version": "0.1.0",

@@ -102,6 +102,15 @@ export function buildAgentContext() {
   };
 }
 
+// Assignment board primitives (required tasks → agents → triggers).
+export {
+  ASSIGNMENT_STATUSES,
+  ASSIGNMENT_TRIGGER_TYPES,
+  REQUIRED_ASSIGNMENTS,
+  defineAssignment,
+  createAssignmentBoard
+} from './assignments.mjs';
+
 /* =============================================================================
    Markdown building blocks (used by the markdown-generation engine agent)
    ========================================================================== */

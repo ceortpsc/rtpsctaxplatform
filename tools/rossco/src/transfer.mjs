@@ -7,7 +7,7 @@ import { discoverWorkspaces, loadRootManifest } from '../../aol/src/workspaces.m
  * Measures bytes/sec across linked workspace trees for velocity reporting.
  */
 
-export async function infiniteTransfer(root, { force = false, quiet = false } = {}) {
+export async function infiniteTransfer(root, { force = false } = {}) {
   const started = performance.now();
   const manifest = await loadRootManifest(root);
   const workspaces = await discoverWorkspaces(root, manifest.workspaces || []);

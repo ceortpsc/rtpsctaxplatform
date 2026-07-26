@@ -2,14 +2,14 @@
   "name": "@rtp/rossco",
   "version": "0.1.0",
   "private": true,
-  "description": "ROSS.CO — Infinite Transfer Rate Package Manager. Full lifecycle package velocity for RTPSC.",
+  "description": "ROSS.CO Infinite Package Manager — a first-party package-management, registry, provenance, and software-supply-chain product of Ross Tax Pro Software Co.",
   "type": "module",
   "license": "MIT",
-  "author": "RTPSC / Ross Tax Software <ceo@rosstaxsoftware.com>",
-  "copyright": "Copyright (c) 2026 RTPSC / Ross Tax Software / ROSS.CO",
+  "author": "Ross Tax Pro Software Co. <ceo@rosstaxsoftware.com>",
+  "copyright": "Copyright (c) 2026 Ross Tax Pro Software Co. / RTPSC / Ross Tax Software.",
   "bin": {
-    "rossco": "./bin/rossco.mjs",
-    "itr": "./bin/rossco.mjs"
+    "ross": "./bin/rossco.mjs",
+    "rossco": "./bin/rossco.mjs"
   },
   "exports": {
     ".": "./src/index.mjs",
@@ -27,14 +27,14 @@
   "keywords": [
     "rossco",
     "ross.co",
-    "infinite-transfer-rate",
-    "itr",
+    "ross-infinite",
     "package-manager",
-    "monorepo",
-    "aol",
-    "rtpsc"
+    "registry",
+    "provenance",
+    "software-supply-chain",
+    "ross-tax-pro-software"
   ],
-  "homepage": "https://ross.co",
+  "homepage": "https://rosstaxsoftware.com/rossco",
   "repository": {
     "type": "git",
     "url": "https://github.com/ceortpsc/rtpsctaxplatform",

@@ -71,3 +71,19 @@ test('credit scan disables EITC without earned income', () => {
   const scan = scanRefundableCredits({ earnedIncome: 0, qualifyingChildren: 2 });
   assert.equal(scan.find((credit) => credit.id === 'EITC').eligible, false);
 });
+
+test('HOH boost never deepens an amount owed', () => {
+  const roi = runOptimizationWorkflow({
+    withholding: 100,
+    taxLiability: 5000,
+    possibleHoh: true,
+    qualifyingChildren: 1,
+    earnedIncome: 20000
+  });
+  assert.equal(roi.filing.recommended.status, 'HOH');
+  assert.ok(roi.optimized.owed >= 0);
+  assert.equal(roi.optimized.isRefund, roi.optimized.refund >= 0);
+  assert.equal(roi.optimized.owed, roi.optimized.refund < 0 ? Math.abs(roi.optimized.refund) : 0);
+  // When baseline is owed, optimized owed must not exceed a worsened baseline from a negative boost.
+  assert.ok(roi.optimized.refund >= roi.baseline.refund || roi.optimized.isRefund);
+});

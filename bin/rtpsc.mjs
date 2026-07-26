@@ -58,9 +58,9 @@ export const COMMANDS = {
     }
   },
   agents: {
-    usage: 'agents [docs]',
-    desc: 'Run the deployment-assist & development team (add "docs" to write markdown)',
-    plan: (rest) => node('scripts/agents.mjs', rest.includes('docs') || rest.includes('--write') ? ['--write'] : [])
+    usage: 'agents [docs|list|assign|run|required|trigger|workflow|help]',
+    desc: 'Run/assign the deployment-assist team; dispatch assignment workflows & triggers',
+    plan: (rest) => node('scripts/agents.mjs', rest)
   },
   canvas: {
     usage: 'canvas [list|kinds|describe|create [kind|all]]',
