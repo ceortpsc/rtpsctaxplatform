@@ -12,7 +12,7 @@
 | Artifact | Path |
 |----------|------|
 | Environment definition | `.cursor/environment.json` |
-| Agent Dockerfile | `.cursor/Dockerfile` |
+| Agent Dockerfile | `.cursor/Dockerfile` (`build.dockerfile: "Dockerfile"` — path relative to `.cursor/`) |
 | Deploy Dockerfile | `Dockerfile` |
 | Node workspace | `package.json` + AOL lockfile |
 | Python tooling | `requirements.txt` |
