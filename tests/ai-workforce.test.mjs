@@ -78,6 +78,12 @@ test('AI cannot clear HOLD', () => {
   const ran = runPersonaStep(id, {});
   assert.equal(ran.ok, false);
   assert.equal(ran.code, 'hold_locked');
+  const spoofed = humanApprove(id, { reviewer: 'office-manager-bot' });
+  assert.equal(spoofed.ok, false);
+  assert.equal(spoofed.code, 'unauthorized_reviewer');
+  const cleared = humanApprove(id, { reviewer: 'human-reviewer' });
+  assert.equal(cleared.ok, true);
+  assert.equal(cleared.task.state, 'DELIVERED');
 });
 
 test('live service orchestrator completes under governance', () => {

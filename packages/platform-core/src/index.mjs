@@ -163,7 +163,14 @@ function contentTypeFor(filePath) {
 }
 
 export function serveStaticFile(response, rootDir, requestPath) {
-  const safePath = path.normalize(decodeURIComponent(requestPath.split('?')[0])).replace(/^(\.\.[/\\])+/, '');
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(String(requestPath || '').split('?')[0]);
+  } catch {
+    sendJson(response, 400, { error: 'bad_request', message: 'Malformed URL encoding' });
+    return true;
+  }
+  const safePath = path.normalize(decodedPath).replace(/^(\.\.[/\\])+/, '');
   const relative = safePath === '/' || safePath === '' ? 'index.html' : safePath.replace(/^\//, '');
   const absolute = path.join(rootDir, relative);
   if (!absolute.startsWith(path.resolve(rootDir))) {
@@ -173,7 +180,7 @@ export function serveStaticFile(response, rootDir, requestPath) {
   if (!fs.existsSync(absolute) || fs.statSync(absolute).isDirectory()) return false;
   response.setHeader('content-type', contentTypeFor(absolute));
   response.writeHead(200);
-  response.end(fs.readFileSync(absolute));
+  fs.createReadStream(absolute).pipe(response);
   return true;
 }
 

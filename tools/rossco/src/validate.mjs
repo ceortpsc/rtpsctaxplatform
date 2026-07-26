@@ -66,7 +66,7 @@ export async function verifyPrototype(root, { transferFn } = {}) {
   let transferError = null;
   try {
     if (typeof transferFn === 'function') {
-      transfer = await transferFn(root, { quiet: true });
+      transfer = await transferFn(root);
     }
   } catch (error) {
     transferError = error.message;

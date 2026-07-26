@@ -85,9 +85,7 @@ function renderLandingHtml(config) {
   <meta property="og:description" content="${seo.description}" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${seo.canonical}" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <!-- Fonts intentionally local/system stacks (no external runtime deps). -->
   <link rel="stylesheet" href="./styles.css" />
   <script type="application/ld+json" src="./structured-data.json"></script>
 </head>
@@ -134,8 +132,8 @@ function renderCss() {
   --muted: #8fb0c8;
   --accent: #3de0c5;
   --hot: #ffb703;
-  --display: "Syne", sans-serif;
-  --mono: "IBM Plex Mono", monospace;
+  --display: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --mono: "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace;
 }
 * { box-sizing: border-box; }
 body {
