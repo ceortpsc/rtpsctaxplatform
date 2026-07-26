@@ -65,6 +65,10 @@ test('refund store ingestCase + runFullPath + ledger import', async () => {
   const minimal = store.listCasesMinimal();
   assert.equal(minimal.length, 1);
   const caseId = minimal[0].caseId;
+  assert.ok(
+    ['closed', 'funded', 'accepted', 'protections', 'fees_settled'].includes(minimal[0].latestStage),
+    `expected federal latestStage, got ${minimal[0].latestStage}`
+  );
   const detail = store.getCase(caseId);
   assert.ok(detail.timeline.some((t) => t.stage === 'accepted'));
   assert.ok(detail.ledger?.ackCode === 'A' || detail.timeline.some((t) => t.stage === 'funded'));

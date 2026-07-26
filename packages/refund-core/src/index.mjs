@@ -85,10 +85,11 @@ export function createRefundStore({
 
   function appendTimeline(record, entry) {
     const createdAt = now();
+    const stage = entry.stage ?? entry.type ?? 'event';
     record.timeline.unshift({
       id: entry.id ?? nextId('evt'),
       caseId: record.id,
-      stage: entry.stage ?? entry.type ?? 'event',
+      stage,
       label: entry.label ?? entry.detail ?? entry.type ?? 'event',
       details: entry.details ?? {},
       phrase: entry.phrase ?? null,
@@ -98,7 +99,10 @@ export function createRefundStore({
       type: entry.type ?? entry.stage ?? 'event',
       detail: entry.detail ?? entry.label ?? ''
     });
-    if (entry.stage) record.latestStage = entry.stage;
+    // Only federal trace / filing stages advance latestStage (not pipeline noise).
+    if (TRACE_STAGES.includes(stage) || FILING_STAGES.includes(stage)) {
+      record.latestStage = stage;
+    }
     if (record.timeline.length > 200) record.timeline.length = 200;
     record.updatedAt = createdAt;
   }
