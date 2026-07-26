@@ -13,17 +13,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate critical JSON / packageManager / lockfile
+        run: node ./scripts/lint.mjs
+
       - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.3
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'pnpm'
-      - run: pnpm install
-      - run: pnpm run lint
-      - run: pnpm test
-      - run: pnpm run build
-      - name: AOL install
+
+      - name: pnpm install
+        run: pnpm install
+
+      - name: pnpm lint
+        run: pnpm run lint
+
+      - name: pnpm test
+        run: pnpm test
+
+      - name: pnpm build
+        run: pnpm run build
+
+      - name: AOL install (reseal / link workspaces)
         run: node ./tools/aol/bin/aol.mjs install
-      - run: node ./tools/aol/bin/aol.mjs run lint
-      - run: node ./tools/aol/bin/aol.mjs run test
-      - run: node ./tools/aol/bin/aol.mjs run build
+
+      - name: AOL lint
+        run: node ./tools/aol/bin/aol.mjs run lint
+
+      - name: AOL test
+        run: node ./tools/aol/bin/aol.mjs run test
+
+      - name: AOL build
+        run: node ./tools/aol/bin/aol.mjs run build
+
+      - name: Assert lockfile still valid after AOL install
+        run: node -e "JSON.parse(require('fs').readFileSync('RTPSC-package-lock.json','utf8')); console.log('lockfile ok')"

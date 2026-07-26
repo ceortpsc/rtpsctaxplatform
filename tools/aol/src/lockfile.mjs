@@ -117,7 +117,7 @@ export async function writeLockfile(root, lock, options = {}) {
   return file;
 }
 
-export async function readLockfile(root) {
+export async function readLockfile(root, { recoverCorrupt = true } = {}) {
   for (const name of [LOCKFILE_NAME, LEGACY_LOCKFILE_NAME]) {
     const file = lockfilePath(root, name);
     try {
@@ -125,8 +125,19 @@ export async function readLockfile(root) {
     } catch {
       continue;
     }
-    const raw = JSON.parse(await readFile(file, 'utf8'));
-    return normalizeLock(raw, name);
+    try {
+      const raw = JSON.parse(await readFile(file, 'utf8'));
+      return normalizeLock(raw, name);
+    } catch (error) {
+      // Merge-corrupted locks must not hard-crash install — treat as missing so
+      // `aol install` can reseal a valid RTPSC-package-lock.json.
+      if (!recoverCorrupt) {
+        throw new Error(
+          `${name} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+      return null;
+    }
   }
   return null;
 }

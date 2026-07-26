@@ -96,3 +96,11 @@ test('strict production marks unresolved manual items as fail', async () => {
   const manual = results.filter((item) => item.mode === 'manual');
   assert.ok(manual.every((item) => item.status === 'fail'));
 });
+
+test('BND-003 does not flag clients.mjs export-env scaffolding', async () => {
+  const { results } = await runComplianceChecks(root, { skipGates: true, live: false });
+  const bnd = results.find((item) => item.id === 'BND-003');
+  assert.ok(bnd, 'BND-003 should be present');
+  assert.equal(bnd.status, 'pass', JSON.stringify(bnd, null, 2));
+  assert.ok(!(bnd.findings || []).includes('scripts/clients.mjs'));
+});
