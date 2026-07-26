@@ -1,3 +1,6 @@
+# Ross AI Runtime Platform
+# Core CLI uses Python stdlib only. Install is optional for local tooling parity.
+# python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 # RTPSC Python tooling — PDF fill engine + IRS helper scaffold
 # Install: python3 -m pip install -r requirements.txt
 pypdf==5.1.0

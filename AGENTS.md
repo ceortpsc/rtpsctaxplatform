@@ -31,6 +31,25 @@ Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
 Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 `aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`.
 
+### Ross Tax Pro Software Co | RunTime AI Assist
+
+**RunTime AI Assist** (full name: **Ross Tax Pro Software Co | RunTime AI Assist**)
+is the operator control plane
+(landing, access gates, dashboards, inventory, hardening, WebSockets, RBAC,
+GitHub auth, transparent execution) on port `8787`, with advanced SEO
+(`/robots.txt`, `/sitemap.xml`, JSON-LD). Docs: `docs/ross-ai-runtime-platform.md`.
+
+```bash
+python3 ross.py init
+python3 ross.py doctor
+python3 ross.py package build
+python3 ross.py runtime run hello
+python3 ross.py deploy plan docker
+python3 ross.py dev                 # http://127.0.0.1:8787
+# Landing → /signup or /signin → /dashboard
+```
+
+Docker (optional): `cp .env.example .env && docker compose -f docker-compose.ross.yml up --build`.
 ### Cursor Cloud environment
 
 - Repo definition: `.cursor/environment.json` (+ `.cursor/Dockerfile`).

@@ -18,6 +18,28 @@ built for workspace velocity. Instant Messenger soul, next-level speed.
 
 See [`docs/aol-package-manager.md`](docs/aol-package-manager.md).
 
+## Ross Tax Pro Software Co | RunTime AI Assist
+
+**RunTime AI Assist** is the product from **Ross Tax Pro Software Co**
+(full name: **Ross Tax Pro Software Co | RunTime AI Assist**) —
+landing, access gates, dashboards, membership, RBAC, GitHub sign-in, transparent
+execution, and advanced SEO on **http://127.0.0.1:8787**.
+
+```bash
+python3 ross.py init
+python3 ross.py doctor
+python3 ross.py package build      # → workspace/dist/application.rpkg
+python3 ross.py runtime run hello
+python3 ross.py deploy plan local
+python3 ross.py dev                # open http://127.0.0.1:8787
+# Create account → verify email → MFA → membership → payment
+```
+
+SEO: `/robots.txt`, `/sitemap.xml`, `/site.webmanifest` (set `ROSS_PUBLIC_URL` in production).
+
+Docker: `docker compose -f docker-compose.ross.yml up --build`.  
+Details: [`docs/ross-ai-runtime-platform.md`](docs/ross-ai-runtime-platform.md).
+
 ## Platform Overview
 
 The repository is organized as a lightweight monorepo with executable Node.js service and worker skeletons, shared packages for runtime configuration and secure tunnel interfaces, Terraform placeholders, CI scaffolding, and operations/compliance documentation.
@@ -71,6 +93,7 @@ Run workers in one-shot mode:
 ```text
 tools/
   aol/                   Adaptive Optimized Linker (package manager)
+ross.py / ross_ai/       Ross Tax Pro Software Co | RunTime AI Assist (packages, runtime, deploy)
 packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
@@ -131,6 +154,7 @@ Key placeholders include:
 - `/docs/aol-package-manager.md`
 - `/docs/aol-api-and-config.md`
 - `/docs/aol-intellectual-property.md`
+- `/docs/ross-ai-runtime-platform.md`
 - `/docs/rtpsc-package-lock.md`
 - `/docs/architecture.md`
 - `/docs/engineering-standards.md`
