@@ -42,7 +42,7 @@ node ./packages/production-compliance/bin/prodcheck.mjs log
 ## Modes
 
 - **automated** — repository and scaffold gates
-- **manual** — legal / security / ops sign-off (reported as `pending_signoff` unless `--strict-production`)
+- **manual** — legal / security / ops sign-off via `policy/procedures/production-signoffs/registry.json`
 - **live** — HTTP `/health` probes (enabled with `--live`)
 
 ## Exit codes

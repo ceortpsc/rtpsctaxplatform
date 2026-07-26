@@ -183,6 +183,15 @@ pnpm run worker:transcript-pull
 pnpm run worker:live-source
 ```
 
+
+Run the Agent Build Engineering Team across all modules:
+
+```bash
+./scripts/aol run team:inventory
+./scripts/aol run team:plan
+./scripts/aol run team
+```
+
 ## Bank products — SBTPG refund advance (payment gate + enrollment)
 
 `packages/bank-products` models **Santa Barbara Tax Products Group (SBTPG)** refund-advance /
@@ -349,6 +358,7 @@ packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
   secure-tunnel/         compliant tunnel adapter interface scaffold
+  agent-build-team/      Agent Build Engineering Team (multi-role module orchestration)
   workflow-engine/       modular task/workflow/trigger engine + run history
   module-advisor/        AI-assisted insights, assistant, and dependency graph
   ero-governance/        RTP-AI-001 personas, catalog, paid-task state machine
@@ -423,6 +433,7 @@ Key placeholders include:
 - `/docs/aol-intellectual-property.md`
 - `/docs/ross-ai-runtime-platform.md`
 - `/docs/rtpsc-package-lock.md`
+- `/docs/agent-build-engineering-team.md`
 - `/docs/architecture.md`
 - `/docs/engineering-standards.md`
 - `/docs/api-spec-overview.md`

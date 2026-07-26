@@ -7,6 +7,7 @@ const modules = [
   '../packages/client-identity/src/index.mjs',
   '../packages/refund-core/src/index.mjs',
   '../packages/secure-tunnel/src/index.mjs',
+  '../packages/agent-build-team/src/index.mjs',
   '../packages/workflow-engine/src/index.mjs',
   '../packages/module-advisor/src/index.mjs',
   '../packages/bank-products/src/index.mjs',

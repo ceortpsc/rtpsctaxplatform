@@ -1,0 +1,34 @@
+{
+  "name": "@rtp/agent-build-team",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Agent Build Engineering Team — multi-role orchestration across all RTPSC developmental projects and modules.",
+  "type": "module",
+  "license": "MIT",
+  "author": "RTPSC / Ross Tax Software <ceo@rosstaxsoftware.com>",
+  "bin": {
+    "abet": "./bin/abet.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "start": "node ./bin/abet.mjs run",
+    "team": "node ./bin/abet.mjs run",
+    "inventory": "node ./bin/abet.mjs inventory",
+    "report": "node ./bin/abet.mjs report"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "agent-build-team",
+    "engineering-team",
+    "design-style",
+    "presentation",
+    "monorepo",
+    "build-orchestration",
+    "rtpsc"
+  ]
+}

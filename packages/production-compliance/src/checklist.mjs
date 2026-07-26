@@ -70,6 +70,13 @@ export const CHECKLIST_SECTIONS = Object.freeze([
         mode: 'manual',
         severity: 'blocker',
         evidence: 'AI assist policy + legal/security sign-off'
+      },
+      {
+        id: 'GOV-009',
+        title: 'Production sign-off pack and registry present',
+        mode: 'automated',
+        severity: 'blocker',
+        evidence: 'policy/procedures/production-signoffs/registry.json'
       }
     ]
   },

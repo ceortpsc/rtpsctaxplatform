@@ -2,6 +2,7 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { listChecklistItems } from './checklist.mjs';
+import { evaluateManualSignoff, loadSignoffRegistry, SIGNOFF_REGISTRY_PATH } from './signoffs.mjs';
 
 const DEFAULT_LIVE_ENDPOINTS = Object.freeze([
   { id: 'api-gateway', url: 'http://127.0.0.1:3000/health' },
@@ -142,6 +143,15 @@ async function runAutomatedItem(root, item, context) {
         (await exists(root, 'docs/enterprise-tax-software-checklist.md')) ? 'pass' : 'fail',
         'Enterprise tax software checklist doc check'
       );
+    case 'GOV-009': {
+      const registryOk = await exists(root, SIGNOFF_REGISTRY_PATH);
+      const readmeOk = await exists(root, 'policy/procedures/production-signoffs/README.md');
+      return result(
+        item,
+        registryOk && readmeOk ? 'pass' : 'fail',
+        registryOk && readmeOk ? 'Production sign-off pack present' : 'Missing production sign-off pack'
+      );
+    }
     case 'BND-001': {
       const ok = await fileContains(root, ['docs/compliance-and-governance.md', 'README.md'], 'No unauthorized access to IRS systems');
       return result(item, ok ? 'pass' : 'fail', 'Unauthorized IRS access boundary language');
@@ -428,7 +438,8 @@ export async function runComplianceChecks(root, options = {}) {
     skipGates: Boolean(options.skipGates),
     live: Boolean(options.live),
     endpoints: options.endpoints || DEFAULT_LIVE_ENDPOINTS,
-    gateResults: null
+    gateResults: null,
+    signoffRegistry: await loadSignoffRegistry(root)
   };
 
   if (!context.skipGates) {
@@ -438,14 +449,13 @@ export async function runComplianceChecks(root, options = {}) {
   const results = [];
   for (const item of items) {
     if (item.mode === 'manual') {
+      const evaluation = evaluateManualSignoff(item, context.signoffRegistry, {
+        strictProduction: Boolean(options.strictProduction)
+      });
       results.push(
-        result(
-          item,
-          options.strictProduction ? 'fail' : 'pending_signoff',
-          options.strictProduction
-            ? 'Manual sign-off required for live production (--strict-production)'
-            : 'Awaiting documented human sign-off'
-        )
+        result(item, evaluation.status, evaluation.message, {
+          signoff: evaluation.signoff
+        })
       );
       continue;
     }
@@ -458,7 +468,7 @@ export async function runComplianceChecks(root, options = {}) {
     results.push(await runAutomatedItem(root, item, context));
   }
 
-  return { results, gateResults: context.gateResults, live: context.live };
+  return { results, gateResults: context.gateResults, live: context.live, signoffRegistry: context.signoffRegistry };
 }
 
 export { DEFAULT_LIVE_ENDPOINTS };
