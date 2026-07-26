@@ -104,10 +104,24 @@ describe('AOL package manager', () => {
   });
 
   it('cli help and version exit 0', async () => {
-    const help = await runCli(['help']);
-    const version = await runCli(['version']);
-    assert.equal(help, 0);
-    assert.equal(version, 0);
+    // Capture CLI banners: large ANSI help text on stdout has flaked the Node
+    // test-runner IPC in CI with "Unable to deserialize cloned data…".
+    const lines = [];
+    const origLog = console.log;
+    console.log = (...args) => {
+      lines.push(args.map(String).join(' '));
+    };
+    try {
+      const help = await runCli(['help']);
+      const version = await runCli(['version']);
+      assert.equal(help, 0);
+      assert.equal(version, 0);
+      const joined = lines.join('\n');
+      assert.match(joined, /AOL/);
+      assert.match(joined, /aol\/0\.1\.0/);
+    } finally {
+      console.log = origLog;
+    }
   });
 
   it('reads lockfile after install', async () => {
