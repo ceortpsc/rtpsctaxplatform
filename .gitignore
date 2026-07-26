@@ -2,6 +2,7 @@ appengine-generated/
 node_modules/
 build/
 coverage/
+logs/
 .env
 .env.*
 !.env.example

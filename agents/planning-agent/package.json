@@ -1,0 +1,7 @@
+{
+  "name": "@rtp/planning-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs"
+}

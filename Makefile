@@ -30,6 +30,10 @@ start-check:
 	node ./scripts/start-all.mjs --check-only
 
 gateway:
+	pnpm run start:gateway
+
+workers:
+	pnpm run worker:tds && pnpm run worker:transcript-pull && pnpm run worker:live-source
 	$(AOL) run start:gateway
 
 workers:

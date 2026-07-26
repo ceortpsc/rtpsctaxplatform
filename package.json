@@ -1,8 +1,13 @@
 {
   "name": "rtpsctaxplatform",
   "version": "0.1.0",
+  "description": "Ross Tax Pro Software Co — Efile Transmission Software",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.33.3",
+  "bin": {
+    "rtpsc": "bin/rtpsc.mjs"
+  },
   "packageManager": "aol@0.1.0",
   "workspaces": [
     "packages/*",
@@ -18,6 +23,26 @@
     "test": "./scripts/test.sh",
     "build": "./scripts/build.sh",
     "start": "./scripts/start.sh",
+    "start:gateway": "pnpm --filter @rtp/api-gateway start",
+    "start:refund-status": "pnpm --filter @rtp/refund-status-service start",
+    "start:transcript": "pnpm --filter @rtp/transcript-service start",
+    "start:analytics": "pnpm --filter @rtp/analytics-service start",
+    "start:enrollment": "pnpm --filter @rtp/enrollment-service start",
+    "start:invoice": "pnpm --filter @rtp/invoice-service start",
+    "start:pos-crm": "pnpm --filter @rtp/pos-crm-service start",
+    "start:dashboard": "pnpm --filter @rtp/modules-dashboard start",
+    "start:workflows": "pnpm --filter @rtp/workflow-runner start",
+    "deploy:all": "node scripts/deploy-all.mjs",
+    "deploy:smoke": "node scripts/deploy-all.mjs --smoke",
+    "worker:tds": "pnpm --filter @rtp/tds-worker start --once",
+    "worker:transcript-pull": "pnpm --filter @rtp/transcript-pull-worker start --once",
+    "worker:live-source": "pnpm --filter @rtp/live-source-fetcher start --once",
+    "worker:workflows": "pnpm --filter @rtp/workflow-runner start --once",
+    "workflow:list": "pnpm --filter @rtp/workflow-runner workflows",
+    "workflow:run": "pnpm --filter @rtp/workflow-runner run-workflow",
+    "agents": "node scripts/agents.mjs",
+    "agents:docs": "node scripts/agents.mjs --write",
+    "clients": "node scripts/clients.mjs"
     "start:all": "./scripts/start-all.sh",
     "start:all:fg": "node ./scripts/start-all.mjs",
     "start:check": "node ./scripts/start-all.mjs --check-only",
@@ -47,6 +72,7 @@
     "compliance:log": "node ./packages/production-compliance/bin/prodcheck.mjs log"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "pnpm": ">=10"
   }
 }

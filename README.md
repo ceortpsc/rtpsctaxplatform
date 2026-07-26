@@ -1,6 +1,17 @@
-# RTPSC Tax Platform Scaffold
+# Ross Tax Pro Software Co — Efile Transmission Software
 
-Production-grade scaffold for a tax platform focused on secure integrations, real-time processing, compliance boundaries, and iterative delivery. This baseline is intentionally limited to compliant adapters and executable stubs; it does **not** implement unauthorized access to IRS systems, non-public channels, or scraping workflows.
+**Ross Tax Pro Software Co (RTPSC)** — *Efile Transmission Software*.
+
+Production-grade scaffold for a tax e-file transmission platform focused on secure integrations, real-time processing, compliance boundaries, and iterative delivery. This baseline is intentionally limited to compliant adapters and executable stubs; it does **not** implement unauthorized access to IRS systems, non-public channels, or scraping workflows.
+
+### Environment protection
+
+Live IRS e-file transmission is guarded by a fail-safe **environment protection** check
+(`evaluateEnvironmentProtection` in `packages/platform-core`). Transmission stays **blocked**
+unless every safeguard passes: the environment is production, all secrets are configured, an
+approved secure tunnel endpoint is set, and `EFILE_TRANSMISSION_ENABLED=true`. Every service
+reports its protection state at `GET /metadata`; the dashboard exposes `GET /api/environment`
+and a live indicator (sidebar badge + System Status panel).
 
 ## Package Managers: AOL + ROSS.CO ITR
 
@@ -74,9 +85,71 @@ The repository is organized as a lightweight monorepo with executable Node.js se
 - Client IDs, secrets, certificates, and tunnel credentials are environment-based only.
 - Production integrations touching taxpayer data require legal approval, security review, and documented operating procedures before implementation.
 
-## Quickstart
+## Full API client id + TDS client id
+
+`packages/client-identity` issues and authenticates **full** API and TDS client credentials
+(scopes, audit log, hashed secret registry under `logs/`). Prefer the custom CLI:
 
 ```bash
+./rtpsc clients issue api --name "Ops API"
+./rtpsc clients issue tds --name "TDS Pull"
+./rtpsc clients export-env    # prints export API_CLIENT_* / TDS_CLIENT_*
+./rtpsc clients status
+```
+
+The **api-gateway** (`:3000`) authenticates API clients (`POST /api/auth/token`) and proxies
+`/api/refund/*` to the refund service. The **tds-worker** authenticates TDS clients before
+simulated pull jobs.
+
+## Full refund center
+
+`packages/refund-core` + upgraded `services/refund-status-service` (`:3001`) provide full refund
+cases: approved-event ingest → pipeline stages → `refund-status-update` workflow → intelligence
+timeline. UI at `http://localhost:3001`. Write paths require an API or TDS client.
+
+```bash
+./rtpsc start refund-status
+# POST /api/events  or  POST /api/refunds/full   (with x-api-client-id / x-api-client-secret)
+```
+
+## Quickstart
+
+Use the built-in **`rtpsc`** command runner — a dependency-free CLI that drives everything through
+`node` directly (no package manager required to run tasks):
+
+```bash
+./rtpsc help          # list all commands
+./rtpsc lint
+./rtpsc test
+./rtpsc build
+./rtpsc start         # api-gateway (or: ./rtpsc start dashboard)
+./rtpsc deploy        # all services + background worker (add --smoke to verify & exit)
+./rtpsc workflow run transcript-intake '{"requestId":"REQ-1","authorized":true}'
+./rtpsc agents        # deployment-assist & development team (./rtpsc agents docs writes markdown)
+./rtpsc env           # environment protection status
+```
+
+`rtpsc` is a thin wrapper over `bin/rtpsc.mjs` (also exposed as a `bin` entry); run it as
+`./rtpsc <command>` or `node bin/rtpsc.mjs <command>`.
+
+Install dependencies with your package manager of choice; this repo is configured for **pnpm**
+(`pnpm install`; `corepack enable pnpm` if needed). The equivalent pnpm scripts remain available
+and are used by CI.
+
+## Deploy all (development)
+
+Bring up the whole platform — every HTTP service plus the background
+`workflow-runner` — with one command:
+
+```bash
+pnpm run deploy:all     # starts all components, health-checks them, stays live
+pnpm run deploy:smoke   # same, but verifies health once and exits (CI smoke check)
+```
+
+Services: api-gateway `:3000`, refund-status `:3001`, transcript `:3002`,
+analytics `:3003`, modules-dashboard `:3010`.
+
+Default gateway health check:
 ./scripts/aol install
 ./scripts/aol run lint
 ./scripts/aol run test
@@ -99,10 +172,158 @@ curl http://localhost:3003/health   # analytics
 Workers also run once during `start:all`. Manual one-shot:
 
 ```bash
+pnpm run worker:tds
+pnpm run worker:transcript-pull
+pnpm run worker:live-source
+```
+
+## Bank products — SBTPG refund advance (payment gate + enrollment)
+
+`packages/bank-products` models **Santa Barbara Tax Products Group (SBTPG)** refund-advance /
+refund-transfer products with required disclosures, a fail-safe **payment gate**, and enrollment
+logic. `services/enrollment-service` (port `3004`) exposes the REST API and a taxpayer
+**enrollment interface**.
+
+- Products: `RA-NF` (No-Fee Refund Advance), `RA-FC` (Refund Advance w/ finance charge), `RT` (Refund Transfer).
+- **Payment gate is fail-safe:** enrollment records taxpayer intent + consent, but **funding stays
+  blocked** unless the environment is production, provider secrets are configured, `SBTPG_ENABLED=true`,
+  disclosures are accepted, and the amount is within product limits. No real SBTPG integration is
+  performed (stub adapter, pending bank/legal/security sign-off).
+
+```bash
+./rtpsc start enrollment      # http://localhost:3004  (enrollment UI)
+```
+
+REST API: `GET /api/products`, `GET /api/payment-gate`, `POST /api/enrollments`,
+`GET /api/enrollments[/:id]`, plus `/health` + `/metadata`.
+
+### SBTPG login validation & clearance (audited)
+
+Operator credentials are provisioned via environment only (`SBTPG_USERNAME`, `SBTPG_SECRET`) —
+never hard-coded. `packages/bank-products/src/auth.mjs` validates logins with timing-safe
+comparison, issues a short-lived **clearance token**, and appends every attempt to
+`logs/sbtpg-login-audit.jsonl` (username redacted; secrets never logged).
+
+```bash
+export SBTPG_USERNAME='…'
+export SBTPG_SECRET='…'
+./rtpsc start enrollment   # login panel at http://localhost:3004
+```
+
+Auth API: `GET /api/auth/status`, `POST /api/auth/login`, `POST /api/auth/logout`,
+`GET /api/auth/clearance`, `GET /api/auth/audit[?persisted=1]`.
+
+## Invoicing machine — operations, tax calc, PDF & receipt paper
+
+`packages/tax-data` holds **state + county/parish** taxation reference rates (Louisiana uses
+parishes). `packages/invoice-core` is the invoicing machine: local **AI-assisted data entry**,
+line-item/tax calculations, payment **approval → confirmation**, and export to **PDF** plus
+**receipt paper** (thermal `.txt` and narrow receipt PDF). `services/invoice-service` (port
+`3005`) exposes the REST API and operator UI.
+
+```bash
+./rtpsc start invoice      # http://localhost:3005  (invoicing machine UI)
+```
+
+Lifecycle: `draft` → `pending-approval` → `approved` → `paid` (+ confirmation).  
+REST: `POST /api/assist`, `GET /api/tax`, `GET /api/catalog`, `POST /api/invoices`,
+`POST /api/invoices/:id/{submit,approve,pay}`, `GET /api/invoices/:id/{pdf,receipt.pdf,receipt.txt}`.
+
+Rates are reference/stub data for development — confirm with the tax authority before production use.
+
+## POS + CRM (integrated operations) · ERO / SBTPG intelligence
+
+Modular engineering packages fully integrated with the existing operating stack:
+
+| Package | Role |
+|---------|------|
+| `@rtp/crm-core` | Contacts, household accounts, interaction timeline |
+| `@rtp/pos-core` | POS sessions/carts; checkout settles via **invoice-core** + tax-data |
+| `@rtp/ero-ops` | SBTPG report **tracking/tracing**, automated **ERO phrasing**, refund-intelligence scoring |
+
+`services/pos-crm-service` (port **3006**) exposes a unified operator UI (CRM · Point of Sale · Refund Intel / SBTPG) and REST APIs. POS sales attach to CRM contacts, write interactions, create paid invoices, and offer PDF / receipt-paper downloads.
+
+```bash
+./rtpsc start pos-crm     # http://localhost:3006  (aliases: pos, crm)
+```
+
+REST highlights: `GET/POST /api/contacts`, `POST /api/pos/sessions` → `/items` → `/checkout`,
+`GET/POST /api/sbtpg/traces`, `POST /api/ero/phrases`, `POST /api/ero/intelligence`.
+
+## Deployment Assist & Development Team
+
+A virtual **deployment-assist and development team** ships as developer/deployment tooling under
+`agents/*` (with shared `packages/agent-core`). These are **not** a runtime subsystem of the
+product — they analyze the codebase and produce reports + documentation to assist development and
+deployment.
+
+| Team member | Role |
+|-------------|------|
+| `planning-agent` | Phased delivery plan, milestones, exit criteria |
+| `scoping-agent` | Inventory, complexity index, scope boundaries |
+| `testing-agent` | Validations & verifications across catalog + workflows |
+| `mapping-agent` | Dependency map & enhancement recommendations |
+| `staging-agent` | Staged rollout / promotion pipeline with gates |
+| `assessment-agent` | Environmental assessment & inspection with findings |
+| `markdown-agent` | Markdown generation engine (writes `docs/agents/*`) |
+
+```bash
+pnpm run agents        # run the team, print a JSON summary
+pnpm run agents:docs   # regenerate docs/agents/*.md
 ./scripts/aol run worker:tds
 ./scripts/aol run worker:transcript-pull
 ./scripts/aol run worker:live-source
 ```
+
+Generated reports live in [`docs/agents/`](./docs/agents/README.md).
+
+## Background Workflows
+
+The platform ships a modular workflow engine (`packages/workflow-engine`) plus
+domain workflows under `workflows/*`. Workflows run **in the background** via the
+`workflow-runner` worker (`workers/workflow-runner`) — they are not triggered
+from any dashboard.
+
+Run all workflows in the background (schedules fire automatically, event/manual
+workflows are driven on a cadence; every completed run is logged):
+
+```bash
+pnpm run start:workflows        # long-running background runner
+pnpm run worker:workflows       # one-shot: run every workflow once and exit
+```
+
+Trigger a single workflow from the terminal:
+
+```bash
+pnpm run workflow:list
+pnpm run workflow:run transcript-intake '{"requestId":"REQ-1","authorized":true}'
+```
+
+## Modules Dashboard
+
+The dashboard (`services/modules-dashboard`) is a **read-only inventory of
+platform modules only** (packages, services, workers, pipelines, engines, and
+workflow definitions). It does not trigger workflows.
+
+```bash
+pnpm run start:dashboard
+# then open http://localhost:3010
+```
+
+The dashboard has four views with a sidebar and a `Ctrl+K` command palette:
+
+- **Catalog** — searchable/filterable module inventory with per-module details
+- **Insights** — AI-assisted metrics (trigger distribution, category counts) and recommendations
+- **AI Assistant** — ask natural-language questions about modules (local heuristic engine, no external LLM)
+- **Dependency Graph** — layered SVG graph of module dependencies and workflow-runner links
+
+REST API (served by the dashboard):
+
+- `GET /api/modules` — categorized catalog of all platform modules
+- `GET /api/insights` — insights + recommendations (from `@rtp/module-advisor`)
+- `GET /api/graph` — dependency graph nodes/edges
+- `POST /api/assistant` — natural-language query (`{ "query": "..." }`) → answer + matches
+- `GET /health` and `GET /metadata` — service health and module summary
 
 ## Module Map
 
@@ -118,6 +339,8 @@ packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
   secure-tunnel/         compliant tunnel adapter interface scaffold
+  workflow-engine/       modular task/workflow/trigger engine + run history
+  module-advisor/        AI-assisted insights, assistant, and dependency graph
   ero-governance/        RTP-AI-001 personas, catalog, paid-task state machine
 services/
   api-gateway/           route registry and transmission entrypoint skeleton
@@ -126,6 +349,13 @@ services/
   refund-status-service/ event-driven refund status surface
   transcript-service/    transcript intake and orchestration surface
   analytics-service/     analytics and refund intelligence API surface
+  modules-dashboard/     read-only dashboard + REST API for platform modules
+workflows/
+  refund-status-workflow/    event-driven refund status update workflow
+  transcript-intake-workflow/ authorization-gated transcript intake workflow
+  transmission-workflow/     scheduled transmission cycle workflow
+workers/
+  workflow-runner/       runs all workflows in the background (schedules/events)
 workers/
   tds-worker/            TDS orchestration worker scaffold
   transcript-pull-worker/account transcript pull worker scaffold
@@ -171,6 +401,8 @@ Key placeholders include:
 
 1. Copy the appropriate `env/.env.<environment>.example` file into a local untracked `.env` file.
 2. Run `docker compose up -d` to provision local Postgres and Redis placeholders.
+3. Run `pnpm run setup`, then `pnpm run start`.
+4. Run `pnpm test` and `pnpm run build` before opening changes.
 3. Run `./scripts/aol install`, then `./scripts/aol run start`.
 4. Run `./scripts/aol run test` and `./scripts/aol run build` before opening changes.
 

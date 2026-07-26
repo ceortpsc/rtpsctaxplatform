@@ -1,0 +1,8 @@
+packages:
+  - "packages/*"
+  - "services/*"
+  - "workers/*"
+  - "pipelines/*"
+  - "engines/*"
+  - "workflows/*"
+  - "agents/*"
