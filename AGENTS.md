@@ -75,17 +75,11 @@ Two equivalent runners exist:
 - **Custom CLI (preferred for local dev):** `./rtpsc <command>` (or `node bin/rtpsc.mjs <command>`) —
   a dependency-free dispatcher that runs everything via `node` directly, **no package manager
   required**. Commands: `lint`, `test`, `build`, `start [service]`, `deploy [--smoke]`, `workflows`,
-<<<<<<< HEAD
   `workflow run|emit …`, `agents [docs|list|assign|run|required|trigger|workflow]`,
-  `canvas [create|list|…]`, `clients …`, `env`, `help`. Mapping in `bin/rtpsc.mjs`.
+  `canvas [create|list|…]`, `cloud doctor`, `clients …`, `env`, `help`. Mapping in `bin/rtpsc.mjs`.
   Cursor Canvases: `./rtpsc canvas create all` → `.cursor/canvases/`
   (docs: `docs/cursor-canvas.md`, skill: `.cursor/skills/rtpsc-canvas`).
-=======
-  `workflow run|emit …`, `agents [docs]`, `canvas [create|list|…]`, `cloud doctor`,
-  `clients …`, `env`, `help`. Mapping in `bin/rtpsc.mjs`. Cursor Canvases:
-  `./rtpsc canvas create all` → `.cursor/canvases/` (docs: `docs/cursor-canvas.md`).
   Cloud helpers: `./rtpsc cloud doctor` (tmux/ffmpeg/desktop deps — `docs/cursor-environment.md`).
->>>>>>> f2d00cd (Fix Cloud tmux/desktop helpers and register cloud doctor)
 - **pnpm scripts:** `pnpm run lint`, `pnpm test`, `pnpm run build`, etc. (used by CI).
 
 - `pnpm run start` launches only the **api-gateway** on port `3000` and blocks (long-running). Start
