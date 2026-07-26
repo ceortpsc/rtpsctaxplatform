@@ -1,0 +1,23 @@
+{
+  "name": "RTPSC Enterprise Environment",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "install": "./scripts/aol install && python3 -m pip install --user -r requirements.txt",
+  "start": "test -f assets/banners/primeweb-motd.txt && cat assets/banners/primeweb-motd.txt || true",
+  "ports": [
+    { "name": "api-gateway", "port": 3000 },
+    { "name": "refund-status", "port": 3001 },
+    { "name": "transcript", "port": 3002 },
+    { "name": "analytics", "port": 3003 },
+    { "name": "irs-gateway", "port": 8820 }
+  ],
+  "terminals": [
+    {
+      "name": "api-gateway",
+      "command": "./scripts/aol run start",
+      "description": "Starts the RTPSC api-gateway on port 3000 (/health, /metadata)."
+    }
+  ]
+}

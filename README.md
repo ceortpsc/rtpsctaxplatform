@@ -18,6 +18,28 @@ built for workspace velocity. Instant Messenger soul, next-level speed.
 
 See [`docs/aol-package-manager.md`](docs/aol-package-manager.md).
 
+## Ross Tax Pro Software Co | RunTime AI Assist
+
+**RunTime AI Assist** is the product from **Ross Tax Pro Software Co**
+(full name: **Ross Tax Pro Software Co | RunTime AI Assist**) —
+landing, access gates, dashboards, membership, RBAC, GitHub sign-in, transparent
+execution, and advanced SEO on **http://127.0.0.1:8787**.
+
+```bash
+python3 ross.py init
+python3 ross.py doctor
+python3 ross.py package build      # → workspace/dist/application.rpkg
+python3 ross.py runtime run hello
+python3 ross.py deploy plan local
+python3 ross.py dev                # open http://127.0.0.1:8787
+# Create account → verify email → MFA → membership → payment
+```
+
+SEO: `/robots.txt`, `/sitemap.xml`, `/site.webmanifest` (set `ROSS_PUBLIC_URL` in production).
+
+Docker: `docker compose -f docker-compose.ross.yml up --build`.  
+Details: [`docs/ross-ai-runtime-platform.md`](docs/ross-ai-runtime-platform.md).
+
 ## Platform Overview
 
 The repository is organized as a lightweight monorepo with executable Node.js service and worker skeletons, shared packages for runtime configuration and secure tunnel interfaces, Terraform placeholders, CI scaffolding, and operations/compliance documentation.
@@ -27,7 +49,8 @@ The repository is organized as a lightweight monorepo with executable Node.js se
 - Monorepo directory structure for services, workers, pipelines, engines, shared packages, infrastructure, scripts, docs, policy assets, forms, letters, and static assets.
 - **AOL** package manager (`tools/aol`) for parallel workspace linking and script running.
 - Environment/configuration scaffold for local, dev, stage, and prod with explicit secret placeholders.
-- API gateway plus domain service skeletons for refund status, transcripts, and analytics.
+- API gateway plus domain service skeletons for refund status, transcripts, analytics, and IRS OAuth/TDS gateway.
+- Cursor Cloud environment pack (`.cursor/environment.json`), root `Dockerfile`, and Python `requirements.txt` for PDF fill tooling.
 - 24/7 worker skeletons for TDS, transcript pulls, and live-source fetch orchestration.
 - Transmission, masterfile, and refund-status pipeline starters.
 - Secure tunnel adapter scaffold with compliance checkpoints and TODO markers.
@@ -76,12 +99,14 @@ Workers also run once during `start:all`. Manual one-shot:
 ```text
 tools/
   aol/                   Adaptive Optimized Linker (package manager)
+ross.py / ross_ai/       Ross Tax Pro Software Co | RunTime AI Assist (packages, runtime, deploy)
 packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
   secure-tunnel/         compliant tunnel adapter interface scaffold
 services/
   api-gateway/           route registry and transmission entrypoint skeleton
+  irs-gateway/           IRS OAuth2 / TDS token gateway (JWT client assertion)
   refund-status-service/ event-driven refund status surface
   transcript-service/    transcript intake and orchestration surface
   analytics-service/     analytics and refund intelligence API surface
@@ -97,13 +122,16 @@ engines/
   refund-intelligence-engine/
   analytics-center/
   tc-code-engine/
+  pdf-fill-engine/       Python PDF fill scaffold (`requirements.txt`)
 infra/
   terraform/             module and environment placeholders
+.cursor/
+  environment.json       Cursor Cloud agent environment definition
 ```
 
 ## Environment Model
 
-Use the example files in `/env`:
+Use the example files in `/env` and root `.env.example`. Cursor setup: [`docs/cursor-environment.md`](docs/cursor-environment.md).
 
 - `env/.env.local.example`
 - `env/.env.dev.example`
@@ -132,6 +160,7 @@ Key placeholders include:
 - `/docs/aol-package-manager.md`
 - `/docs/aol-api-and-config.md`
 - `/docs/aol-intellectual-property.md`
+- `/docs/ross-ai-runtime-platform.md`
 - `/docs/rtpsc-package-lock.md`
 - `/docs/architecture.md`
 - `/docs/engineering-standards.md`

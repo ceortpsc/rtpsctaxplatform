@@ -31,6 +31,33 @@ Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
 Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 `aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`.
 
+### Ross Tax Pro Software Co | RunTime AI Assist
+
+**RunTime AI Assist** (full name: **Ross Tax Pro Software Co | RunTime AI Assist**)
+is the operator control plane
+(landing, access gates, dashboards, inventory, hardening, WebSockets, RBAC,
+GitHub auth, transparent execution) on port `8787`, with advanced SEO
+(`/robots.txt`, `/sitemap.xml`, JSON-LD). Docs: `docs/ross-ai-runtime-platform.md`.
+
+```bash
+python3 ross.py init
+python3 ross.py doctor
+python3 ross.py package build
+python3 ross.py runtime run hello
+python3 ross.py deploy plan docker
+python3 ross.py dev                 # http://127.0.0.1:8787
+# Landing → /signup or /signin → /dashboard
+```
+
+Docker (optional): `cp .env.example .env && docker compose -f docker-compose.ross.yml up --build`.
+### Cursor Cloud environment
+
+- Repo definition: `.cursor/environment.json` (+ `.cursor/Dockerfile`).
+- Linked repository: `ceortpsc/rtpsctaxplatform` (Personal scope).
+- Env templates: `.env.example`, `env/.env.*.example`. Set real IRS secrets only in the
+  Cursor Personal environment / approved secret store — never commit them.
+- Details: `docs/cursor-environment.md`. Banner: `assets/banners/primeweb-motd.txt`.
+
 ### Running services / commands
 
 - `./scripts/aol run start:all` (or `make start-all`) launches the **entire platform** under
@@ -42,6 +69,14 @@ Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 - Individual services: `start:refund-status`, `start:transcript`, `start:analytics`.
 - Workers one-shot: `worker:tds`, `worker:transcript-pull`, `worker:live-source`.
 - Docker Compose (Postgres/Redis) is optional and unused by stubs.
+  (long-running). Start it in a background terminal/tmux session. Verify with
+  `curl http://localhost:3000/health` and `curl http://localhost:3000/metadata`.
+- Other services are independent HTTP stubs on fixed ports: refund-status `3001`,
+  transcript `3002`, analytics `3003`, irs-gateway `8820`
+  (`./scripts/aol run start:refund-status`, `start:transcript`, `start:analytics`,
+  `start:irs-gateway`).
+- Workers run one-shot and print a JSON descriptor + planned steps, then exit
+  (`./scripts/aol run worker:tds`, `worker:transcript-pull`, `worker:live-source`).
 - Production compliance: `./scripts/aol run compliance:checklist`,
   `./scripts/aol run compliance -- --skip-gates`,
   `./scripts/aol run compliance -- --live`,
@@ -52,9 +87,10 @@ Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 
 ### Non-obvious notes
 
-- The services only expose `/health` and `/metadata` (any other path returns `404`).
-  There is no business logic, DB, or inter-service calls yet — "dependencies" in
-  descriptors are metadata only.
+- Most services only expose `/health` and `/metadata` (any other path returns `404`).
+  `irs-gateway` also exposes `POST /irs/token` (JWT client assertion) and returns
+  `credentials_not_configured` until secrets/keys are provisioned.
+  There is no DB or inter-service mesh yet — "dependencies" in descriptors are metadata only.
 - `docker compose up` (Postgres 16 / Redis 7 in `docker-compose.yml`) is **optional and
   unused by the code**. Do not treat Docker as a prerequisite for running or testing.
 - No `.env` is required — `platform-core` defaults every config value to `unset`/sane

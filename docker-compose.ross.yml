@@ -1,0 +1,20 @@
+# Ross AI Runtime Platform
+# Start: docker compose -f docker-compose.ross.yml up --build
+# Open:  http://127.0.0.1:8787
+
+services:
+  ross-platform:
+    build:
+      context: .
+      dockerfile: Dockerfile.ross
+    ports:
+      - "8787:8787"
+    environment:
+      ROSS_HOST: 0.0.0.0
+      ROSS_PORT: 8787
+      ROSS_ENV: docker
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8787/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
