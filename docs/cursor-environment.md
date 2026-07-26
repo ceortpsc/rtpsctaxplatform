@@ -43,6 +43,34 @@ Use `.env.example` and `env/.env.*.example` as templates. Mount private keys und
 
 Node engines: `>=22`. Package manager: **AOL** (`./scripts/aol`), not npm as the primary install path.
 
+## Cloud helpers (tmux / desktop / recordScreen)
+
+Custom `.cursor/Dockerfile` images must install platform helpers themselves:
+
+| Package | Why |
+|---------|-----|
+| `tmux` | `environment.json` `terminals` + Cursor `configure-terminals` |
+| `ffmpeg` | `recordScreen` / demo artifacts |
+| `sudo` | Cursor Dockerfile guidance |
+| `locales` + `xz-utils` | computer-use / remote-desktop bootstrap on Ubuntu |
+
+Diagnose:
+
+```bash
+./rtpsc cloud doctor
+./rtpsc cloud doctor --json
+# or: pnpm run cloud:doctor
+```
+
+Notes:
+
+- `Desktop init script not found, exiting` is Cursor’s **platform** desktop bootstrap
+  (computer-use / noVNC), not a missing repo script. Shipping `locales`/`xz-utils`/`sudo`
+  in `.cursor/Dockerfile` is the supported fix for custom Ubuntu images.
+- After Dockerfile changes, force a Cloud environment rebuild (Dockerfile comment bump or
+  delete the saved environment in Cursor → Cloud Agents → Environments). Snapshots can
+  keep an old image until invalidated.
+
 ## Branding
 
 - Terminal MOTD: `assets/banners/primeweb-motd.txt`

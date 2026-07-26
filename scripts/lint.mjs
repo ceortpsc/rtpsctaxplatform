@@ -73,10 +73,15 @@ const requiredPaths = [
   '.cursor/Dockerfile',
   'Dockerfile',
   'docs/cursor-canvas.md',
+  'docs/cursor-environment.md',
   'packages/canvas-core/package.json',
   'packages/canvas-core/src/index.mjs',
   '.cursor/skills/rtpsc-canvas/SKILL.md',
+<<<<<<< HEAD
   'docs/CURSOR_TERMINAL_AGENT.md'
+=======
+  'scripts/cloud-doctor.mjs'
+>>>>>>> f2d00cd (Fix Cloud tmux/desktop helpers and register cloud doctor)
 ];
 
 const packageFiles = [

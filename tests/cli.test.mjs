@@ -46,7 +46,7 @@ test('agents subcommands pass through to scripts/agents.mjs', () => {
 
 test('usage lists the commands', () => {
   const usage = buildUsage();
-  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'canvas', 'workflow', 'clients']) {
+  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'canvas', 'cloud', 'workflow', 'clients']) {
     assert.ok(usage.includes(name), `usage should mention ${name}`);
   }
 });

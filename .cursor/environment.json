@@ -4,7 +4,7 @@
     "dockerfile": ".cursor/Dockerfile",
     "context": ".."
   },
-  "install": "./scripts/aol install && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt",
+  "install": "command -v tmux && command -v git && ./scripts/aol install && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && node ./scripts/cloud-doctor.mjs",
   "start": "test -f assets/banners/primeweb-motd.txt && cat assets/banners/primeweb-motd.txt || true",
   "ports": [
     { "name": "api-gateway", "port": 3000 },

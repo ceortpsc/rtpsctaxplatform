@@ -67,6 +67,17 @@ export const COMMANDS = {
     desc: 'Create Cursor Canvas artifacts from platform state (.cursor/canvases)',
     plan: (rest) => node('scripts/canvas.mjs', rest.length ? rest : ['list'])
   },
+  cloud: {
+    usage: 'cloud doctor [--json]',
+    desc: 'Verify Cursor Cloud helper tools (tmux, ffmpeg, desktop deps)',
+    plan: (rest) => {
+      const sub = rest[0] ?? 'doctor';
+      if (sub !== 'doctor') {
+        return { error: `Unknown cloud subcommand "${sub}". Use: ./rtpsc cloud doctor [--json]` };
+      }
+      return node('scripts/cloud-doctor.mjs', rest.slice(1));
+    }
+  },
   clients: {
     usage: 'clients [status|issue api|issue tds|ensure|export-env]',
     desc: 'Issue/list full API and TDS client ids (secrets gitignored)',

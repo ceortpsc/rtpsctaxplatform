@@ -51,6 +51,7 @@
     "agents:docs": "node scripts/agents.mjs --write",
     "canvas": "node scripts/canvas.mjs",
     "canvas:create": "node scripts/canvas.mjs create all",
+    "cloud:doctor": "node scripts/cloud-doctor.mjs",
     "clients": "node scripts/clients.mjs",
     "bench:aol": "node ./tools/aol/bin/aol.mjs bench",
     "aol": "node ./tools/aol/bin/aol.mjs",
