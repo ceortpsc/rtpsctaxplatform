@@ -201,7 +201,8 @@ export function runOptimizationWorkflow(input = {}) {
     withholding: baseline.withholding
   });
   optimized.refund += hohBoost;
-
+  optimized.owed = optimized.refund < 0 ? Math.abs(optimized.refund) : 0;
+  optimized.isRefund = optimized.refund >= 0;
   const recommendations = [];
   recommendations.push('Check refundable credits first — they move refund magnitude most.');
   if (eligibleRefundables.some((credit) => credit.id === 'EITC')) {
