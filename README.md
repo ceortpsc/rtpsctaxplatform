@@ -2,10 +2,11 @@
 
 Production-grade scaffold for a tax platform focused on secure integrations, real-time processing, compliance boundaries, and iterative delivery. This baseline is intentionally limited to compliant adapters and executable stubs; it does **not** implement unauthorized access to IRS systems, non-public channels, or scraping workflows.
 
-## Package Manager: AOL
+## Package Managers: AOL + ROSS.CO ITR
 
-This monorepo uses **AOL** (Adaptive Optimized Linker) — a first-party package manager
-built for workspace velocity. Instant Messenger soul, next-level speed.
+This monorepo uses **AOL** (Adaptive Optimized Linker) for workspace linking, and
+**ROSS.CO** (Infinite Transfer Rate Package Manager) for lifecycle, registration,
+presence, and SEO velocity.
 
 ```bash
 ./scripts/aol install     # or: make setup
@@ -14,9 +15,18 @@ built for workspace velocity. Instant Messenger soul, next-level speed.
 ./scripts/aol run build
 ./scripts/aol run start
 ./scripts/aol bench       # velocity report vs npm
+
+./scripts/rossco transfer # Infinite Transfer Rate report
+./scripts/rossco lifecycle
+./scripts/rossco register
+./scripts/rossco presence
+./scripts/rossco seo
 ```
 
-See [`docs/aol-package-manager.md`](docs/aol-package-manager.md).
+See [`docs/aol-package-manager.md`](docs/aol-package-manager.md) and
+[`docs/rossco-itr-package-manager.md`](docs/rossco-itr-package-manager.md).
+Refund Optimization Intelligence:
+[`docs/refund-optimization-intelligence.md`](docs/refund-optimization-intelligence.md).
 
 ## Ross Tax Pro Software Co | RunTime AI Assist
 
@@ -98,15 +108,21 @@ Workers also run once during `start:all`. Manual one-shot:
 
 ```text
 tools/
+  aol/                   Adaptive Optimized Linker (workspace linker)
+  rossco/                ROSS.CO Infinite Transfer Rate package manager
+presence/
+  rossco/                Online presence + SEO landing (ross.co)
   aol/                   Adaptive Optimized Linker (package manager)
 ross.py / ross_ai/       Ross Tax Pro Software Co | RunTime AI Assist (packages, runtime, deploy)
 packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
   secure-tunnel/         compliant tunnel adapter interface scaffold
+  ero-governance/        RTP-AI-001 personas, catalog, paid-task state machine
 services/
   api-gateway/           route registry and transmission entrypoint skeleton
   irs-gateway/           IRS OAuth2 / TDS token gateway (JWT client assertion)
+  ai-workforce-hub/      realtime AI persona hire/pay UI + APIs (RTP-AI-001)
   refund-status-service/ event-driven refund status surface
   transcript-service/    transcript intake and orchestration surface
   analytics-service/     analytics and refund intelligence API surface
@@ -114,12 +130,15 @@ workers/
   tds-worker/            TDS orchestration worker scaffold
   transcript-pull-worker/account transcript pull worker scaffold
   live-source-fetcher/   approved-source fetch coordinator scaffold
+  ai-persona-worker/     paid persona queue worker scaffold
 pipelines/
   transmission-pipeline/ transmission flow stages
   masterfile-pipeline/   masterfile ingestion/normalization stages
   refund-status-pipeline/event-driven refund updates stages
 engines/
-  refund-intelligence-engine/
+  refund-intelligence-engine/  lifecycle, guard, ETA, ROI handoff
+  refund-optimization-engine/  Refund = withholding + credits − liability
+  ai-persona-runtime/          hire→pay→run orchestration under ERO gates
   analytics-center/
   tc-code-engine/
   pdf-fill-engine/       Python PDF fill scaffold (`requirements.txt`)

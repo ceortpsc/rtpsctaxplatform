@@ -7,9 +7,9 @@ stubs (`services/*`, `workers/*`, `pipelines/*`, `engines/*`, `packages/*`). All
 ES modules (`.mjs`) and only Node built-ins — there are **no external runtime
 dependencies**.
 
-### Package manager: AOL
+### Package managers: AOL + ROSS.CO ITR
 
-Use **AOL** (Adaptive Optimized Linker) instead of npm:
+Use **AOL** (Adaptive Optimized Linker) for workspace linking instead of npm:
 
 ```bash
 ./scripts/aol install          # parallel workspace link + RTPSC-package-lock.json
@@ -22,14 +22,39 @@ Use **AOL** (Adaptive Optimized Linker) instead of npm:
 ./scripts/aol run compliance   # live production checklist + compliance report/log
 ```
 
-Equivalent: `node ./tools/aol/bin/aol.mjs <cmd>` or `make setup|lint|test|build|start|bench|compliance`.
+Use **ROSS.CO** (Infinite Transfer Rate Package Manager) for product lifecycle /
+transfer-rate / register / presence / SEO:
 
 Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
 `docs/aol-intellectual-property.md`, `docs/live-production-checklist.md`,
 `docs/enterprise-tax-software-checklist.md`, `docs/production-compliance-report.md`.
+```bash
+./scripts/rossco install       # ITR transfer (delegates link to AOL)
+./scripts/rossco lifecycle
+./scripts/rossco validate
+./scripts/rossco register
+./scripts/rossco presence
+./scripts/rossco seo
+```
+
+Equivalent: `node ./tools/aol/bin/aol.mjs <cmd>`, `node ./tools/rossco/bin/rossco.mjs <cmd>`,
+or `make setup|lint|test|build|start|bench|compliance|rossco`.
+
+Docs: `docs/aol-package-manager.md`, `docs/rossco-itr-package-manager.md`,
+`docs/rossco-intellectual-property.md`, `docs/refund-optimization-intelligence.md`,
+`docs/aol-api-and-config.md`, `docs/live-production-checklist.md`.
 
 Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
-`aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`.
+`aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`,
+`rossco lifecycle|plan|scope|stage|verify|register|seo`.
+
+### Cursor Cloud environment
+
+- Repo definition: `.cursor/environment.json` (+ `.cursor/Dockerfile`).
+- Linked repository: `ceortpsc/rtpsctaxplatform` (Personal scope).
+- Env templates: `.env.example`, `env/.env.*.example`. Set real IRS secrets only in the
+  Cursor Personal environment / approved secret store — never commit them.
+- Details: `docs/cursor-environment.md`. Banner: `assets/banners/primeweb-motd.txt`.
 
 ### Ross Tax Pro Software Co | RunTime AI Assist
 
@@ -72,11 +97,15 @@ Docker (optional): `cp .env.example .env && docker compose -f docker-compose.ros
   (long-running). Start it in a background terminal/tmux session. Verify with
   `curl http://localhost:3000/health` and `curl http://localhost:3000/metadata`.
 - Other services are independent HTTP stubs on fixed ports: refund-status `3001`,
+  transcript `3002`, analytics `3003`, irs-gateway `8820`, ai-workforce-hub `8860`
+  (`./scripts/aol run start:refund-status`, `start:transcript`, `start:analytics`,
+  `start:irs-gateway`, `start:ai-workforce`).
   transcript `3002`, analytics `3003`, irs-gateway `8820`
   (`./scripts/aol run start:refund-status`, `start:transcript`, `start:analytics`,
   `start:irs-gateway`).
 - Workers run one-shot and print a JSON descriptor + planned steps, then exit
-  (`./scripts/aol run worker:tds`, `worker:transcript-pull`, `worker:live-source`).
+  (`./scripts/aol run worker:tds`, `worker:transcript-pull`, `worker:live-source`,
+  `worker:ai-persona`).
 - Production compliance: `./scripts/aol run compliance:checklist`,
   `./scripts/aol run compliance -- --skip-gates`,
   `./scripts/aol run compliance -- --live`,
@@ -90,6 +119,8 @@ Docker (optional): `cp .env.example .env && docker compose -f docker-compose.ros
 - Most services only expose `/health` and `/metadata` (any other path returns `404`).
   `irs-gateway` also exposes `POST /irs/token` (JWT client assertion) and returns
   `credentials_not_configured` until secrets/keys are provisioned.
+  `ai-workforce-hub` exposes hire/pay/run persona APIs + UI under RTP-AI-001
+  (AI cannot sign, transmit, or clear material HOLD).
   There is no DB or inter-service mesh yet — "dependencies" in descriptors are metadata only.
 - `docker compose up` (Postgres 16 / Redis 7 in `docker-compose.yml`) is **optional and
   unused by the code**. Do not treat Docker as a prerequisite for running or testing.
