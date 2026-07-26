@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-26T08:55:04.723Z",
-  "count": 55,
+  "createdAt": "2026-07-26T13:42:54.122Z",
+  "count": 57,
   "ok": true,
   "footprints": [
     {
@@ -175,6 +175,26 @@
       "footprint": "7476bb44df1899a8",
       "fingerprint": "7476bb44df1899a8",
       "integrity": "sha256-7476bb44df1899a89dc3f0f84dec0d3a5361b3c906e2454a18e1fa28338dbcfa",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/data-sync",
+      "version": "0.1.0",
+      "location": "packages/data-sync",
+      "sector": "packages",
+      "footprint": "6dc8b29272414247",
+      "fingerprint": "6dc8b29272414247",
+      "integrity": "sha256-6dc8b2927241424781ca9d7215d573a3555be61b4f93868b6354f46d87b97088",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/data-sync-worker",
+      "version": "0.1.0",
+      "location": "workers/data-sync-worker",
+      "sector": "workers",
+      "footprint": "f9d11651104415a4",
+      "fingerprint": "f9d11651104415a4",
+      "integrity": "sha256-f9d11651104415a48f9346ffba79ad31195a2d8eda0edce0a15d3f5ae6f49d45",
       "status": "sealed"
     },
     {

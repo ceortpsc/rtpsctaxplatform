@@ -63,3 +63,12 @@ test('catalog includes canvas-core for Cursor Canvas creation', () => {
   assert.ok(canvas.tags.includes('canvas'));
   assert.deepEqual(canvas.detail.kinds, ['platform', 'compliance', 'agents', 'modules']);
 });
+
+test('catalog includes data-sync for table synchronization', () => {
+  const packages = buildModuleCatalog().find((group) => group.category === 'packages');
+  const sync = packages.modules.find((m) => m.name === '@rtp/data-sync');
+  assert.ok(sync, 'expected @rtp/data-sync in packages category');
+  assert.ok(sync.detail.tables.includes('clients'));
+  const workers = buildModuleCatalog().find((group) => group.category === 'workers');
+  assert.ok(workers.modules.some((m) => m.name === 'data-sync-worker'));
+});

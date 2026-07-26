@@ -46,7 +46,7 @@ test('agents subcommands pass through to scripts/agents.mjs', () => {
 
 test('usage lists the commands', () => {
   const usage = buildUsage();
-  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'canvas', 'cloud', 'workflow', 'clients']) {
+  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'canvas', 'cloud', 'workflow', 'clients', 'sync']) {
     assert.ok(usage.includes(name), `usage should mention ${name}`);
   }
 });
@@ -54,6 +54,12 @@ test('usage lists the commands', () => {
 test('clients command resolves to scripts/clients.mjs', () => {
   assert.match(planCommand(['clients']).args.join(' '), /scripts\/clients\.mjs/);
   assert.match(planCommand(['clients', 'issue', 'api']).args.join(' '), /issue api$/);
+});
+
+test('sync command resolves to scripts/sync.mjs', () => {
+  assert.match(planCommand(['sync']).args.join(' '), /scripts\/sync\.mjs/);
+  assert.match(planCommand(['sync', 'run']).args.join(' '), /run$/);
+  assert.match(planCommand(['sync', 'import', 'clients', 'data/sync/clients.csv']).args.join(' '), /import clients/);
 });
 
 test('canvas command resolves to scripts/canvas.mjs', () => {

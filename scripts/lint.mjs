@@ -80,11 +80,16 @@ const requiredPaths = [
   'Dockerfile',
   'docs/cursor-canvas.md',
   'docs/cursor-environment.md',
+  'docs/data-table-synchronization.md',
   'packages/canvas-core/package.json',
   'packages/canvas-core/src/index.mjs',
+  'packages/data-sync/package.json',
+  'packages/data-sync/src/index.mjs',
   '.cursor/skills/rtpsc-canvas/SKILL.md',
   'docs/CURSOR_TERMINAL_AGENT.md',
-  'scripts/cloud-doctor.mjs'
+  'scripts/cloud-doctor.mjs',
+  'scripts/sync.mjs',
+  'data/sync/README.md'
 ];
 
 const packageFiles = [
@@ -105,6 +110,7 @@ const packageFiles = [
   'packages/crm-core/package.json',
   'packages/pos-core/package.json',
   'packages/ero-ops/package.json',
+  'packages/data-sync/package.json',
   'packages/production-compliance/package.json',
   'packages/ai-assist/package.json',
   'packages/ero-governance/package.json',
@@ -123,6 +129,7 @@ const packageFiles = [
   'workers/live-source-fetcher/package.json',
   'workers/workflow-runner/package.json',
   'workers/ai-persona-worker/package.json',
+  'workers/data-sync-worker/package.json',
   'workflows/refund-status-workflow/package.json',
   'workflows/transcript-intake-workflow/package.json',
   'workflows/transmission-workflow/package.json',

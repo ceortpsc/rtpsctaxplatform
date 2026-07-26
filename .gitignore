@@ -26,3 +26,11 @@ workspace/plans/*.json
 workspace/data/
 workspace/user-scripts/
 !workspace/**/.gitkeep
+
+# Data & table synchronization (keep README + synthetic fixtures; ignore live dumps)
+data/sync/store.json
+data/sync/*.live.csv
+data/sync/*.live.json
+data/federal-returns/*
+!data/federal-returns/.gitkeep
+!data/federal-returns/README.md

@@ -10,9 +10,12 @@ import {
 } from '../../../packages/platform-core/src/index.mjs';
 import { createSecureTunnelAdapter } from '../../../packages/secure-tunnel/src/index.mjs';
 import { createClientRegistry, extractClientCredentials } from '../../../packages/client-identity/src/index.mjs';
+import { createSyncEngine } from '../../../packages/data-sync/src/index.mjs';
 
 const DEFAULT_PORT = 3000;
 const REFUND_UPSTREAM = process.env.REFUND_STATUS_URL ?? 'http://localhost:3001';
+const SYNC_DIR = process.env.DATA_SYNC_DIR ?? path.resolve(process.cwd(), 'data', 'sync');
+const SYNC_STORE = process.env.DATA_SYNC_STORE ?? path.join(SYNC_DIR, 'store.json');
 
 export const gatewayDescriptor = createServiceDescriptor({
   name: 'api-gateway',
@@ -20,9 +23,16 @@ export const gatewayDescriptor = createServiceDescriptor({
   responsibilities: [
     'Authenticate API client id/secret at the ingress edge.',
     'Expose client registry status and proxy approved refund routes.',
+    'Expose data & table synchronization status/import/run APIs.',
     'Declare secure tunnel prerequisites and transmission disclaimers.'
   ],
-  dependencies: ['refund-status-service', 'transcript-service', 'analytics-service', '@rtp/client-identity']
+  dependencies: [
+    'refund-status-service',
+    'transcript-service',
+    'analytics-service',
+    '@rtp/client-identity',
+    '@rtp/data-sync'
+  ]
 });
 
 function sendJson(response, statusCode, body) {
@@ -56,9 +66,10 @@ function readBody(request) {
   });
 }
 
-export function createGatewayServer({ registry } = {}) {
+export function createGatewayServer({ registry, syncEngine } = {}) {
   const config = loadRuntimeConfig({ servicePort: DEFAULT_PORT });
   const clients = registry ?? createClientRegistry();
+  const sync = syncEngine ?? createSyncEngine({ persistPath: SYNC_STORE });
   let ready = false;
 
   async function ensure() {
@@ -66,6 +77,7 @@ export function createGatewayServer({ registry } = {}) {
     await clients.loadPersisted();
     clients.seedFromEnv();
     await clients.ensureLocalClients();
+    await sync.store.loadPersisted();
     ready = true;
   }
 
@@ -88,11 +100,77 @@ export function createGatewayServer({ registry } = {}) {
           environmentProtection: evaluateEnvironmentProtection(config),
           secureTunnel: createSecureTunnelAdapter(),
           clients: clients.status(),
+          dataSync: {
+            counts: sync.store.count(),
+            directory: SYNC_DIR
+          },
           metadata: {
             transmissionFlows: ['prepare', 'validate', 'queue', 'transmit', 'acknowledge'],
             refundUpstream: REFUND_UPSTREAM,
-            routes: ['/api/clients', '/api/auth/token', '/api/refund/*']
+            routes: ['/api/clients', '/api/auth/token', '/api/refund/*', '/api/sync', '/api/sync/*']
           }
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/api/sync') {
+        return sendJson(response, 200, { ...sync.status(), directory: SYNC_DIR });
+      }
+
+      if (request.method === 'GET' && pathname === '/api/sync/tables') {
+        return sendJson(response, 200, {
+          tables: sync.listTableSchemas().map((t) => ({
+            ...t,
+            count: sync.store.count(t.name)
+          }))
+        });
+      }
+
+      const syncTableMatch = pathname.match(/^\/api\/sync\/tables\/([^/]+)$/);
+      if (request.method === 'GET' && syncTableMatch) {
+        const name = decodeURIComponent(syncTableMatch[1]);
+        try {
+          const limit = Number(url.searchParams.get('limit') ?? 100);
+          return sendJson(response, 200, {
+            table: name,
+            count: sync.store.count(name),
+            rows: sync.store.list(name, { limit })
+          });
+        } catch (error) {
+          return sendJson(response, 404, { error: 'unknown_table', message: error.message });
+        }
+      }
+
+      if (request.method === 'POST' && pathname === '/api/sync/import') {
+        const body = await readBody(request);
+        const table = body.table;
+        if (!table) return sendJson(response, 400, { error: 'table_required' });
+        try {
+          let result;
+          if (body.csv) result = sync.importCsvText(table, body.csv, { source: body.source ?? 'api-gateway' });
+          else if (Array.isArray(body.rows)) result = sync.importRows(table, body.rows, { source: body.source ?? 'api-gateway' });
+          else return sendJson(response, 400, { error: 'csv_or_rows_required' });
+          await sync.store.persist();
+          return sendJson(response, 201, result);
+        } catch (error) {
+          return sendJson(response, 400, { error: 'import_failed', message: error.message });
+        }
+      }
+
+      if (request.method === 'POST' && pathname === '/api/sync/run') {
+        const body = await readBody(request);
+        const result = await sync.runFullSync({
+          directory: body.directory ?? SYNC_DIR,
+          persist: body.persist !== false,
+          includeTaxSeed: body.includeTaxSeed !== false
+        });
+        return sendJson(response, 200, {
+          directory: result.directory,
+          counts: result.counts,
+          tables: result.tables,
+          persist: result.persist,
+          projections: Object.fromEntries(
+            Object.entries(result.projection.projections).map(([k, v]) => [k, v.summary ?? v])
+          )
         });
       }
 
@@ -160,7 +238,7 @@ export function createGatewayServer({ registry } = {}) {
     }
   });
 
-  return { server, config, clients };
+  return { server, config, clients, sync };
 }
 
 export function start() {

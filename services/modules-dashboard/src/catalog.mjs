@@ -15,6 +15,7 @@ import { listPhraseTemplates } from '../../../packages/ero-ops/src/index.mjs';
 import { tdsWorkerDescriptor } from '../../../workers/tds-worker/src/index.mjs';
 import { transcriptPullWorkerDescriptor } from '../../../workers/transcript-pull-worker/src/index.mjs';
 import { liveSourceFetcherDescriptor } from '../../../workers/live-source-fetcher/src/index.mjs';
+import { dataSyncWorkerDescriptor } from '../../../workers/data-sync-worker/src/index.mjs';
 import { transmissionPipeline } from '../../../pipelines/transmission-pipeline/src/index.mjs';
 import { masterfilePipeline } from '../../../pipelines/masterfile-pipeline/src/index.mjs';
 import { refundStatusPipeline } from '../../../pipelines/refund-status-pipeline/src/index.mjs';
@@ -216,6 +217,16 @@ export function buildModuleCatalog() {
             commands: ['./rtpsc canvas create all', './rtpsc canvas list'],
             output: '.cursor/canvases/*.canvas.tsx'
           }
+        },
+        {
+          name: '@rtp/data-sync',
+          summary: 'Shared table contracts, CSV/JSON import, and CRM/refund projection for platform data sync.',
+          tags: ['data', 'tables', 'sync', 'csv'],
+          detail: {
+            tables: ['clients', 'refund_cases', 'invoices', 'tax_rates', 'interactions', 'federal_ledger'],
+            commands: ['./rtpsc sync status', './rtpsc sync run', './rtpsc sync import clients data/sync/clients.csv'],
+            directory: 'data/sync'
+          }
         }
       ]
     },
@@ -240,6 +251,7 @@ export function buildModuleCatalog() {
         workerEntry(tdsWorkerDescriptor),
         workerEntry(transcriptPullWorkerDescriptor),
         workerEntry(liveSourceFetcherDescriptor),
+        workerEntry(dataSyncWorkerDescriptor),
         {
           name: 'workflow-runner',
           summary: 'Runs all modular workflows in the background (schedules + events).',
