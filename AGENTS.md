@@ -56,7 +56,8 @@ Two equivalent runners exist:
 - **Custom CLI (preferred for local dev):** `./rtpsc <command>` (or `node bin/rtpsc.mjs <command>`) —
   a dependency-free dispatcher that runs everything via `node` directly, **no package manager
   required**. Commands: `lint`, `test`, `build`, `start [service]`, `deploy [--smoke]`, `workflows`,
-  `workflow run|emit …`, `agents [docs]`, `clients …`, `env`, `help`. Mapping in `bin/rtpsc.mjs`.
+  `workflow run|emit …`, `agents [docs|list|assign|run|required|trigger|workflow]`,
+  `clients …`, `env`, `help`. Mapping in `bin/rtpsc.mjs`.
 - **pnpm scripts:** `pnpm run lint`, `pnpm test`, `pnpm run build`, etc. (used by CI).
 
 - `pnpm run start` launches only the **api-gateway** on port `3000` and blocks (long-running). Start
@@ -118,8 +119,11 @@ Two equivalent runners exist:
   (aliases: `pos`, `crm`). Seeded demo contact: Jordan Ellis / Orleans Parish.
 - `agents/*` (+ `packages/agent-core`) are a **deployment-assist & development team** — dev/deploy
   tooling, NOT a runtime product subsystem. Run with `./rtpsc agents`; regenerate the reports in
-  `docs/agents/` with `./rtpsc agents docs`. They introspect the module catalog/workflows and are
-  intentionally not exposed in the product dashboard/API.
+  `docs/agents/` with `./rtpsc agents docs`. Required tasks are pre-assigned on the assignment board
+  (`./rtpsc agents list|assign|run|required|trigger`); agent-assignment workflows
+  (`agent-assignment-dispatch`, `agent-task-requested`, `agent-assignment-cycle`) run via the
+  workflow-runner triggers. See `docs/CURSOR_TERMINAL_AGENT.md`. They introspect the module
+  catalog/workflows and are intentionally not exposed in the product dashboard/API.
 ### Cursor Cloud environment
 
 - Repo definition: `.cursor/environment.json` (+ `.cursor/Dockerfile`).

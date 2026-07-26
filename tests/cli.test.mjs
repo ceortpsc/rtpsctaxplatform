@@ -36,9 +36,12 @@ test('start resolves services and rejects unknown ones', () => {
   assert.match(planCommand(['start', 'nope']).error, /Unknown service/);
 });
 
-test('agents docs maps to the --write flag', () => {
-  assert.deepEqual(planCommand(['agents', 'docs']).args.slice(-1), ['--write']);
-  assert.equal(planCommand(['agents']).args.some((a) => a === '--write'), false);
+test('agents subcommands pass through to scripts/agents.mjs', () => {
+  assert.deepEqual(planCommand(['agents', 'docs']).args.slice(-1), ['docs']);
+  assert.deepEqual(planCommand(['agents', 'list']).args.slice(-1), ['list']);
+  assert.deepEqual(planCommand(['agents', 'run', 'required']).args.slice(-2), ['run', 'required']);
+  assert.deepEqual(planCommand(['agents', 'trigger', 'event']).args.slice(-2), ['trigger', 'event']);
+  assert.equal(planCommand(['agents']).args.some((a) => a === 'docs'), false);
 });
 
 test('usage lists the commands', () => {

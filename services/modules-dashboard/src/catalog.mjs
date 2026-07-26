@@ -24,6 +24,11 @@ import { tcCodeEngine } from '../../../engines/tc-code-engine/src/index.mjs';
 import { refundStatusWorkflow } from '../../../workflows/refund-status-workflow/src/index.mjs';
 import { transcriptIntakeWorkflow } from '../../../workflows/transcript-intake-workflow/src/index.mjs';
 import { transmissionWorkflow } from '../../../workflows/transmission-workflow/src/index.mjs';
+import {
+  agentAssignmentDispatchWorkflow,
+  agentTaskRequestedWorkflow,
+  agentAssignmentCycleWorkflow
+} from '../../../workflows/agent-assignment-workflow/src/index.mjs';
 
 // Descriptor for the modules-dashboard itself, defined here to avoid a circular
 // import between the catalog and the HTTP service entrypoint.
@@ -153,6 +158,15 @@ export function buildModuleCatalog() {
           detail: { primitives: ['defineTask', 'defineWorkflow', 'createWorkflowRunner', 'createTriggerManager'] }
         },
         {
+          name: '@rtp/agent-core',
+          summary: 'Deployment-assist agent primitives, required-task assignment board, and assignment triggers.',
+          tags: ['agents', 'assignments', 'triggers'],
+          detail: {
+            primitives: ['defineAgent', 'defineAssignment', 'createAssignmentBoard', 'createPlatformAssignmentBoard'],
+            commands: ['./rtpsc agents list', './rtpsc agents run required', './rtpsc agents trigger event']
+          }
+        },
+        {
           name: '@rtp/bank-products',
           summary: 'SBTPG products, login clearance/audit logging, disclosures, and the fail-safe payment gate.',
           tags: ['bank-products', 'sbtpg', 'auth', 'audit'],
@@ -220,7 +234,16 @@ export function buildModuleCatalog() {
           name: 'workflow-runner',
           summary: 'Runs all modular workflows in the background (schedules + events).',
           tags: ['always-on', 'background'],
-          detail: { drives: ['refund-status-update', 'transcript-intake', 'transmission-cycle'] }
+          detail: {
+            drives: [
+              'refund-status-update',
+              'transcript-intake',
+              'transmission-cycle',
+              'agent-assignment-dispatch',
+              'agent-task-requested',
+              'agent-assignment-cycle'
+            ]
+          }
         }
       ]
     },
@@ -237,7 +260,14 @@ export function buildModuleCatalog() {
     {
       category: 'workflows',
       description: 'Modular workflow definitions (executed by the background workflow-runner).',
-      modules: [workflowEntry(refundStatusWorkflow), workflowEntry(transcriptIntakeWorkflow), workflowEntry(transmissionWorkflow)]
+      modules: [
+        workflowEntry(refundStatusWorkflow),
+        workflowEntry(transcriptIntakeWorkflow),
+        workflowEntry(transmissionWorkflow),
+        workflowEntry(agentAssignmentDispatchWorkflow),
+        workflowEntry(agentTaskRequestedWorkflow),
+        workflowEntry(agentAssignmentCycleWorkflow)
+      ]
     }
   ];
 }

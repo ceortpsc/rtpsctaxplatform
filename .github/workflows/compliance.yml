@@ -12,20 +12,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: test -f docs/compliance-and-governance.md
-      - run: test -f docs/irm-aligned-handbook.md
-      - run: test -f docs/live-production-checklist.md
-      - run: test -f docs/production-compliance-report.md
-      - run: grep -R "No unauthorized access to IRS systems" docs README.md
+
+      - name: Required compliance documentation exists
+        run: |
+          test -f docs/compliance-and-governance.md
+          test -f docs/irm-aligned-handbook.md
+          test -f docs/live-production-checklist.md
+          test -f docs/production-compliance-report.md
+          test -f docs/enterprise-tax-software-checklist.md
+          test -f docs/operations-runbook.md
+
+      - name: IRS unauthorized-access notice present
+        run: grep -R "No unauthorized access to IRS systems" docs README.md
+
+      - name: Validate lockfile + environment JSON (quality gate)
+        run: node ./scripts/lint.mjs
+
       - name: AOL install
         run: node ./tools/aol/bin/aol.mjs install
+
       - name: Production compliance report
         run: node ./tools/aol/bin/aol.mjs run compliance -- --skip-gates
+
       - name: Verify report artifacts
         run: |
           test -f build/production-compliance-report.json
           test -f build/production-compliance-report.md
           test -f build/production-compliance-checklist.log
+
+      - name: Assert ready_scaffold overall status
+        run: |
+          node --input-type=module -e "
+          import { readFileSync } from 'node:fs';
+          const report = JSON.parse(readFileSync('build/production-compliance-report.json', 'utf8'));
+          const overall = report.overall;
+          if (!['ready_scaffold', 'pass'].includes(overall)) {
+            console.error('Unexpected compliance overall:', overall);
+            const fails = (report.results || []).filter((r) => r.status === 'fail');
+            console.error(JSON.stringify(fails, null, 2));
+            process.exit(1);
+          }
+          console.log('compliance overall:', overall);
+          "
