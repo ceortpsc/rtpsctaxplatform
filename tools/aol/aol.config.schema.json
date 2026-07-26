@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rtpsc.local/schemas/aol.config.json",
+  "title": "AOL Adaptive Optimized Linker configuration",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "brand": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "const": "AOL" },
+        "expansion": { "type": "string" },
+        "tagline": { "type": "string" },
+        "chevron": { "type": "string" },
+        "aesthetic": { "type": "string" }
+      }
+    },
+    "install": {
+      "type": "object",
+      "properties": {
+        "parallel": { "type": "boolean" },
+        "force": { "type": "boolean" },
+        "lockfile": { "type": "string" },
+        "cacheHit": { "type": "boolean" }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "color": { "type": "boolean" },
+        "buddyList": { "type": "boolean" },
+        "handshake": { "type": "boolean" },
+        "quiet": { "type": "boolean" }
+      }
+    },
+    "bench": {
+      "type": "object",
+      "properties": {
+        "rounds": { "type": "integer", "minimum": 1 },
+        "compareWith": { "type": "string" }
+      }
+    },
+    "workspaces": {
+      "type": "object",
+      "properties": {
+        "patterns": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        }
+      }
+    },
+    "api": {
+      "type": "object",
+      "properties": {
+        "version": { "type": "string" },
+        "jsonDefault": { "type": "boolean" }
+      }
+    },
+    "ip": {
+      "type": "object",
+      "properties": {
+        "copyrightHolder": { "type": "string" },
+        "copyrightYear": { "type": "integer" },
+        "spdxLicense": { "type": "string" },
+        "productNotice": { "type": "string" },
+        "disclaimer": { "type": "string" }
+      }
+    }
+  }
+}

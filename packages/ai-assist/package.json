@@ -1,0 +1,10 @@
+{
+  "name": "@rtp/ai-assist",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Enterprise AI assist scaffold — local/heuristic guidance with IRS/scraping guardrails.",
+  "exports": {
+    ".": "./src/index.mjs"
+  }
+}

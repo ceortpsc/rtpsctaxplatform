@@ -22,3 +22,8 @@ jobs:
       - run: pnpm run lint
       - run: pnpm test
       - run: pnpm run build
+      - name: AOL install
+        run: node ./tools/aol/bin/aol.mjs install
+      - run: node ./tools/aol/bin/aol.mjs run lint
+      - run: node ./tools/aol/bin/aol.mjs run test
+      - run: node ./tools/aol/bin/aol.mjs run build

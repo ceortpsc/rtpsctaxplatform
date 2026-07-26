@@ -1,0 +1,7 @@
+{
+  "name": "@rtp/ai-persona-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Realtime AI persona employee runtime under ERO / RTP-AI-001 governance"
+}

@@ -13,6 +13,54 @@ approved secure tunnel endpoint is set, and `EFILE_TRANSMISSION_ENABLED=true`. E
 reports its protection state at `GET /metadata`; the dashboard exposes `GET /api/environment`
 and a live indicator (sidebar badge + System Status panel).
 
+## Package Managers: AOL + ROSS.CO ITR
+
+This monorepo uses **AOL** (Adaptive Optimized Linker) for workspace linking, and
+**ROSS.CO** (Infinite Transfer Rate Package Manager) for lifecycle, registration,
+presence, and SEO velocity.
+
+```bash
+./scripts/aol install     # or: make setup
+./scripts/aol run lint
+./scripts/aol run test
+./scripts/aol run build
+./scripts/aol run start
+./scripts/aol bench       # velocity report vs npm
+
+./scripts/rossco transfer # Infinite Transfer Rate report
+./scripts/rossco lifecycle
+./scripts/rossco register
+./scripts/rossco presence
+./scripts/rossco seo
+```
+
+See [`docs/aol-package-manager.md`](docs/aol-package-manager.md) and
+[`docs/rossco-itr-package-manager.md`](docs/rossco-itr-package-manager.md).
+Refund Optimization Intelligence:
+[`docs/refund-optimization-intelligence.md`](docs/refund-optimization-intelligence.md).
+
+## Ross Tax Pro Software Co | RunTime AI Assist
+
+**RunTime AI Assist** is the product from **Ross Tax Pro Software Co**
+(full name: **Ross Tax Pro Software Co | RunTime AI Assist**) —
+landing, access gates, dashboards, membership, RBAC, GitHub sign-in, transparent
+execution, and advanced SEO on **http://127.0.0.1:8787**.
+
+```bash
+python3 ross.py init
+python3 ross.py doctor
+python3 ross.py package build      # → workspace/dist/application.rpkg
+python3 ross.py runtime run hello
+python3 ross.py deploy plan local
+python3 ross.py dev                # open http://127.0.0.1:8787
+# Create account → verify email → MFA → membership → payment
+```
+
+SEO: `/robots.txt`, `/sitemap.xml`, `/site.webmanifest` (set `ROSS_PUBLIC_URL` in production).
+
+Docker: `docker compose -f docker-compose.ross.yml up --build`.  
+Details: [`docs/ross-ai-runtime-platform.md`](docs/ross-ai-runtime-platform.md).
+
 ## Platform Overview
 
 The repository is organized as a lightweight monorepo with executable Node.js service and worker skeletons, shared packages for runtime configuration and secure tunnel interfaces, Terraform placeholders, CI scaffolding, and operations/compliance documentation.
@@ -20,11 +68,14 @@ The repository is organized as a lightweight monorepo with executable Node.js se
 ### Included foundations
 
 - Monorepo directory structure for services, workers, pipelines, engines, shared packages, infrastructure, scripts, docs, policy assets, forms, letters, and static assets.
+- **AOL** package manager (`tools/aol`) for parallel workspace linking and script running.
 - Environment/configuration scaffold for local, dev, stage, and prod with explicit secret placeholders.
-- API gateway plus domain service skeletons for refund status, transcripts, and analytics.
+- API gateway plus domain service skeletons for refund status, transcripts, analytics, and IRS OAuth/TDS gateway.
+- Cursor Cloud environment pack (`.cursor/environment.json`), root `Dockerfile`, and Python `requirements.txt` for PDF fill tooling.
 - 24/7 worker skeletons for TDS, transcript pulls, and live-source fetch orchestration.
 - Transmission, masterfile, and refund-status pipeline starters.
 - Secure tunnel adapter scaffold with compliance checkpoints and TODO markers.
+- Production compliance package (`@rtp/production-compliance`) with full live checklist, report, and audit log.
 - CI placeholder workflows with lint, test, and build quality gates.
 
 ## Security and Compliance Boundaries
@@ -99,12 +150,26 @@ Services: api-gateway `:3000`, refund-status `:3001`, transcript `:3002`,
 analytics `:3003`, modules-dashboard `:3010`.
 
 Default gateway health check:
-
-```bash
-curl http://localhost:3000/health
+./scripts/aol install
+./scripts/aol run lint
+./scripts/aol run test
+./scripts/aol run build
+./scripts/aol run start:all    # entire platform (tmux)
+./scripts/aol run start:check  # health probe all services
 ```
 
-Run workers in one-shot mode:
+Or foreground supervisor: `./scripts/aol run start:all:fg`.
+
+Default health checks:
+
+```bash
+curl http://localhost:3000/health   # api-gateway
+curl http://localhost:3001/health   # refund-status
+curl http://localhost:3002/health   # transcript
+curl http://localhost:3003/health   # analytics
+```
+
+Workers also run once during `start:all`. Manual one-shot:
 
 ```bash
 pnpm run worker:tds
@@ -205,6 +270,9 @@ deployment.
 ```bash
 pnpm run agents        # run the team, print a JSON summary
 pnpm run agents:docs   # regenerate docs/agents/*.md
+./scripts/aol run worker:tds
+./scripts/aol run worker:transcript-pull
+./scripts/aol run worker:live-source
 ```
 
 Generated reports live in [`docs/agents/`](./docs/agents/README.md).
@@ -260,14 +328,24 @@ REST API (served by the dashboard):
 ## Module Map
 
 ```text
+tools/
+  aol/                   Adaptive Optimized Linker (workspace linker)
+  rossco/                ROSS.CO Infinite Transfer Rate package manager
+presence/
+  rossco/                Online presence + SEO landing (ross.co)
+  aol/                   Adaptive Optimized Linker (package manager)
+ross.py / ross_ai/       Ross Tax Pro Software Co | RunTime AI Assist (packages, runtime, deploy)
 packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
   secure-tunnel/         compliant tunnel adapter interface scaffold
   workflow-engine/       modular task/workflow/trigger engine + run history
   module-advisor/        AI-assisted insights, assistant, and dependency graph
+  ero-governance/        RTP-AI-001 personas, catalog, paid-task state machine
 services/
   api-gateway/           route registry and transmission entrypoint skeleton
+  irs-gateway/           IRS OAuth2 / TDS token gateway (JWT client assertion)
+  ai-workforce-hub/      realtime AI persona hire/pay UI + APIs (RTP-AI-001)
   refund-status-service/ event-driven refund status surface
   transcript-service/    transcript intake and orchestration surface
   analytics-service/     analytics and refund intelligence API surface
@@ -282,21 +360,27 @@ workers/
   tds-worker/            TDS orchestration worker scaffold
   transcript-pull-worker/account transcript pull worker scaffold
   live-source-fetcher/   approved-source fetch coordinator scaffold
+  ai-persona-worker/     paid persona queue worker scaffold
 pipelines/
   transmission-pipeline/ transmission flow stages
   masterfile-pipeline/   masterfile ingestion/normalization stages
   refund-status-pipeline/event-driven refund updates stages
 engines/
-  refund-intelligence-engine/
+  refund-intelligence-engine/  lifecycle, guard, ETA, ROI handoff
+  refund-optimization-engine/  Refund = withholding + credits − liability
+  ai-persona-runtime/          hire→pay→run orchestration under ERO gates
   analytics-center/
   tc-code-engine/
+  pdf-fill-engine/       Python PDF fill scaffold (`requirements.txt`)
 infra/
   terraform/             module and environment placeholders
+.cursor/
+  environment.json       Cursor Cloud agent environment definition
 ```
 
 ## Environment Model
 
-Use the example files in `/env`:
+Use the example files in `/env` and root `.env.example`. Cursor setup: [`docs/cursor-environment.md`](docs/cursor-environment.md).
 
 - `env/.env.local.example`
 - `env/.env.dev.example`
@@ -319,14 +403,24 @@ Key placeholders include:
 2. Run `docker compose up -d` to provision local Postgres and Redis placeholders.
 3. Run `pnpm run setup`, then `pnpm run start`.
 4. Run `pnpm test` and `pnpm run build` before opening changes.
+3. Run `./scripts/aol install`, then `./scripts/aol run start`.
+4. Run `./scripts/aol run test` and `./scripts/aol run build` before opening changes.
 
 ## Documentation Index
 
+- `/docs/aol-package-manager.md`
+- `/docs/aol-api-and-config.md`
+- `/docs/aol-intellectual-property.md`
+- `/docs/ross-ai-runtime-platform.md`
+- `/docs/rtpsc-package-lock.md`
 - `/docs/architecture.md`
 - `/docs/engineering-standards.md`
 - `/docs/api-spec-overview.md`
 - `/docs/operations-runbook.md`
 - `/docs/compliance-and-governance.md`
+- `/docs/live-production-checklist.md`
+- `/docs/enterprise-tax-software-checklist.md`
+- `/docs/production-compliance-report.md`
 - `/docs/irm-aligned-handbook.md`
 
 ## Suggested Next Milestones

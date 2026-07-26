@@ -1,4 +1,7 @@
 import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // Product identity for Ross Tax Pro Software Co (RTPSC).
 export const PLATFORM_IDENTITY = Object.freeze({
@@ -10,7 +13,8 @@ export const PLATFORM_IDENTITY = Object.freeze({
 const defaultComplianceNotice = [
   'No unauthorized access to IRS systems.',
   'No scraping-based refund status collection.',
-  'Secrets must come from environment configuration.'
+  'Secrets must come from environment configuration.',
+  'AI personas are assistive and cannot clear material HOLD, sign, or transmit without human review.'
 ];
 
 const PRODUCTION_ENVIRONMENTS = new Set(['prod', 'production']);
@@ -107,7 +111,80 @@ export function createEngineDescriptor({ name, capabilities = [], outputs = [] }
   return Object.freeze({ name, capabilities, outputs, compliance: defaultComplianceNotice });
 }
 
-export function startHttpService({ descriptor, defaultPort = 3000, extraMetadata = {} }) {
+export function readJsonBody(request, { limitBytes = 1_000_000 } = {}) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0;
+    request.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > limitBytes) {
+        reject(Object.assign(new Error('request body too large'), { code: 'payload_too_large' }));
+        request.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    request.on('end', () => {
+      if (chunks.length === 0) {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+      } catch (error) {
+        reject(Object.assign(error, { code: 'invalid_json' }));
+      }
+    });
+    request.on('error', reject);
+  });
+}
+
+export function sendJson(response, statusCode, body) {
+  response.setHeader('content-type', 'application/json; charset=utf-8');
+  response.writeHead(statusCode);
+  response.end(JSON.stringify(body, null, 2));
+}
+
+function contentTypeFor(filePath) {
+  switch (path.extname(filePath).toLowerCase()) {
+    case '.html':
+      return 'text/html; charset=utf-8';
+    case '.css':
+      return 'text/css; charset=utf-8';
+    case '.js':
+      return 'text/javascript; charset=utf-8';
+    case '.svg':
+      return 'image/svg+xml';
+    case '.json':
+      return 'application/json; charset=utf-8';
+    default:
+      return 'application/octet-stream';
+  }
+}
+
+export function serveStaticFile(response, rootDir, requestPath) {
+  const safePath = path.normalize(decodeURIComponent(requestPath.split('?')[0])).replace(/^(\.\.[/\\])+/, '');
+  const relative = safePath === '/' || safePath === '' ? 'index.html' : safePath.replace(/^\//, '');
+  const absolute = path.join(rootDir, relative);
+  if (!absolute.startsWith(path.resolve(rootDir))) {
+    sendJson(response, 403, { error: 'forbidden' });
+    return true;
+  }
+  if (!fs.existsSync(absolute) || fs.statSync(absolute).isDirectory()) return false;
+  response.setHeader('content-type', contentTypeFor(absolute));
+  response.writeHead(200);
+  response.end(fs.readFileSync(absolute));
+  return true;
+}
+
+export function startHttpService({
+  descriptor,
+  defaultPort = 3000,
+  extraMetadata = {},
+  routes = {},
+  staticDir = null,
+  onReady = null
+} = {}) {
   const config = loadRuntimeConfig({ servicePort: defaultPort });
   const payload = {
     identity: PLATFORM_IDENTITY,
@@ -117,36 +194,49 @@ export function startHttpService({ descriptor, defaultPort = 3000, extraMetadata
     metadata: extraMetadata
   };
 
-  const server = http.createServer((request, response) => {
-    response.setHeader('content-type', 'application/json; charset=utf-8');
+  const server = http.createServer(async (request, response) => {
+    const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
+    const routeKey = `${request.method || 'GET'} ${url.pathname}`;
 
-    if (request.url === '/health') {
-      response.writeHead(200);
-      response.end(JSON.stringify({ status: 'ok', service: descriptor.name, environment: config.appEnv }));
-      return;
+    try {
+      if (url.pathname === '/health' && request.method === 'GET') {
+        sendJson(response, 200, { status: 'ok', service: descriptor.name, environment: config.appEnv });
+        return;
+      }
+      if (url.pathname === '/metadata' && request.method === 'GET') {
+        sendJson(response, 200, payload);
+        return;
+      }
+
+      const handler = routes[routeKey];
+      if (handler) {
+        await handler({ request, response, url, config, payload, readJsonBody, sendJson });
+        return;
+      }
+
+      if (staticDir && request.method === 'GET') {
+        if (serveStaticFile(response, staticDir, url.pathname)) return;
+        if (url.pathname === '/' || !path.extname(url.pathname)) {
+          if (serveStaticFile(response, staticDir, '/index.html')) return;
+        }
+      }
+
+      sendJson(response, 404, { error: 'not_found', service: descriptor.name });
+    } catch (error) {
+      const status = error.code === 'payload_too_large' ? 413 : error.code === 'invalid_json' ? 400 : 500;
+      sendJson(response, status, { error: error.code || 'internal_error', message: error.message });
     }
-
-    if (request.url === '/metadata') {
-      response.writeHead(200);
-      response.end(JSON.stringify(payload, null, 2));
-      return;
-    }
-
-    response.writeHead(404);
-    response.end(JSON.stringify({ error: 'not_found', service: descriptor.name }));
   });
 
-  server.listen(config.servicePort);
+  server.listen(config.servicePort, () => {
+    if (typeof onReady === 'function') onReady({ config, payload });
+  });
   return { server, config, payload };
 }
 
 export function runWorker({ descriptor, steps = [] }) {
   const config = loadRuntimeConfig();
-  const output = {
-    worker: descriptor,
-    runtime: redactConfig(config),
-    steps
-  };
+  const output = { worker: descriptor, runtime: redactConfig(config), steps };
 
   if (process.argv.includes('--once')) {
     console.log(JSON.stringify(output, null, 2));
@@ -158,10 +248,12 @@ export function runWorker({ descriptor, steps = [] }) {
     console.log(JSON.stringify({ heartbeat: descriptor.name, environment: config.appEnv }));
   }, 15000);
   timer.unref();
-
   const stop = () => clearInterval(timer);
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);
-
   return { timer, output, stop };
+}
+
+export function packageDir(importMetaUrl, ...segments) {
+  return path.join(path.dirname(fileURLToPath(importMetaUrl)), ...segments);
 }

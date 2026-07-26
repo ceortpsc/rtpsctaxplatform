@@ -1,0 +1,33 @@
+{
+  "name": "@rtp/production-compliance",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Full live production checklist, compliance report, checklist log, and automated gate runner for the RTPSC Tax Platform.",
+  "type": "module",
+  "license": "MIT",
+  "author": "RTPSC / Ross Tax Software <ceo@rosstaxsoftware.com>",
+  "bin": {
+    "prodcheck": "./bin/prodcheck.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "start": "node ./bin/prodcheck.mjs run",
+    "checklist": "node ./bin/prodcheck.mjs checklist",
+    "report": "node ./bin/prodcheck.mjs report",
+    "log": "node ./bin/prodcheck.mjs log"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "production",
+    "compliance",
+    "checklist",
+    "report",
+    "log",
+    "rtpsc"
+  ]
+}
