@@ -88,9 +88,11 @@ packages/
   platform-core/         shared runtime config, service helpers, worker helpers
   client-config/         API/TDS/tunnel credential placeholder definitions
   secure-tunnel/         compliant tunnel adapter interface scaffold
+  ero-governance/        RTP-AI-001 personas, catalog, paid-task state machine
 services/
   api-gateway/           route registry and transmission entrypoint skeleton
   irs-gateway/           IRS OAuth2 / TDS token gateway (JWT client assertion)
+  ai-workforce-hub/      realtime AI persona hire/pay UI + APIs (RTP-AI-001)
   refund-status-service/ event-driven refund status surface
   transcript-service/    transcript intake and orchestration surface
   analytics-service/     analytics and refund intelligence API surface
@@ -98,6 +100,7 @@ workers/
   tds-worker/            TDS orchestration worker scaffold
   transcript-pull-worker/account transcript pull worker scaffold
   live-source-fetcher/   approved-source fetch coordinator scaffold
+  ai-persona-worker/     paid persona queue worker scaffold
 pipelines/
   transmission-pipeline/ transmission flow stages
   masterfile-pipeline/   masterfile ingestion/normalization stages
@@ -105,6 +108,7 @@ pipelines/
 engines/
   refund-intelligence-engine/  lifecycle, guard, ETA, ROI handoff
   refund-optimization-engine/  Refund = withholding + credits − liability
+  ai-persona-runtime/          hire→pay→run orchestration under ERO gates
   analytics-center/
   tc-code-engine/
   pdf-fill-engine/       Python PDF fill scaffold (`requirements.txt`)

@@ -19,6 +19,7 @@ const requiredPaths = [
   'docs/rossco-itr-package-manager.md',
   'docs/rossco-intellectual-property.md',
   'docs/refund-optimization-intelligence.md',
+  'docs/ai-persona-workforce.md',
   'tools/aol/bin/aol.mjs',
   'tools/aol/package.json',
   'tools/aol/NOTICE',
@@ -57,17 +58,21 @@ const packageFiles = [
   'packages/client-config/package.json',
   'packages/secure-tunnel/package.json',
   'packages/production-compliance/package.json',
+  'packages/ero-governance/package.json',
   'tools/rossco/package.json',
   'engines/refund-optimization-engine/package.json',
   'engines/refund-intelligence-engine/package.json',
+  'engines/ai-persona-runtime/package.json',
   'services/api-gateway/package.json',
   'services/irs-gateway/package.json',
+  'services/ai-workforce-hub/package.json',
   'services/refund-status-service/package.json',
   'services/transcript-service/package.json',
   'services/analytics-service/package.json',
   'workers/tds-worker/package.json',
   'workers/transcript-pull-worker/package.json',
-  'workers/live-source-fetcher/package.json'
+  'workers/live-source-fetcher/package.json',
+  'workers/ai-persona-worker/package.json'
 ];
 
 for (const relativePath of packageFiles) {

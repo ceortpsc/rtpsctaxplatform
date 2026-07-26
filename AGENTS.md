@@ -59,11 +59,12 @@ Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
   (long-running). Start it in a background terminal/tmux session. Verify with
   `curl http://localhost:3000/health` and `curl http://localhost:3000/metadata`.
 - Other services are independent HTTP stubs on fixed ports: refund-status `3001`,
-  transcript `3002`, analytics `3003`, irs-gateway `8820`
+  transcript `3002`, analytics `3003`, irs-gateway `8820`, ai-workforce-hub `8860`
   (`./scripts/aol run start:refund-status`, `start:transcript`, `start:analytics`,
-  `start:irs-gateway`).
+  `start:irs-gateway`, `start:ai-workforce`).
 - Workers run one-shot and print a JSON descriptor + planned steps, then exit
-  (`./scripts/aol run worker:tds`, `worker:transcript-pull`, `worker:live-source`).
+  (`./scripts/aol run worker:tds`, `worker:transcript-pull`, `worker:live-source`,
+  `worker:ai-persona`).
 - Production compliance: `./scripts/aol run compliance:checklist`,
   `./scripts/aol run compliance -- --skip-gates`,
   `./scripts/aol run compliance -- --live`,
@@ -77,6 +78,8 @@ Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 - Most services only expose `/health` and `/metadata` (any other path returns `404`).
   `irs-gateway` also exposes `POST /irs/token` (JWT client assertion) and returns
   `credentials_not_configured` until secrets/keys are provisioned.
+  `ai-workforce-hub` exposes hire/pay/run persona APIs + UI under RTP-AI-001
+  (AI cannot sign, transmit, or clear material HOLD).
   There is no DB or inter-service mesh yet — "dependencies" in descriptors are metadata only.
 - `docker compose up` (Postgres 16 / Redis 7 in `docker-compose.yml`) is **optional and
   unused by the code**. Do not treat Docker as a prerequisite for running or testing.

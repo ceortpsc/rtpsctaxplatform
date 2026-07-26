@@ -15,11 +15,14 @@ import { tcCodeEngine } from '../engines/tc-code-engine/src/index.mjs';
 import { clientIdentityPlaceholders } from '../packages/client-config/src/index.mjs';
 import { createSecureTunnelAdapter } from '../packages/secure-tunnel/src/index.mjs';
 import { IP as rosscoIp } from '../tools/rossco/src/index.mjs';
+import { aiWorkforceHubDescriptor } from '../services/ai-workforce-hub/src/index.mjs';
+import { PERSONA_REGISTER } from '../packages/ero-governance/src/index.mjs';
 
 test('scaffold modules expose expected domain metadata', () => {
   assert.equal(gatewayDescriptor.name, 'api-gateway');
   assert.equal(irsGatewayDescriptor.name, 'irs-gateway');
   assert.equal(irsGatewayDescriptor.domain, 'irs-oauth');
+  assert.equal(aiWorkforceHubDescriptor.domain, 'ai-workforce');
   assert.equal(refundStatusDescriptor.domain, 'refund-status');
   assert.equal(transcriptDescriptor.domain, 'transcripts');
   assert.equal(analyticsDescriptor.domain, 'analytics');
@@ -33,6 +36,7 @@ test('scaffold modules expose expected domain metadata', () => {
   assert.ok(refundIntelligenceEngine.capabilities.includes('lifecycle-state-machine'));
   assert.ok(refundOptimizationEngine.capabilities.includes('refundable-credit-scan'));
   assert.equal(rosscoIp.productName, 'ROSS.CO');
+  assert.ok(PERSONA_REGISTER.some((persona) => persona.id === 'billing-service-order-agent'));
   assert.ok(analyticsCenter.outputs.includes('analytics-feed'));
   assert.ok(tcCodeEngine.capabilities.includes('tc-code-catalog'));
 });
