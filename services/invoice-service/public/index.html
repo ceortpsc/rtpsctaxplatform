@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invoicing Machine · RTPSC</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">RTPSC</span>
+        <span class="brand-sub">Invoicing Machine · Operations</span>
+      </div>
+      <div class="provider">State &amp; county/parish tax · AI data entry · PDF / receipt paper</div>
+    </header>
+
+    <main class="wrap">
+      <section class="banner">
+        Full-fledged invoicing for tax-prep operations: AI-assisted entry, jurisdiction tax math,
+        payment approval &amp; confirmation, export to PDF and thermal receipt paper.
+      </section>
+
+      <section class="grid">
+        <div class="col">
+          <h2>1 · AI-assisted data entry</h2>
+          <div class="field">
+            <label>Describe the job (natural language)</label>
+            <textarea id="assistText" rows="3" placeholder="e.g. 2 hours consultation and 1040 prep for Jordan Ellis in Orleans Parish LA $400"></textarea>
+          </div>
+          <button type="button" id="assistBtn" class="secondary-btn">Run AI assist</button>
+          <div id="assistOut" class="assist-out" hidden></div>
+
+          <h2>2 · Client &amp; jurisdiction</h2>
+          <div class="field"><label>Client name</label><input id="clientName" value="" placeholder="Jordan Ellis" /></div>
+          <div class="field"><label>Email</label><input id="email" type="email" value="" placeholder="client@example.com" /></div>
+          <div class="row2">
+            <div class="field">
+              <label>State</label>
+              <select id="state"></select>
+            </div>
+            <div class="field">
+              <label id="localityLabel">County / Parish</label>
+              <select id="locality"></select>
+            </div>
+          </div>
+          <div id="taxPreview" class="tax-preview">Select a jurisdiction to preview tax rate.</div>
+
+          <h2>3 · Line items</h2>
+          <div id="lines" class="lines"></div>
+          <button type="button" id="addLine" class="ghost-btn">+ Add line</button>
+        </div>
+
+        <div class="col">
+          <h2>4 · Create &amp; operate</h2>
+          <div class="field"><label>Notes</label><textarea id="notes" rows="2" placeholder="Optional operations notes"></textarea></div>
+          <div class="totals" id="totals">Totals appear after create / assist.</div>
+          <div class="actions">
+            <button type="button" id="createBtn" class="primary-btn">Create invoice</button>
+            <button type="button" id="submitBtn" class="secondary-btn" disabled>Submit for approval</button>
+            <button type="button" id="approveBtn" class="secondary-btn" disabled>Approve</button>
+            <button type="button" id="payBtn" class="primary-btn" disabled>Record payment</button>
+          </div>
+          <div class="pay-row" id="payRow" hidden>
+            <div class="field">
+              <label>Payment method</label>
+              <select id="payMethod">
+                <option value="card">Card</option>
+                <option value="cash">Cash</option>
+                <option value="check">Check</option>
+                <option value="ach">ACH</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="field"><label>Reference</label><input id="payRef" placeholder="Auth / check #" /></div>
+          </div>
+          <div id="result" class="result" hidden></div>
+          <div class="exports" id="exports" hidden>
+            <a id="pdfLink" href="#" target="_blank">Download invoice PDF</a>
+            <a id="receiptPdfLink" href="#" target="_blank">Download receipt PDF</a>
+            <a id="receiptTxtLink" href="#" target="_blank">Download receipt paper (.txt)</a>
+          </div>
+
+          <h2>Service catalog</h2>
+          <div id="catalog" class="catalog">Loading…</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Recent invoices</h2>
+        <div id="invoiceList" class="invoice-list">None yet.</div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast"></div>
+    <script src="/app.js"></script>
+  </body>
+</html>

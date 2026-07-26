@@ -1,0 +1,7 @@
+{
+  "name": "@rtp/refund-optimization-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Refund Optimization Intelligence (ROI) — deterministic refund = withholding + refundable credits − tax liability"
+}

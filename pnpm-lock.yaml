@@ -1,0 +1,93 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  agents/assessment-agent: {}
+
+  agents/mapping-agent: {}
+
+  agents/markdown-agent: {}
+
+  agents/planning-agent: {}
+
+  agents/scoping-agent: {}
+
+  agents/staging-agent: {}
+
+  agents/testing-agent: {}
+
+  engines/analytics-center: {}
+
+  engines/refund-intelligence-engine: {}
+
+  engines/tc-code-engine: {}
+
+  packages/agent-core: {}
+
+  packages/bank-products: {}
+
+  packages/client-config: {}
+
+  packages/client-identity: {}
+
+  packages/crm-core: {}
+
+  packages/ero-ops: {}
+
+  packages/invoice-core: {}
+
+  packages/module-advisor: {}
+
+  packages/platform-core: {}
+
+  packages/pos-core: {}
+
+  packages/refund-core: {}
+
+  packages/secure-tunnel: {}
+
+  packages/tax-data: {}
+
+  packages/workflow-engine: {}
+
+  pipelines/masterfile-pipeline: {}
+
+  pipelines/refund-status-pipeline: {}
+
+  pipelines/transmission-pipeline: {}
+
+  services/analytics-service: {}
+
+  services/api-gateway: {}
+
+  services/enrollment-service: {}
+
+  services/invoice-service: {}
+
+  services/modules-dashboard: {}
+
+  services/pos-crm-service: {}
+
+  services/refund-status-service: {}
+
+  services/transcript-service: {}
+
+  workers/live-source-fetcher: {}
+
+  workers/tds-worker: {}
+
+  workers/transcript-pull-worker: {}
+
+  workers/workflow-runner: {}
+
+  workflows/refund-status-workflow: {}
+
+  workflows/transcript-intake-workflow: {}
+
+  workflows/transmission-workflow: {}

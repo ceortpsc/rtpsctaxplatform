@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Full Refund Center · RTPSC</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">RTPSC</span>
+        <span class="brand-sub">Full Refund Center · API / TDS clients</span>
+      </div>
+      <div id="clientBadge" class="badge">Clients…</div>
+    </header>
+    <main class="wrap">
+      <section class="banner">
+        Approved-source refund ingest only (no scraping). Authenticate with a full
+        <strong>API client id</strong> or <strong>TDS client id</strong>, then build a complete refund case timeline.
+      </section>
+
+      <section class="grid">
+        <div class="col">
+          <h2>1 · Client credentials</h2>
+          <div id="clientStatus" class="panel">Loading…</div>
+          <div class="field"><label>Client ID</label><input id="clientId" placeholder="rtp_api_… or rtp_tds_…" /></div>
+          <div class="field"><label>Client secret</label><input id="clientSecret" type="password" placeholder="rtp_sk_…" /></div>
+          <p class="hint">Issued at service start (console) or via <code>./rtpsc clients issue</code>. Also accepts env <code>API_CLIENT_*</code> / <code>TDS_CLIENT_*</code>.</p>
+
+          <h2>2 · Ingest / full refund</h2>
+          <div class="field"><label>Case ID</label><input id="caseId" value="CASE-FULL-1001" /></div>
+          <div class="field"><label>Taxpayer ref</label><input id="taxpayerRef" value="TP-77" /></div>
+          <div class="field"><label>Amount</label><input id="amount" type="number" value="3200" /></div>
+          <div class="field">
+            <label>Single filing stage</label>
+            <select id="stage">
+              <option value="received">received</option>
+              <option value="processing">processing</option>
+              <option value="approved">approved</option>
+              <option value="sent" selected>sent</option>
+              <option value="paid">paid</option>
+              <option value="review">review</option>
+            </select>
+          </div>
+          <div class="actions">
+            <button type="button" id="ingestBtn" class="primary">Ingest event</button>
+            <button type="button" id="fullBtn" class="secondary">Run full refund path</button>
+          </div>
+          <div id="result" class="result" hidden></div>
+        </div>
+        <div class="col">
+          <h2>Cases</h2>
+          <div id="cases" class="list">Loading…</div>
+          <h2>Case detail / timeline</h2>
+          <pre id="detail" class="panel">Select a case…</pre>
+        </div>
+      </section>
+    </main>
+    <div class="toast" id="toast"></div>
+    <script src="/app.js"></script>
+  </body>
+</html>

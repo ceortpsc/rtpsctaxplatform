@@ -45,6 +45,17 @@ await aol.install();
 
 CLI mirrors: `aol api`, `aol codes`, `aol config`, `aol copyright`.
 
+## AI Workforce Hub (`:8860`)
+
+- UI: `GET /`
+- `GET /v1/personas` · `GET /v1/catalog` · `GET /v1/governance`
+- `POST /v1/hire` · `POST /v1/tasks/pay` · `POST /v1/tasks/run`
+- `POST /v1/tasks/human-approve` · `POST /v1/tasks/hold`
+- `POST /v1/live-service` — hire → pay → realtime persona step
+- `GET /v1/events` — governance event stream
+
+See [`ai-persona-workforce.md`](./ai-persona-workforce.md).
+
 ## Future contracts
 
 - Version external and internal event schemas.

@@ -1,6 +1,16 @@
 # @rtp/production-compliance
 
-Full **live production checklist**, executable **compliance report**, **checklist log**, and gate runner for the RTPSC Tax Platform scaffold.
+Full **live production checklist** (**v2.0.0**), executable **compliance report**, **checklist log**, and gate runner for the RTPSC Tax Platform scaffold.
+
+Enterprise domains covered:
+
+- IRS API client ID / credentials (`IRS-*`)
+- TDS client ID / credentials (`TDS-*`)
+- Enterprise AI assist (`AIA-*`)
+- Refund intellectual support & tracking (`RFD-*`)
+- Full e-file transmission systems (`EFL-*`)
+
+Human companions: `docs/live-production-checklist.md`, `docs/enterprise-tax-software-checklist.md`.
 
 ## Commands
 

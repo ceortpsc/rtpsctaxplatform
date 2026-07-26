@@ -20,7 +20,8 @@ The platform ships an executable **production compliance report** plus a durable
 
 ## Report contents
 
-The report covers six sections:
+The report covers eleven sections (checklist **v2.0.0**), including IRS API / TDS
+client IDs, AI assist, refund intelligence & tracking, and e-file transmission:
 
 1. Legal, governance, and IRM alignment
 2. Security and compliance boundaries

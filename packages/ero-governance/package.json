@@ -1,0 +1,7 @@
+{
+  "name": "@rtp/ero-governance",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "ERO / IRM-style governance gates, AI persona register, and CRM rules from RTP Master Manual v2.0"
+}

@@ -23,12 +23,23 @@ const root = process.cwd();
 test('checklist enumerates automated, manual, and live items', () => {
   const summary = checklistSummary();
   assert.equal(summary.version, CHECKLIST_VERSION);
-  assert.ok(summary.items >= 20);
+  assert.equal(summary.version, '2.0.0');
+  assert.ok(summary.items >= 60);
+  assert.ok(summary.sections >= 10);
   assert.ok(summary.byMode.automated > 0);
   assert.ok(summary.byMode.manual > 0);
   assert.ok(summary.byMode.live > 0);
   assert.ok(listChecklistItems().some((item) => item.id === 'BND-001'));
   assert.ok(listChecklistItems().some((item) => item.id === 'GOV-007'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'GOV-008'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'GOV-009'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'IRS-001'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'TDS-001'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'AIA-001'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'RFD-001'));
+  assert.ok(listChecklistItems().some((item) => item.id === 'EFL-001'));
+  assert.ok(summary.bySection.irs_api_credentials >= 1);
+  assert.ok(summary.bySection.efile_transmission >= 1);
 });
 
 test('compliance checks pass scaffold automated gates with skip-gates', async () => {
@@ -123,4 +134,12 @@ test('strict production marks unresolved manual items as fail', async () => {
   const { results } = await runComplianceChecks(root, { skipGates: true, strictProduction: true });
   const manual = results.filter((item) => item.mode === 'manual');
   assert.ok(manual.every((item) => item.status === 'fail'));
+});
+
+test('BND-003 does not flag clients.mjs export-env scaffolding', async () => {
+  const { results } = await runComplianceChecks(root, { skipGates: true, live: false });
+  const bnd = results.find((item) => item.id === 'BND-003');
+  assert.ok(bnd, 'BND-003 should be present');
+  assert.equal(bnd.status, 'pass', JSON.stringify(bnd, null, 2));
+  assert.ok(!(bnd.findings || []).includes('scripts/clients.mjs'));
 });

@@ -1,6 +1,11 @@
 SHELL := /bin/bash
 AOL := node ./tools/aol/bin/aol.mjs
 
+.PHONY: setup lint test build start start-all start-check gateway workers bench aol compliance compliance-checklist compliance-log
+ROSSCO := node ./tools/rossco/bin/rossco.mjs
+
+.PHONY: setup lint test build start gateway workers bench aol rossco itr compliance compliance-checklist compliance-log
+.PHONY: setup lint test build start gateway workers bench aol ross ross-dev ross-doctor
 .PHONY: setup lint test build start gateway workers bench aol compliance compliance-checklist compliance-log
 
 setup:
@@ -18,7 +23,17 @@ build:
 start:
 	./scripts/start.sh
 
+start-all:
+	./scripts/start-all.sh
+
+start-check:
+	node ./scripts/start-all.mjs --check-only
+
 gateway:
+	pnpm run start:gateway
+
+workers:
+	pnpm run worker:tds && pnpm run worker:transcript-pull && pnpm run worker:live-source
 	$(AOL) run start:gateway
 
 workers:
@@ -38,3 +53,14 @@ compliance-log:
 
 aol:
 	$(AOL) $(ARGS)
+
+rossco itr:
+	$(ROSSCO) $(ARGS)
+ross:
+	python3 ./ross.py $(ARGS)
+
+ross-doctor:
+	python3 ./ross.py doctor
+
+ross-dev:
+	python3 ./ross.py dev

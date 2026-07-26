@@ -37,7 +37,10 @@ export {
   listCommands,
   doctor,
   graph,
-  mailStatus
+  mailStatus,
+  listFootprints,
+  formatFootprintLedger,
+  FOOTPRINTS_FILE
 } from './api.mjs';
 
 export { runCli } from './cli.mjs';

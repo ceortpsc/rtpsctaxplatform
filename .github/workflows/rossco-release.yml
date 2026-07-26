@@ -1,0 +1,195 @@
+name: ROSS.CO Infinite Release and Registry
+
+on:
+  push:
+    branches:
+      - main
+      - 'rossco/**'
+      - 'cursor/**'
+    tags:
+      - 'rossco-v*'
+  pull_request:
+    paths:
+      - 'tools/rossco/**'
+      - 'scripts/rossco'
+      - 'rossco.config.json'
+      - 'docs/rossco-*.md'
+      - 'presence/rossco/**'
+      - '.github/workflows/rossco-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: rossco-release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ROSS_ARTIFACT_NAME: rossco-infinite-package-manager
+
+jobs:
+  verify-package-manager:
+    name: Verify ROSS.CO package manager
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Confirm native ROSS.CO command surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x ./scripts/rossco
+          ./scripts/rossco lifecycle
+          ./scripts/rossco validate
+          ./scripts/rossco test
+          ./scripts/rossco verify
+          ./scripts/rossco register
+
+      - name: Build release artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          tar \
+            --sort=name \
+            --mtime='UTC 2026-01-01' \
+            --owner=0 \
+            --group=0 \
+            --numeric-owner \
+            -czf "dist/${ROSS_ARTIFACT_NAME}-${GITHUB_SHA}.tar.gz" \
+            tools/rossco \
+            scripts/rossco \
+            rossco.config.json \
+            docs/rossco-itr-package-manager.md \
+            docs/rossco-intellectual-property.md \
+            presence/rossco
+          sha256sum "dist/${ROSS_ARTIFACT_NAME}-${GITHUB_SHA}.tar.gz" > dist/SHA256SUMS
+
+      - name: Generate release manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const artifact = fs.readdirSync('dist').find((name) => name.endsWith('.tar.gz'));
+          const checksum = fs.readFileSync('dist/SHA256SUMS', 'utf8').trim().split(/\s+/)[0];
+          const manifest = {
+            schema: 'ross.co.release-manifest.v1',
+            product: 'ROSS.CO Infinite Package Manager',
+            owner: 'Ross Tax Pro Software Co.',
+            commit: process.env.GITHUB_SHA,
+            repository: process.env.GITHUB_REPOSITORY,
+            artifact,
+            sha256: checksum,
+            evidenceState: 'automatically-tested',
+            generatedAt: new Date().toISOString()
+          };
+          fs.writeFileSync(path.join('dist', 'release-manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+          NODE
+
+      - name: Attest release artifact
+        uses: actions/attest@v4
+        with:
+          subject-path: dist/${{ env.ROSS_ARTIFACT_NAME }}-${{ github.sha }}.tar.gz
+
+      - name: Upload verified release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: rossco-release-${{ github.sha }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            dist/${{ env.ROSS_ARTIFACT_NAME }}-${{ github.sha }}.tar.gz
+            dist/SHA256SUMS
+            dist/release-manifest.json
+            build/rossco-registry.json
+
+  deploy-registry:
+    name: Deploy verified registry release
+    needs: verify-package-manager
+    runs-on: ubuntu-latest
+    environment: rossco-production
+    if: >-
+      github.event_name != 'pull_request' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/rossco-v')) &&
+      vars.AWS_ROLE_ARN != '' &&
+      vars.ROSS_REGISTRY_BUCKET != ''
+
+    permissions:
+      contents: read
+      id-token: write
+      attestations: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download verified release evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: rossco-release-${{ github.sha }}
+          path: dist
+
+      - name: Configure AWS production identity
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Publish immutable registry release
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_prefix="releases/${GITHUB_SHA}"
+          aws s3 cp dist/ "s3://${{ vars.ROSS_REGISTRY_BUCKET }}/${release_prefix}/" \
+            --recursive \
+            --only-show-errors
+          aws s3 cp "s3://${{ vars.ROSS_REGISTRY_BUCKET }}/${release_prefix}/release-manifest.json" \
+            "s3://${{ vars.ROSS_REGISTRY_BUCKET }}/latest/release-manifest.json" \
+            --metadata-directive COPY \
+            --only-show-errors
+
+      - name: Publish registry presence
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws s3 sync presence/rossco/ "s3://${{ vars.ROSS_REGISTRY_BUCKET }}/site/" \
+            --delete \
+            --only-show-errors
+
+      - name: Invalidate distribution
+        if: vars.ROSS_CLOUDFRONT_DISTRIBUTION_ID != ''
+        shell: bash
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id '${{ vars.ROSS_CLOUDFRONT_DISTRIBUTION_ID }}' \
+            --paths '/latest/*' '/site/*'
+
+      - name: Record deployment evidence
+        shell: bash
+        run: |
+          printf '%s\n' \
+            "product=ROSS.CO Infinite Package Manager" \
+            "commit=${GITHUB_SHA}" \
+            "bucket=${{ vars.ROSS_REGISTRY_BUCKET }}" \
+            "status=production-published" \
+            "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            > rossco-production-evidence.txt
+
+      - name: Upload deployment evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: rossco-production-evidence-${{ github.sha }}
+          retention-days: 90
+          path: rossco-production-evidence.txt

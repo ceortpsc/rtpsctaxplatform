@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "product": "RTPSC Tax Platform",
   "description": "Production go-live sign-off registry. Set status to approved only after real human approval with evidence.",
-  "updatedAt": "2026-07-25T00:00:00.000Z",
+  "updatedAt": "2026-07-26T00:00:00.000Z",
   "signoffs": {
     "GOV-005": {
       "id": "GOV-005",
@@ -83,6 +83,236 @@
       "approver": null,
       "approvedAt": null,
       "notes": "Fill on-call roster before the live window opens."
+    },
+    "GOV-008": {
+      "id": "GOV-008",
+      "role": "Legal / Governance",
+      "title": "Enterprise AI assist policy approved (disclosure, retention, no unauthorized IRS use)",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/GOV-008.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for AI assist policy + legal/security sign-off. Approve only after real human sign-off."
+    },
+    "IRS-005": {
+      "id": "IRS-005",
+      "role": "IRS / Credentials",
+      "title": "IRS API client enrollment / e-Services (or successor) approval recorded",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/IRS-005.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for IRS enrollment / client-id issuance record. Approve only after real human sign-off."
+    },
+    "IRS-006": {
+      "id": "IRS-006",
+      "role": "IRS / Credentials",
+      "title": "Sandbox IRS API client ID validated before production client ID cutover",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/IRS-006.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Sandbox validation report. Approve only after real human sign-off."
+    },
+    "IRS-007": {
+      "id": "IRS-007",
+      "role": "IRS / Credentials",
+      "title": "Production API_CLIENT_ID rotated and stored only in approved secret manager",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/IRS-007.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Secret manager inventory + rotation log. Approve only after real human sign-off."
+    },
+    "IRS-008": {
+      "id": "IRS-008",
+      "role": "IRS / Credentials",
+      "title": "OAuth/token (or approved auth) flow design reviewed for IRS API client",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/IRS-008.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Auth design review. Approve only after real human sign-off."
+    },
+    "TDS-005": {
+      "id": "TDS-005",
+      "role": "TDS / Credentials",
+      "title": "TDS client enrollment and transmitter agreements approved",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/TDS-005.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for TDS enrollment / agreement package. Approve only after real human sign-off."
+    },
+    "TDS-006": {
+      "id": "TDS-006",
+      "role": "TDS / Credentials",
+      "title": "Production TDS_CLIENT_ID provisioned in secret manager (not in VCS)",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/TDS-006.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Secret manager inventory. Approve only after real human sign-off."
+    },
+    "TDS-007": {
+      "id": "TDS-007",
+      "role": "TDS / Credentials",
+      "title": "TDS job scheduling, retry, and escalation SLAs documented",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/TDS-007.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Operations runbook TDS section. Approve only after real human sign-off."
+    },
+    "TDS-008": {
+      "id": "TDS-008",
+      "role": "TDS / Credentials",
+      "title": "TDS sandbox pull validated before production enablement",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/TDS-008.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Sandbox TDS validation report. Approve only after real human sign-off."
+    },
+    "AIA-005": {
+      "id": "AIA-005",
+      "role": "AI Assist / Compliance",
+      "title": "Human-in-the-loop required for AI recommendations affecting filings or refunds",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/AIA-005.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for AI assist operating procedure. Approve only after real human sign-off."
+    },
+    "AIA-006": {
+      "id": "AIA-006",
+      "role": "AI Assist / Compliance",
+      "title": "External LLM / model vendor DPIA and BAA (if applicable) completed",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/AIA-006.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for DPIA / vendor risk package. Approve only after real human sign-off."
+    },
+    "AIA-007": {
+      "id": "AIA-007",
+      "role": "AI Assist / Compliance",
+      "title": "Taxpayer PII redaction rules enforced before any model prompt egress",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/AIA-007.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for PII redaction test evidence. Approve only after real human sign-off."
+    },
+    "AIA-008": {
+      "id": "AIA-008",
+      "role": "AI Assist / Compliance",
+      "title": "AI assist audit log retained for recommendations affecting compliance decisions",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/AIA-008.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Audit log retention config. Approve only after real human sign-off."
+    },
+    "RFD-005": {
+      "id": "RFD-005",
+      "role": "Product / Refund Ops",
+      "title": "Refund tracking timeline / case workflow design approved",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/RFD-005.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Refund tracking design + product sign-off. Approve only after real human sign-off."
+    },
+    "RFD-006": {
+      "id": "RFD-006",
+      "role": "Product / Refund Ops",
+      "title": "Refund status data sources limited to authorized IRS/event channels",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/RFD-006.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Authorized source inventory. Approve only after real human sign-off."
+    },
+    "RFD-007": {
+      "id": "RFD-007",
+      "role": "Product / Refund Ops",
+      "title": "Refund intelligence scoring validated against sample authorized events",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/RFD-007.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Validation dataset report. Approve only after real human sign-off."
+    },
+    "RFD-008": {
+      "id": "RFD-008",
+      "role": "Product / Refund Ops",
+      "title": "Operator tracking UI / API contracts reviewed for PII minimization",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/RFD-008.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for API/UI privacy review. Approve only after real human sign-off."
+    },
+    "EFL-006": {
+      "id": "EFL-006",
+      "role": "E-file / Transmission",
+      "title": "MeF / e-file transmitter credentials and EFIN/ETIN (or successor) recorded",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/EFL-006.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Transmitter credential inventory. Approve only after real human sign-off."
+    },
+    "EFL-007": {
+      "id": "EFL-007",
+      "role": "E-file / Transmission",
+      "title": "Schema validation suite for transmission payloads approved",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/EFL-007.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Schema test suite + sign-off. Approve only after real human sign-off."
+    },
+    "EFL-008": {
+      "id": "EFL-008",
+      "role": "E-file / Transmission",
+      "title": "Acknowledgement / rejection processing and retry policy approved",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/EFL-008.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Ack/reject runbook. Approve only after real human sign-off."
+    },
+    "EFL-009": {
+      "id": "EFL-009",
+      "role": "E-file / Transmission",
+      "title": "Production transmission kill-switch / disable path rehearsed",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/EFL-009.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for SEV-1 disable-transmission drill record. Approve only after real human sign-off."
+    },
+    "EFL-010": {
+      "id": "EFL-010",
+      "role": "E-file / Transmission",
+      "title": "End-to-end sandbox e-file transmission validated before go-live",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/EFL-010.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for Sandbox e-file validation report. Approve only after real human sign-off."
+    },
+    "OPS-006": {
+      "id": "OPS-006",
+      "role": "Operations",
+      "title": "Enterprise tax checklist sign-offs complete (IRS, TDS, AI, refund, e-file)",
+      "status": "open",
+      "evidenceRef": "policy/procedures/production-signoffs/OPS-006.md",
+      "approver": null,
+      "approvedAt": null,
+      "notes": "Open slot for docs/enterprise-tax-software-checklist.md sign-off block. Approve only after real human sign-off."
     }
   }
 }

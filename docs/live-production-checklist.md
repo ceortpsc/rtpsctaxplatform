@@ -3,6 +3,11 @@
 This is the **full live production checklist** for the RTPSC Tax Platform scaffold.
 It is the human companion to the executable runner in `@rtp/production-compliance`.
 
+For the enterprise tax domains (**AI assist**, **IRS API client ID**, **TDS client ID**,
+**refund intellectual support & tracking**, **full e-file transmission**), use the
+expanded companion: [`enterprise-tax-software-checklist.md`](./enterprise-tax-software-checklist.md)
+(checklist **v2.0.0**).
+
 ## How to use
 
 1. Review every section below before any production cutover.
@@ -95,6 +100,7 @@ matching template under that folder). The compliance runner treats
 
 ## Related documents
 
+- [`enterprise-tax-software-checklist.md`](./enterprise-tax-software-checklist.md)
 - [`compliance-and-governance.md`](./compliance-and-governance.md)
 - [`operations-runbook.md`](./operations-runbook.md)
 - [`irm-aligned-handbook.md`](./irm-aligned-handbook.md)
