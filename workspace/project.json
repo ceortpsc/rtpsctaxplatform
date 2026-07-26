@@ -1,0 +1,7 @@
+{
+  "name": "application",
+  "scripts": [
+    "hello"
+  ],
+  "initialized": true
+}

@@ -53,6 +53,33 @@ Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
   Cursor Personal environment / approved secret store — never commit them.
 - Details: `docs/cursor-environment.md`. Banner: `assets/banners/primeweb-motd.txt`.
 
+### Ross Tax Pro Software Co | RunTime AI Assist
+
+**RunTime AI Assist** (full name: **Ross Tax Pro Software Co | RunTime AI Assist**)
+is the operator control plane
+(landing, access gates, dashboards, inventory, hardening, WebSockets, RBAC,
+GitHub auth, transparent execution) on port `8787`, with advanced SEO
+(`/robots.txt`, `/sitemap.xml`, JSON-LD). Docs: `docs/ross-ai-runtime-platform.md`.
+
+```bash
+python3 ross.py init
+python3 ross.py doctor
+python3 ross.py package build
+python3 ross.py runtime run hello
+python3 ross.py deploy plan docker
+python3 ross.py dev                 # http://127.0.0.1:8787
+# Landing → /signup or /signin → /dashboard
+```
+
+Docker (optional): `cp .env.example .env && docker compose -f docker-compose.ross.yml up --build`.
+### Cursor Cloud environment
+
+- Repo definition: `.cursor/environment.json` (+ `.cursor/Dockerfile`).
+- Linked repository: `ceortpsc/rtpsctaxplatform` (Personal scope).
+- Env templates: `.env.example`, `env/.env.*.example`. Set real IRS secrets only in the
+  Cursor Personal environment / approved secret store — never commit them.
+- Details: `docs/cursor-environment.md`. Banner: `assets/banners/primeweb-motd.txt`.
+
 ### Running services / commands
 
 - `./scripts/aol run start` launches only the **api-gateway** on port `3000` and blocks
@@ -62,6 +89,9 @@ Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
   transcript `3002`, analytics `3003`, irs-gateway `8820`, ai-workforce-hub `8860`
   (`./scripts/aol run start:refund-status`, `start:transcript`, `start:analytics`,
   `start:irs-gateway`, `start:ai-workforce`).
+  transcript `3002`, analytics `3003`, irs-gateway `8820`
+  (`./scripts/aol run start:refund-status`, `start:transcript`, `start:analytics`,
+  `start:irs-gateway`).
 - Workers run one-shot and print a JSON descriptor + planned steps, then exit
   (`./scripts/aol run worker:tds`, `worker:transcript-pull`, `worker:live-source`,
   `worker:ai-persona`).

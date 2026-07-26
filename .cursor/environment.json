@@ -13,6 +13,7 @@
     { "name": "analytics", "port": 3003 },
     { "name": "irs-gateway", "port": 8820 },
     { "name": "ai-workforce-hub", "port": 8860 }
+    { "name": "irs-gateway", "port": 8820 }
   ],
   "terminals": [
     {
@@ -24,6 +25,7 @@
       "name": "ai-workforce-hub",
       "command": "./scripts/aol run start:ai-workforce",
       "description": "AI persona hire/pay hub UI on port 8860."
+      "description": "Starts the RTPSC api-gateway on port 3000 (/health, /metadata)."
     }
   ]
 }

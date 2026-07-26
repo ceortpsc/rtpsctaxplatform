@@ -32,6 +32,12 @@
     "aol": "node ./tools/aol/bin/aol.mjs",
     "rossco": "node ./tools/rossco/bin/rossco.mjs",
     "itr": "node ./tools/rossco/bin/rossco.mjs",
+    "ross": "python3 ./ross.py",
+    "ross:init": "python3 ./ross.py init",
+    "ross:doctor": "python3 ./ross.py doctor",
+    "ross:dev": "python3 ./ross.py dev",
+    "ross:package": "python3 ./ross.py package build",
+    "ross:hello": "python3 ./ross.py runtime run hello"
     "compliance": "node ./packages/production-compliance/bin/prodcheck.mjs run",
     "compliance:checklist": "node ./packages/production-compliance/bin/prodcheck.mjs checklist",
     "compliance:report": "node ./packages/production-compliance/bin/prodcheck.mjs report",
