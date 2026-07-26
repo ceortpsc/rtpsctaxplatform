@@ -1,0 +1,11 @@
+{
+  "name": "@rtp/security-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs",
+  "description": "RTPSC security primitives: HMAC tokens, field encryption, headers, rate limits, audit",
+  "scripts": {
+    "test": "node --test"
+  }
+}

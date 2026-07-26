@@ -30,6 +30,8 @@ const SERVICE_ENTRIES = {
   'pos-crm': 'services/pos-crm-service/src/index.mjs',
   pos: 'services/pos-crm-service/src/index.mjs',
   crm: 'services/pos-crm-service/src/index.mjs',
+  security: 'services/security-status-service/src/index.mjs',
+  'security-status': 'services/security-status-service/src/index.mjs',
   dashboard: 'services/modules-dashboard/src/index.mjs'
 };
 
@@ -38,7 +40,7 @@ export const COMMANDS = {
   test: { usage: 'test', desc: 'Run the automated test suite', plan: () => nodeRaw(['--test']) },
   build: { usage: 'build', desc: 'Build the platform manifest', plan: () => node('scripts/build.mjs') },
   start: {
-    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard]',
+    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|security|dashboard]',
     desc: 'Start a service (defaults to the api-gateway)',
     plan: (rest) => {
       const target = rest[0] ?? 'gateway';
@@ -46,6 +48,11 @@ export const COMMANDS = {
       if (!entry) return { error: `Unknown service "${target}". Options: ${Object.keys(SERVICE_ENTRIES).join(', ')}` };
       return node(entry);
     }
+  },
+  security: {
+    usage: 'security [status|secrets|tunnel|doctor|scan|encrypt|decrypt|mint-demo]',
+    desc: 'Security posture, secrets readiness, tunnel gate, doctor, and scan',
+    plan: (rest) => node('scripts/security.mjs', rest.length ? rest : ['status'])
   },
   deploy: { usage: 'deploy [--smoke]', desc: 'Deploy all services + background worker', plan: (rest) => node('scripts/deploy-all.mjs', rest) },
   workflows: { usage: 'workflows', desc: 'List background workflows', plan: () => node('workers/workflow-runner/src/cli.mjs', ['list']) },
@@ -83,7 +90,12 @@ export const COMMANDS = {
     desc: 'Issue/list full API and TDS client ids (secrets gitignored)',
     plan: (rest) => node('scripts/clients.mjs', rest.length ? rest : ['status'])
   },
-  env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') }
+  env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') },
+  'worker:security': {
+    usage: 'worker:security',
+    desc: 'Run the security-scanner worker once',
+    plan: () => node('workers/security-scanner-worker/src/index.mjs', ['--once'])
+  }
 };
 
 export function buildUsage() {

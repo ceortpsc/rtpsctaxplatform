@@ -139,7 +139,27 @@ export function readJsonBody(request, { limitBytes = 1_000_000 } = {}) {
   });
 }
 
-export function sendJson(response, statusCode, body) {
+/** Baseline security headers applied to platform HTTP responses (fail-open if already set). */
+export const PLATFORM_SECURITY_HEADERS = Object.freeze({
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'no-referrer',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin'
+});
+
+export function applyPlatformSecurityHeaders(response, extra = {}) {
+  for (const [key, value] of Object.entries(PLATFORM_SECURITY_HEADERS)) {
+    if (!response.getHeader(key)) response.setHeader(key, value);
+  }
+  for (const [key, value] of Object.entries(extra)) {
+    response.setHeader(key, value);
+  }
+}
+
+export function sendJson(response, statusCode, body, { securityHeaders = true } = {}) {
+  if (securityHeaders) applyPlatformSecurityHeaders(response);
   response.setHeader('content-type', 'application/json; charset=utf-8');
   response.writeHead(statusCode);
   response.end(JSON.stringify(body, null, 2));
@@ -190,7 +210,8 @@ export function startHttpService({
   extraMetadata = {},
   routes = {},
   staticDir = null,
-  onReady = null
+  onReady = null,
+  securityHeaders = true
 } = {}) {
   const config = loadRuntimeConfig({ servicePort: defaultPort });
   const payload = {
@@ -202,16 +223,17 @@ export function startHttpService({
   };
 
   const server = http.createServer(async (request, response) => {
+    if (securityHeaders) applyPlatformSecurityHeaders(response);
     const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
     const routeKey = `${request.method || 'GET'} ${url.pathname}`;
 
     try {
       if (url.pathname === '/health' && request.method === 'GET') {
-        sendJson(response, 200, { status: 'ok', service: descriptor.name, environment: config.appEnv });
+        sendJson(response, 200, { status: 'ok', service: descriptor.name, environment: config.appEnv }, { securityHeaders });
         return;
       }
       if (url.pathname === '/metadata' && request.method === 'GET') {
-        sendJson(response, 200, payload);
+        sendJson(response, 200, payload, { securityHeaders });
         return;
       }
 
