@@ -3,10 +3,20 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-25T19:43:56.445Z",
-  "count": 19,
+  "createdAt": "2026-07-26T08:47:30.283Z",
+  "count": 53,
   "ok": true,
   "footprints": [
+    {
+      "name": "@rtp/agent-core",
+      "version": "0.1.0",
+      "location": "packages/agent-core",
+      "sector": "packages",
+      "footprint": "e4f9b1381f57e1c8",
+      "fingerprint": "e4f9b1381f57e1c8",
+      "integrity": "sha256-e4f9b1381f57e1c8aab9661cbd540b7aea2c7b3cba3d83a9f4556dfc682018db",
+      "status": "sealed"
+    },
     {
       "name": "@rtp/ai-assist",
       "version": "0.1.0",
@@ -15,6 +25,36 @@
       "footprint": "cc444c69e4927073",
       "fingerprint": "cc444c69e4927073",
       "integrity": "sha256-cc444c69e492707366a79be8430b2e2585530e59c8d4b6da4a10552de8700cf4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/ai-persona-runtime",
+      "version": "0.1.0",
+      "location": "engines/ai-persona-runtime",
+      "sector": "engines",
+      "footprint": "26dcda674e78240e",
+      "fingerprint": "26dcda674e78240e",
+      "integrity": "sha256-26dcda674e78240e75e2b5007a4d76fbbb8b820512b5a285930bc455b4d8e01c",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/ai-persona-worker",
+      "version": "0.1.0",
+      "location": "workers/ai-persona-worker",
+      "sector": "workers",
+      "footprint": "078035c6a3bdff20",
+      "fingerprint": "078035c6a3bdff20",
+      "integrity": "sha256-078035c6a3bdff200a0d14dd4234a97ca89202a2732e49561946b42252487707",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/ai-workforce-hub",
+      "version": "0.1.0",
+      "location": "services/ai-workforce-hub",
+      "sector": "services",
+      "footprint": "0785f7de2387dd96",
+      "fingerprint": "0785f7de2387dd96",
+      "integrity": "sha256-0785f7de2387dd96debd4856e77f3a8466eef20d7cd3695c29c42edbc6d78d9d",
       "status": "sealed"
     },
     {
@@ -58,6 +98,36 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/assessment-agent",
+      "version": "0.1.0",
+      "location": "agents/assessment-agent",
+      "sector": "agents",
+      "footprint": "778e7e5ff2e0de6c",
+      "fingerprint": "778e7e5ff2e0de6c",
+      "integrity": "sha256-778e7e5ff2e0de6c1ef76922cd79c4870569579c59d7a7086d663ec19940acd6",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/bank-products",
+      "version": "0.1.0",
+      "location": "packages/bank-products",
+      "sector": "packages",
+      "footprint": "0b6fe6f3edaa731c",
+      "fingerprint": "0b6fe6f3edaa731c",
+      "integrity": "sha256-0b6fe6f3edaa731cefe88627376f9351229c875dfb7f811a1905de30a0f7cd66",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/canvas-core",
+      "version": "0.1.0",
+      "location": "packages/canvas-core",
+      "sector": "packages",
+      "footprint": "0645e8e5fc97a6a6",
+      "fingerprint": "0645e8e5fc97a6a6",
+      "integrity": "sha256-0645e8e5fc97a6a622367d14669d2cfb4a1d5f4868c191950eb7a14d1164dbca",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/client-config",
       "version": "0.1.0",
       "location": "packages/client-config",
@@ -65,6 +135,86 @@
       "footprint": "8ef391896df1e806",
       "fingerprint": "8ef391896df1e806",
       "integrity": "sha256-8ef391896df1e806efbfc20796c624345fbd94e89f6353836ddcc28111e906ea",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/client-identity",
+      "version": "0.1.0",
+      "location": "packages/client-identity",
+      "sector": "packages",
+      "footprint": "c4b2ab3c3338062f",
+      "fingerprint": "c4b2ab3c3338062f",
+      "integrity": "sha256-c4b2ab3c3338062f6b4bf68c7b12681300480ac65ff4ea4ea727fc6240ea31b4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/crm-core",
+      "version": "0.1.0",
+      "location": "packages/crm-core",
+      "sector": "packages",
+      "footprint": "7476bb44df1899a8",
+      "fingerprint": "7476bb44df1899a8",
+      "integrity": "sha256-7476bb44df1899a89dc3f0f84dec0d3a5361b3c906e2454a18e1fa28338dbcfa",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/enrollment-service",
+      "version": "0.1.0",
+      "location": "services/enrollment-service",
+      "sector": "services",
+      "footprint": "b9b420fe7b521267",
+      "fingerprint": "b9b420fe7b521267",
+      "integrity": "sha256-b9b420fe7b5212675ee5626a51250aff12d6fbe5f214c916dbef1cfad1b8f091",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/ero-governance",
+      "version": "0.1.0",
+      "location": "packages/ero-governance",
+      "sector": "packages",
+      "footprint": "46ada4c194bc2e2e",
+      "fingerprint": "46ada4c194bc2e2e",
+      "integrity": "sha256-46ada4c194bc2e2e64eae5b2d2e65f4ad0bb62127dc70c56cad78140bf9a2369",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/ero-ops",
+      "version": "0.1.0",
+      "location": "packages/ero-ops",
+      "sector": "packages",
+      "footprint": "7fea4205f1addbaa",
+      "fingerprint": "7fea4205f1addbaa",
+      "integrity": "sha256-7fea4205f1addbaa97f989e4f1b56cbbafb3f3fba8ee0f4fb42fd183f3c19fc2",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/invoice-core",
+      "version": "0.1.0",
+      "location": "packages/invoice-core",
+      "sector": "packages",
+      "footprint": "4cb9fe88e641737d",
+      "fingerprint": "4cb9fe88e641737d",
+      "integrity": "sha256-4cb9fe88e641737d46d2285b65a211a0daf1ec7cdc9458679376196c4c2765d8",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/invoice-service",
+      "version": "0.1.0",
+      "location": "services/invoice-service",
+      "sector": "services",
+      "footprint": "a1ae7f8c7fe88015",
+      "fingerprint": "a1ae7f8c7fe88015",
+      "integrity": "sha256-a1ae7f8c7fe8801571877bb0633e45cc9da8675c5975da5e6de43adf9dec9c78",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/irs-gateway",
+      "version": "0.1.0",
+      "location": "services/irs-gateway",
+      "sector": "services",
+      "footprint": "76fddac1ab5557da",
+      "fingerprint": "76fddac1ab5557da",
+      "integrity": "sha256-76fddac1ab5557da27f9d4cc3c10238b24ec59840ea6238000defdd9e0948ae9",
       "status": "sealed"
     },
     {
@@ -78,6 +228,26 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/mapping-agent",
+      "version": "0.1.0",
+      "location": "agents/mapping-agent",
+      "sector": "agents",
+      "footprint": "c4f2da8364403586",
+      "fingerprint": "c4f2da8364403586",
+      "integrity": "sha256-c4f2da83644035868e57972c84befe2247fc85700dddc640e073970ee4dfc55f",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/markdown-agent",
+      "version": "0.1.0",
+      "location": "agents/markdown-agent",
+      "sector": "agents",
+      "footprint": "518f8564769f1377",
+      "fingerprint": "518f8564769f1377",
+      "integrity": "sha256-518f8564769f1377cee52fbf1f5d5af86fef88efb8d47d9c911eb093c44e4435",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/masterfile-pipeline",
       "version": "0.1.0",
       "location": "pipelines/masterfile-pipeline",
@@ -85,6 +255,36 @@
       "footprint": "186fe0b6edc35d1a",
       "fingerprint": "186fe0b6edc35d1a",
       "integrity": "sha256-186fe0b6edc35d1a604f5250a1b8fac7713c9fc9df06f19fb1db9a3aa10edd52",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/module-advisor",
+      "version": "0.1.0",
+      "location": "packages/module-advisor",
+      "sector": "packages",
+      "footprint": "01a704bf3c544f3b",
+      "fingerprint": "01a704bf3c544f3b",
+      "integrity": "sha256-01a704bf3c544f3b307e84204bd025d889a789d053aefc9f04a9a50dcd14f2a8",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/modules-dashboard",
+      "version": "0.1.0",
+      "location": "services/modules-dashboard",
+      "sector": "services",
+      "footprint": "d4ad844e737e46cf",
+      "fingerprint": "d4ad844e737e46cf",
+      "integrity": "sha256-d4ad844e737e46cfb2597fc4348db25aec0bebc1cc5b8ae1a3ee4cb0986564e4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/planning-agent",
+      "version": "0.1.0",
+      "location": "agents/planning-agent",
+      "sector": "agents",
+      "footprint": "c1b4a9ce0e51ed5e",
+      "fingerprint": "c1b4a9ce0e51ed5e",
+      "integrity": "sha256-c1b4a9ce0e51ed5e432548f5c1ea211b4d6b625811f75b841bbd10b34e2ebf3f",
       "status": "sealed"
     },
     {
@@ -98,6 +298,26 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/pos-core",
+      "version": "0.1.0",
+      "location": "packages/pos-core",
+      "sector": "packages",
+      "footprint": "baacbf7d5dd67d51",
+      "fingerprint": "baacbf7d5dd67d51",
+      "integrity": "sha256-baacbf7d5dd67d51b7310d395f0b705a2a0570ffc522b2413baa7cbe11dba108",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/pos-crm-service",
+      "version": "0.1.0",
+      "location": "services/pos-crm-service",
+      "sector": "services",
+      "footprint": "5b94157a5176edce",
+      "fingerprint": "5b94157a5176edce",
+      "integrity": "sha256-5b94157a5176edce23ff622319d2ad8f76c7e0584fe088121b05dc0c159d8734",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/production-compliance",
       "version": "0.1.0",
       "location": "packages/production-compliance",
@@ -108,6 +328,16 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/refund-core",
+      "version": "0.1.0",
+      "location": "packages/refund-core",
+      "sector": "packages",
+      "footprint": "f3515626b4bdd9d4",
+      "fingerprint": "f3515626b4bdd9d4",
+      "integrity": "sha256-f3515626b4bdd9d4c6d43bdb369e7fac8f69fb4e29a31091478e99528a7de2ba",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/refund-intelligence-engine",
       "version": "0.1.0",
       "location": "engines/refund-intelligence-engine",
@@ -115,6 +345,16 @@
       "footprint": "3990fda244e66f35",
       "fingerprint": "3990fda244e66f35",
       "integrity": "sha256-3990fda244e66f35e4dc5f6fd4becff58b573a9f578c8dc08a4e25a7bea95119",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/refund-optimization-engine",
+      "version": "0.1.0",
+      "location": "engines/refund-optimization-engine",
+      "sector": "engines",
+      "footprint": "419e32f0ce4b4251",
+      "fingerprint": "419e32f0ce4b4251",
+      "integrity": "sha256-419e32f0ce4b42513a1a08c258570e23c499b1abdd9e7d1b9ce30ca58d6ef91f",
       "status": "sealed"
     },
     {
@@ -138,6 +378,36 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/refund-status-workflow",
+      "version": "0.1.0",
+      "location": "workflows/refund-status-workflow",
+      "sector": "workflows",
+      "footprint": "c98b82de5aeab4d8",
+      "fingerprint": "c98b82de5aeab4d8",
+      "integrity": "sha256-c98b82de5aeab4d83857ed008a299e767efd3b467b2768d2ab96f3448adee929",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/rossco",
+      "version": "0.1.0",
+      "location": "tools/rossco",
+      "sector": "tools",
+      "footprint": "7548179e0391b628",
+      "fingerprint": "7548179e0391b628",
+      "integrity": "sha256-7548179e0391b628bcd8363bdbafd3aeda30835b7c979a6783fcdbaffe9fd660",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/scoping-agent",
+      "version": "0.1.0",
+      "location": "agents/scoping-agent",
+      "sector": "agents",
+      "footprint": "9f08a7da52d20dc8",
+      "fingerprint": "9f08a7da52d20dc8",
+      "integrity": "sha256-9f08a7da52d20dc89ecb091e1380b911152decdba3fe28bc023bf6f83c0dc984",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/secure-tunnel",
       "version": "0.1.0",
       "location": "packages/secure-tunnel",
@@ -145,6 +415,26 @@
       "footprint": "8e79948424fddc04",
       "fingerprint": "8e79948424fddc04",
       "integrity": "sha256-8e79948424fddc0465cbee5ddb62a3e26eab526daf1b8e7e0305efda9d78d37a",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/staging-agent",
+      "version": "0.1.0",
+      "location": "agents/staging-agent",
+      "sector": "agents",
+      "footprint": "d9d9bdce4dfad9e3",
+      "fingerprint": "d9d9bdce4dfad9e3",
+      "integrity": "sha256-d9d9bdce4dfad9e3837440adbad1e787e3bde8224900a538c8f79038192faa2b",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/tax-data",
+      "version": "0.1.0",
+      "location": "packages/tax-data",
+      "sector": "packages",
+      "footprint": "81fc8dc587d40a7b",
+      "fingerprint": "81fc8dc587d40a7b",
+      "integrity": "sha256-81fc8dc587d40a7b8ec6fe005835d5985d5c1aa2df4f83d0ceaaddf57c484e88",
       "status": "sealed"
     },
     {
@@ -165,6 +455,26 @@
       "footprint": "0b14c3654edf5d09",
       "fingerprint": "0b14c3654edf5d09",
       "integrity": "sha256-0b14c3654edf5d09945ef99da580b544adec050be3142898c23ca35896cab85e",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/testing-agent",
+      "version": "0.1.0",
+      "location": "agents/testing-agent",
+      "sector": "agents",
+      "footprint": "60665b8f674384c2",
+      "fingerprint": "60665b8f674384c2",
+      "integrity": "sha256-60665b8f674384c272e36c4c896c16068414a89fd1d078bac7f5ad4a2ec90f2b",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/transcript-intake-workflow",
+      "version": "0.1.0",
+      "location": "workflows/transcript-intake-workflow",
+      "sector": "workflows",
+      "footprint": "2ed017c7831c1e0d",
+      "fingerprint": "2ed017c7831c1e0d",
+      "integrity": "sha256-2ed017c7831c1e0def97b8286ccc9cf692ed90eeb4b605183461f2a3f8961b43",
       "status": "sealed"
     },
     {
@@ -195,6 +505,36 @@
       "footprint": "135731a5287a397b",
       "fingerprint": "135731a5287a397b",
       "integrity": "sha256-135731a5287a397ba90552afdf13854c0a1c8e6867a76865c7600e1920efc67e",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/transmission-workflow",
+      "version": "0.1.0",
+      "location": "workflows/transmission-workflow",
+      "sector": "workflows",
+      "footprint": "743c9412b0fb2db0",
+      "fingerprint": "743c9412b0fb2db0",
+      "integrity": "sha256-743c9412b0fb2db0594c7db956bbc379bd8457037a6428cf3669985776ad1ab4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/workflow-engine",
+      "version": "0.1.0",
+      "location": "packages/workflow-engine",
+      "sector": "packages",
+      "footprint": "93e33badf2385052",
+      "fingerprint": "93e33badf2385052",
+      "integrity": "sha256-93e33badf2385052e37b00ee79d24b30030199b44fdc5aaeeb2b064fe2bf1b8d",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/workflow-runner",
+      "version": "0.1.0",
+      "location": "workers/workflow-runner",
+      "sector": "workers",
+      "footprint": "43896c9b20e550f6",
+      "fingerprint": "43896c9b20e550f6",
+      "integrity": "sha256-43896c9b20e550f67529059f276ca8a11288a1d0bffb1ddb932ca20318e0bd89",
       "status": "sealed"
     }
   ]

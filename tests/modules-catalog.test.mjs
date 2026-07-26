@@ -46,3 +46,11 @@ test('every catalog entry has name, summary and tags', () => {
     }
   }
 });
+
+test('catalog includes canvas-core for Cursor Canvas creation', () => {
+  const packages = buildModuleCatalog().find((group) => group.category === 'packages');
+  const canvas = packages.modules.find((m) => m.name === '@rtp/canvas-core');
+  assert.ok(canvas, 'expected @rtp/canvas-core in packages category');
+  assert.ok(canvas.tags.includes('canvas'));
+  assert.deepEqual(canvas.detail.kinds, ['platform', 'compliance', 'agents', 'modules']);
+});

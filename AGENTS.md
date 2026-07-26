@@ -56,7 +56,9 @@ Two equivalent runners exist:
 - **Custom CLI (preferred for local dev):** `./rtpsc <command>` (or `node bin/rtpsc.mjs <command>`) —
   a dependency-free dispatcher that runs everything via `node` directly, **no package manager
   required**. Commands: `lint`, `test`, `build`, `start [service]`, `deploy [--smoke]`, `workflows`,
-  `workflow run|emit …`, `agents [docs]`, `clients …`, `env`, `help`. Mapping in `bin/rtpsc.mjs`.
+  `workflow run|emit …`, `agents [docs]`, `canvas [create|list|…]`, `clients …`, `env`, `help`.
+  Mapping in `bin/rtpsc.mjs`. Cursor Canvases: `./rtpsc canvas create all` → `.cursor/canvases/`
+  (docs: `docs/cursor-canvas.md`, skill: `.cursor/skills/rtpsc-canvas`).
 - **pnpm scripts:** `pnpm run lint`, `pnpm test`, `pnpm run build`, etc. (used by CI).
 
 - `pnpm run start` launches only the **api-gateway** on port `3000` and blocks (long-running). Start

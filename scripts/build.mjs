@@ -19,6 +19,7 @@ const modules = [
   '../packages/ero-ops/src/index.mjs',
   '../packages/agent-core/src/index.mjs',
   '../packages/agent-core/src/roster.mjs',
+  '../packages/canvas-core/src/index.mjs',
   '../agents/planning-agent/src/index.mjs',
   '../agents/scoping-agent/src/index.mjs',
   '../agents/testing-agent/src/index.mjs',

@@ -192,6 +192,16 @@ export function buildModuleCatalog() {
           summary: 'SBTPG report tracing, automated ERO phrasing, and refund-intelligence scoring.',
           tags: ['ero', 'sbtpg', 'refund-intelligence'],
           detail: { phrases: listPhraseTemplates().map((t) => t.code) }
+        },
+        {
+          name: '@rtp/canvas-core',
+          summary: 'Cursor Canvas creation — generate .canvas.tsx artifacts from live platform state.',
+          tags: ['canvas', 'cursor', 'devtools'],
+          detail: {
+            kinds: ['platform', 'compliance', 'agents', 'modules'],
+            commands: ['./rtpsc canvas create all', './rtpsc canvas list'],
+            output: '.cursor/canvases/*.canvas.tsx'
+          }
         }
       ]
     },

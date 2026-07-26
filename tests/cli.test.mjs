@@ -43,7 +43,7 @@ test('agents docs maps to the --write flag', () => {
 
 test('usage lists the commands', () => {
   const usage = buildUsage();
-  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'workflow', 'clients']) {
+  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'canvas', 'workflow', 'clients']) {
     assert.ok(usage.includes(name), `usage should mention ${name}`);
   }
 });
@@ -51,4 +51,10 @@ test('usage lists the commands', () => {
 test('clients command resolves to scripts/clients.mjs', () => {
   assert.match(planCommand(['clients']).args.join(' '), /scripts\/clients\.mjs/);
   assert.match(planCommand(['clients', 'issue', 'api']).args.join(' '), /issue api$/);
+});
+
+test('canvas command resolves to scripts/canvas.mjs', () => {
+  assert.match(planCommand(['canvas']).args.join(' '), /scripts\/canvas\.mjs/);
+  assert.match(planCommand(['canvas', 'create', 'all']).args.join(' '), /create all$/);
+  assert.match(planCommand(['canvas', 'kinds']).args.join(' '), /kinds$/);
 });

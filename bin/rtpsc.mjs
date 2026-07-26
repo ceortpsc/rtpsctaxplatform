@@ -62,6 +62,11 @@ export const COMMANDS = {
     desc: 'Run the deployment-assist & development team (add "docs" to write markdown)',
     plan: (rest) => node('scripts/agents.mjs', rest.includes('docs') || rest.includes('--write') ? ['--write'] : [])
   },
+  canvas: {
+    usage: 'canvas [list|kinds|describe|create [kind|all]]',
+    desc: 'Create Cursor Canvas artifacts from platform state (.cursor/canvases)',
+    plan: (rest) => node('scripts/canvas.mjs', rest.length ? rest : ['list'])
+  },
   clients: {
     usage: 'clients [status|issue api|issue tds|ensure|export-env]',
     desc: 'Issue/list full API and TDS client ids (secrets gitignored)',

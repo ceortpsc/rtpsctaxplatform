@@ -53,8 +53,8 @@ async function scanTrackedSourcesForSecrets(root) {
   const roots = ['packages', 'services', 'workers', 'pipelines', 'engines', 'tools', 'scripts', 'docs'];
   const secretPatterns = [
     /-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----/,
-    // Real assignments only — ignore placeholder field names like API_CLIENT_SECRET= in checks/docs.
-    /(?:^|[^A-Z_])(?:API_CLIENT_SECRET|TDS_CLIENT_SECRET|TUNNEL_CLIENT_SECRET|PASSWORD)\s*=\s*['"](?!unset|replace-in-approved-secret-store|prod-[a-z-]+|example)[^'"]{16,}['"]/m
+    // Real assignments only — ignore placeholders, docs, and JS template interpolations (${...}).
+    /(?:^|[^A-Z_])(?:API_CLIENT_SECRET|TDS_CLIENT_SECRET|TUNNEL_CLIENT_SECRET|PASSWORD)\s*=\s*['"](?!\$\{)(?!unset|replace-in-approved-secret-store|prod-[a-z-]+|example)[^'"]{16,}['"]/m
   ];
 
   async function walk(dir) {

@@ -126,8 +126,11 @@ Use the built-in **`rtpsc`** command runner — a dependency-free CLI that drive
 ./rtpsc deploy        # all services + background worker (add --smoke to verify & exit)
 ./rtpsc workflow run transcript-intake '{"requestId":"REQ-1","authorized":true}'
 ./rtpsc agents        # deployment-assist & development team (./rtpsc agents docs writes markdown)
+./rtpsc canvas create all   # Cursor Canvases → .cursor/canvases/*.canvas.tsx
 ./rtpsc env           # environment protection status
 ```
+
+Cursor Canvases (Agents Window artifacts): see [`docs/cursor-canvas.md`](docs/cursor-canvas.md).
 
 `rtpsc` is a thin wrapper over `bin/rtpsc.mjs` (also exposed as a `bin` entry); run it as
 `./rtpsc <command>` or `node bin/rtpsc.mjs <command>`.
