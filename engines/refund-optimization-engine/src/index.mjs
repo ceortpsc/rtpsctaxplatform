@@ -193,16 +193,21 @@ export function runOptimizationWorkflow(input = {}) {
     taxLiability: input.taxLiability ?? 0
   });
 
-  const hohBoost = filing.recommended.status === 'HOH' ? Math.round(baseline.refund * 0.04) : 0;
+  // HOH boost only applies when the baseline is already a refund (never deepen an amount owed).
+  const hohBoost =
+    filing.recommended.status === 'HOH' && baseline.refund > 0
+      ? Math.round(baseline.refund * 0.04)
+      : 0;
+  const optimizedLiability = Math.max(
+    0,
+    baseline.taxLiability - (deductionCompare.chosen === 'itemized' ? deductionCompare.delta * 0.12 : 0)
+  );
   const optimized = computeRefund({
-    ...baseline,
-    refundableCredits: baseline.refundableCredits,
-    taxLiability: Math.max(0, baseline.taxLiability - (deductionCompare.chosen === 'itemized' ? deductionCompare.delta * 0.12 : 0)),
-    withholding: baseline.withholding
+    withholding: baseline.withholding,
+    refundableCredits: baseline.refundableCredits + hohBoost,
+    nonRefundableCredits: baseline.nonRefundableCredits ?? 0,
+    taxLiability: optimizedLiability
   });
-  optimized.refund += hohBoost;
-  optimized.owed = optimized.refund < 0 ? Math.abs(optimized.refund) : 0;
-  optimized.isRefund = optimized.refund >= 0;
   const recommendations = [];
   recommendations.push('Check refundable credits first — they move refund magnitude most.');
   if (eligibleRefundables.some((credit) => credit.id === 'EITC')) {

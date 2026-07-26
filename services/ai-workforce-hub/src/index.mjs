@@ -35,6 +35,15 @@ export const aiWorkforceHubDescriptor = createServiceDescriptor({
   dependencies: ['api-gateway']
 });
 
+function statusForTaskError(result, fallback = 400) {
+  if (result?.code === 'not_found') return 404;
+  if (result?.code === 'hold_locked' || result?.code === 'invalid_transition' || result?.code === 'not_runnable') {
+    return 409;
+  }
+  if (result?.code === 'governance_blocked' || result?.code === 'payment_required') return 403;
+  return fallback;
+}
+
 export function start(options = {}) {
   const staticDir = packageDir(import.meta.url, '../public');
 
@@ -82,38 +91,43 @@ export function start(options = {}) {
       },
       'POST /v1/tasks/authenticate': async ({ request, response, readJsonBody, sendJson }) => {
         const body = await readJsonBody(request);
-        sendJson(response, 200, authenticateTask(body.taskId));
+        const result = authenticateTask(body.taskId);
+        sendJson(response, result.ok ? 200 : statusForTaskError(result), result);
       },
       'POST /v1/tasks/scope': async ({ request, response, readJsonBody, sendJson }) => {
         const body = await readJsonBody(request);
-        sendJson(response, 200, scopeTask(body.taskId, body.scopeNotes));
+        const result = scopeTask(body.taskId, body.scopeNotes);
+        sendJson(response, result.ok ? 200 : statusForTaskError(result), result);
       },
       'POST /v1/tasks/price': async ({ request, response, readJsonBody, sendJson }) => {
         const body = await readJsonBody(request);
-        sendJson(response, 200, priceTask(body.taskId));
+        const result = priceTask(body.taskId);
+        sendJson(response, result.ok ? 200 : statusForTaskError(result), result);
       },
       'POST /v1/tasks/pay': async ({ request, response, readJsonBody, sendJson }) => {
         const body = await readJsonBody(request);
         const result = payTask(body.taskId, { method: body.method, reference: body.reference });
-        sendJson(response, result.ok ? 200 : 400, result);
+        sendJson(response, result.ok ? 200 : statusForTaskError(result), result);
       },
       'POST /v1/tasks/queue': async ({ request, response, readJsonBody, sendJson }) => {
         const body = await readJsonBody(request);
-        sendJson(response, 200, queueTask(body.taskId));
+        const result = queueTask(body.taskId);
+        sendJson(response, result.ok ? 200 : statusForTaskError(result), result);
       },
       'POST /v1/tasks/run': async ({ request, response, readJsonBody, sendJson }) => {
         const body = await readJsonBody(request);
         const result = runPersonaStep(body.taskId, { action: body.action, message: body.message });
-        sendJson(response, result.ok ? 200 : 409, result);
+        sendJson(response, result.ok ? 200 : statusForTaskError(result, 409), result);
       },
       'POST /v1/tasks/human-approve': async ({ request, response, readJsonBody, sendJson }) => {
         const body = await readJsonBody(request);
         const result = humanApprove(body.taskId, { reviewer: body.reviewer, note: body.note });
-        sendJson(response, result.ok ? 200 : 400, result);
+        sendJson(response, result.ok ? 200 : statusForTaskError(result), result);
       },
       'POST /v1/tasks/hold': async ({ request, response, readJsonBody, sendJson }) => {
         const body = await readJsonBody(request);
-        sendJson(response, 200, placeHold(body.taskId, body.reason));
+        const result = placeHold(body.taskId, body.reason);
+        sendJson(response, result.ok ? 200 : statusForTaskError(result), result);
       },
       'POST /v1/live-service': async ({ request, response, readJsonBody, sendJson }) => {
         const body = await readJsonBody(request);

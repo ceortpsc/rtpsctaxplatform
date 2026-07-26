@@ -4,8 +4,8 @@
   --muted: #8fb0c8;
   --accent: #3de0c5;
   --hot: #ffb703;
-  --display: "Syne", sans-serif;
-  --mono: "IBM Plex Mono", monospace;
+  --display: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --mono: "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace;
 }
 * { box-sizing: border-box; }
 body {

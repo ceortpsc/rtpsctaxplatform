@@ -4,9 +4,9 @@
   "private": true,
   "description": "ROSS.CO Infinite Package Manager — a first-party package-management, registry, provenance, and software-supply-chain product of Ross Tax Pro Software Co.",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "author": "Ross Tax Pro Software Co. <ceo@rosstaxsoftware.com>",
-  "copyright": "Copyright (c) 2026 Ross Tax Pro Software Co. All rights reserved.",
+  "copyright": "Copyright (c) 2026 Ross Tax Pro Software Co. / RTPSC / Ross Tax Software.",
   "bin": {
     "ross": "./bin/rossco.mjs",
     "rossco": "./bin/rossco.mjs"

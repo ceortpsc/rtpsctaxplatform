@@ -151,11 +151,6 @@ export function priceTask(taskId) {
 export function payTask(taskId, { method = 'card_stub', reference } = {}) {
   const task = store.tasks.get(taskId);
   if (!task) return notFound();
-  if (!['PRICED', 'PAID_APPROVED'].includes(task.state) && task.state !== 'PRICED') {
-    if (task.state !== 'PRICED') {
-      return { ok: false, code: 'invalid_state', message: `Payment only from PRICED (current=${task.state})` };
-    }
-  }
   if (task.state !== 'PRICED') {
     return { ok: false, code: 'invalid_state', message: `Payment only from PRICED (current=${task.state})` };
   }
@@ -250,11 +245,20 @@ export function runPersonaStep(taskId, { action, message } = {}) {
 export function humanApprove(taskId, { reviewer = 'ero-manager', note = 'Human approved delivery' } = {}) {
   const task = store.tasks.get(taskId);
   if (!task) return notFound();
+  const allowedReviewers = new Set(['ero-manager', 'human-reviewer']);
+  if (!allowedReviewers.has(reviewer)) {
+    return {
+      ok: false,
+      code: 'unauthorized_reviewer',
+      message: 'HOLD clear / human approve requires ero-manager or human-reviewer',
+      requiresHuman: true
+    };
+  }
   if (task.state !== 'HUMAN_REVIEW' && task.state !== 'HOLD') {
     return { ok: false, code: 'invalid_state', message: `Human approve expects HUMAN_REVIEW/HOLD (current=${task.state})` };
   }
   if (task.state === 'HOLD') {
-    // Only humans clear HOLD
+    // Only explicit human roles clear HOLD
     pushTimeline(task, 'HUMAN_REVIEW', `HOLD cleared by ${reviewer}: ${note}`, reviewer);
   }
   pushTimeline(task, 'DELIVERED', note, reviewer);
@@ -294,8 +298,9 @@ function transition(taskId, next, note, actor) {
   if (!allowed.includes(next)) {
     return { ok: false, code: 'invalid_transition', message: `Cannot move ${task.state} → ${next}` };
   }
-  if (task.state === 'HOLD' && actor !== 'ero-manager' && actor !== 'human-reviewer' && !String(actor).includes('manager')) {
-    // AI cannot clear HOLD — only explicit human approve path clears
+  const holdClearActors = new Set(['ero-manager', 'human-reviewer']);
+  if (task.state === 'HOLD' && !holdClearActors.has(actor)) {
+    // AI cannot clear HOLD — only explicit human roles may leave HOLD (except terminal exits).
     if (next !== 'ESCALATED' && next !== 'CANCELLED' && next !== 'DISENGAGED') {
       return {
         ok: false,

@@ -1,14 +1,13 @@
-ROSS.CO Infinite Package Manager
-Copyright (c) 2026 Ross Tax Pro Software Co. All rights reserved.
+ROSS.CO Infinite Package Manager / Infinite Transfer Rate
+Copyright (c) 2026 Ross Tax Pro Software Co. / RTPSC / Ross Tax Software.
 
-ROSS.CO INFINITE™, ROSS.CO™, ROSS INFINITE™, and the associated command-language,
-product documentation, interfaces, and branding are claimed marks and proprietary
-materials of Ross Tax Pro Software Co., subject to applicable law.
+This package is distributed under the MIT License — see the repository root
+LICENSE file and tools/rossco/src/ip.mjs (spdxLicense: MIT).
 
-This package is proprietary and unlicensed for copying, modification, distribution,
-publication, reverse engineering, commercial use, or derivative development except
-under a written agreement signed by an authorized officer of Ross Tax Pro Software Co.
+ROSS.CO, Infinite Transfer Rate, ITR, and associated product branding are
+marks of Ross Tax Pro Software Co. Trademark rights are independent of the
+software copyright license. Federal trademark registration is not claimed
+unless supported by an official filing receipt or registration record. The ®
+symbol must not be used before registration issues.
 
-Federal trademark and copyright registration are not claimed unless supported by an
-official filing receipt or registration record. The ® symbol must not be used before
-registration issues.
+Contact: ceo@rosstaxsoftware.com
