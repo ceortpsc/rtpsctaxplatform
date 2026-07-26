@@ -27,7 +27,10 @@ export async function validatePrototype(root) {
   }
 
   const config = await loadConfig(root);
-  const stageOk = Array.isArray(config.lifecycle.stages) && config.lifecycle.stages.length === LIFECYCLE_STAGES.length;
+  const stageOk =
+    Array.isArray(config.lifecycle.stages) &&
+    config.lifecycle.stages.length === LIFECYCLE_STAGES.length &&
+    config.lifecycle.stages.every((id, index) => id === LIFECYCLE_STAGES[index]?.id);
   checks.push({
     id: 'lifecycle-stages',
     status: stageOk ? 'pass' : 'fail',
