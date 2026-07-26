@@ -8,11 +8,13 @@ set -Eeuo pipefail
 EXPECTED_AWS_ACCOUNT_ID="${EXPECTED_AWS_ACCOUNT_ID:?Set EXPECTED_AWS_ACCOUNT_ID before running}"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 STACK_NAME="${STACK_NAME:-rossco-infinite-production}"
-REGISTRY_DOMAIN="${REGISTRY_DOMAIN:-registry.rosstaxsoftware.com}"
-ROOT_DOMAIN="${ROOT_DOMAIN:-rosstaxsoftware.com}"
+REGISTRY_DOMAIN="${REGISTRY_DOMAIN:-registry.rosstaxprosoftware.com}"
+ROOT_DOMAIN="${ROOT_DOMAIN:-rosstaxprosoftware.com}"
 GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-ceortpsc/rtpsctaxplatform}"
 TEMPLATE_FILE="${TEMPLATE_FILE:-infra/aws/rossco-registry-production.yaml}"
 CREATE_HOSTED_ZONE_IF_MISSING="${CREATE_HOSTED_ZONE_IF_MISSING:-false}"
+EXISTING_CERTIFICATE_ARN="${EXISTING_CERTIFICATE_ARN:-}"
+HOSTED_ZONE_ID="${HOSTED_ZONE_ID:-}"
 
 export AWS_REGION AWS_DEFAULT_REGION="$AWS_REGION" AWS_PAGER=""
 
@@ -33,22 +35,66 @@ CURRENT_ACCOUNT="$(aws sts get-caller-identity --query Account --output text --n
 
 printf 'ROSS.CO AWS identity verified: %s\n' "$CURRENT_ACCOUNT"
 
-HOSTED_ZONE_ID="$(
-  aws route53 list-hosted-zones-by-name \
-    --dns-name "$ROOT_DOMAIN" \
-    --query "HostedZones[?Name=='${ROOT_DOMAIN}.']|[0].Id" \
-    --output text \
-    --no-cli-pager 2>/dev/null || true
-)"
-HOSTED_ZONE_ID="${HOSTED_ZONE_ID#/hostedzone/}"
+if [[ -n "$EXISTING_CERTIFICATE_ARN" ]]; then
+  case "$EXISTING_CERTIFICATE_ARN" in
+    arn:aws:acm:us-east-1:"${CURRENT_ACCOUNT}":certificate/*)
+      ;;
+    *)
+      fail "Existing certificate must be an ACM certificate in us-east-1 and AWS account $CURRENT_ACCOUNT."
+      ;;
+  esac
+
+  CERTIFICATE_STATUS="$({
+    aws acm describe-certificate \
+      --certificate-arn "$EXISTING_CERTIFICATE_ARN" \
+      --query 'Certificate.Status' \
+      --output text \
+      --no-cli-pager
+  })"
+  [[ "$CERTIFICATE_STATUS" == "ISSUED" ]] || \
+    fail "Existing ACM certificate status is $CERTIFICATE_STATUS, not ISSUED."
+
+  CERTIFICATE_NAMES="$({
+    aws acm describe-certificate \
+      --certificate-arn "$EXISTING_CERTIFICATE_ARN" \
+      --query 'Certificate.SubjectAlternativeNames' \
+      --output text \
+      --no-cli-pager
+  })"
+
+  REGISTRY_PARENT="${REGISTRY_DOMAIN#*.}"
+  REGISTRY_WILDCARD="*.${REGISTRY_PARENT}"
+  CERTIFICATE_MATCH=false
+  for CERTIFICATE_NAME in $CERTIFICATE_NAMES; do
+    if [[ "$CERTIFICATE_NAME" == "$REGISTRY_DOMAIN" || "$CERTIFICATE_NAME" == "$REGISTRY_WILDCARD" ]]; then
+      CERTIFICATE_MATCH=true
+      break
+    fi
+  done
+  [[ "$CERTIFICATE_MATCH" == "true" ]] || \
+    fail "Existing ACM certificate does not cover $REGISTRY_DOMAIN."
+
+  printf 'Using issued ACM certificate: %s\n' "$EXISTING_CERTIFICATE_ARN"
+fi
+
+if [[ -z "$HOSTED_ZONE_ID" ]]; then
+  HOSTED_ZONE_ID="$({
+    aws route53 list-hosted-zones-by-name \
+      --dns-name "$ROOT_DOMAIN" \
+      --query "HostedZones[?Name=='${ROOT_DOMAIN}.' && Config.PrivateZone==\`false\`]|[0].Id" \
+      --output text \
+      --no-cli-pager 2>/dev/null || true
+  })"
+  HOSTED_ZONE_ID="${HOSTED_ZONE_ID#/hostedzone/}"
+fi
 
 if [[ -z "$HOSTED_ZONE_ID" || "$HOSTED_ZONE_ID" == "None" ]]; then
   if [[ "$CREATE_HOSTED_ZONE_IF_MISSING" != "true" ]]; then
-    fail "No public Route 53 hosted zone found for $ROOT_DOMAIN. Do not create a second zone accidentally."
+    fail "No public Route 53 hosted zone found for $ROOT_DOMAIN. Supply HOSTED_ZONE_ID or create/delegate the correct zone."
   fi
 
   CALLER_REFERENCE="rossco-$(date -u +%Y%m%dT%H%M%SZ)-$RANDOM"
-  HOSTED_ZONE_ID="$(
+  HOSTED_ZONE_ID="$({
     aws route53 create-hosted-zone \
       --name "$ROOT_DOMAIN" \
       --caller-reference "$CALLER_REFERENCE" \
@@ -56,14 +102,14 @@ if [[ -z "$HOSTED_ZONE_ID" || "$HOSTED_ZONE_ID" == "None" ]]; then
       --query 'HostedZone.Id' \
       --output text \
       --no-cli-pager
-  )"
+  })"
   HOSTED_ZONE_ID="${HOSTED_ZONE_ID#/hostedzone/}"
-  printf 'Created hosted zone %s. Update the registrar nameservers before expecting ACM validation.\n' "$HOSTED_ZONE_ID"
+  printf 'Created hosted zone %s. Update the registrar nameservers before expecting public DNS resolution.\n' "$HOSTED_ZONE_ID"
 fi
 
 printf 'Using hosted zone: %s\n' "$HOSTED_ZONE_ID"
 
-OIDC_PROVIDER_ARN="$(
+OIDC_PROVIDER_ARN="$({
   aws iam list-open-id-connect-providers \
     --query 'OpenIDConnectProviderList[].Arn' \
     --output text \
@@ -71,10 +117,10 @@ OIDC_PROVIDER_ARN="$(
   | tr '\t' '\n' \
   | grep 'token.actions.githubusercontent.com' \
   | head -n1 || true
-)"
+})"
 
 if [[ -z "$OIDC_PROVIDER_ARN" ]]; then
-  OIDC_PROVIDER_ARN="$(
+  OIDC_PROVIDER_ARN="$({
     aws iam create-open-id-connect-provider \
       --url https://token.actions.githubusercontent.com \
       --client-id-list sts.amazonaws.com \
@@ -82,7 +128,7 @@ if [[ -z "$OIDC_PROVIDER_ARN" ]]; then
       --query OpenIDConnectProviderArn \
       --output text \
       --no-cli-pager
-  )"
+  })"
   printf 'Created GitHub Actions OIDC provider.\n'
 else
   printf 'Using existing GitHub Actions OIDC provider.\n'
@@ -100,6 +146,7 @@ aws cloudformation deploy \
   --parameter-overrides \
     RegistryDomainName="$REGISTRY_DOMAIN" \
     HostedZoneId="$HOSTED_ZONE_ID" \
+    ExistingCertificateArn="$EXISTING_CERTIFICATE_ARN" \
     GitHubOidcProviderArn="$OIDC_PROVIDER_ARN" \
     GitHubRepository="$GITHUB_REPOSITORY"
 
@@ -110,13 +157,13 @@ aws cloudformation wait stack-update-complete \
   --stack-name "$STACK_NAME" \
   --no-cli-pager 2>/dev/null || true
 
-STACK_STATUS="$(
+STACK_STATUS="$({
   aws cloudformation describe-stacks \
     --stack-name "$STACK_NAME" \
     --query 'Stacks[0].StackStatus' \
     --output text \
     --no-cli-pager
-)"
+})"
 
 case "$STACK_STATUS" in
   CREATE_COMPLETE|UPDATE_COMPLETE)
@@ -130,13 +177,13 @@ case "$STACK_STATUS" in
     ;;
 esac
 
-OUTPUTS_JSON="$(
+OUTPUTS_JSON="$({
   aws cloudformation describe-stacks \
     --stack-name "$STACK_NAME" \
     --query 'Stacks[0].Outputs' \
     --output json \
     --no-cli-pager
-)"
+})"
 
 output_value() {
   local key="$1"
@@ -150,13 +197,13 @@ CERTIFICATE_ARN="$(output_value RegistryCertificateArn)"
 SIGNING_KEY_ARN="$(output_value RegistrySigningKeyArn)"
 DEPLOY_ROLE_ARN="$(output_value GitHubDeployRoleArn)"
 
-CERTIFICATE_STATUS="$(
+CERTIFICATE_STATUS="$({
   aws acm describe-certificate \
     --certificate-arn "$CERTIFICATE_ARN" \
     --query 'Certificate.Status' \
     --output text \
     --no-cli-pager
-)"
+})"
 [[ "$CERTIFICATE_STATUS" == "ISSUED" ]] || fail "ACM certificate status is $CERTIFICATE_STATUS, not ISSUED."
 
 printf 'ROSS.CO KMS acceptance test\n'
@@ -175,7 +222,7 @@ aws kms sign \
   --no-cli-pager \
 | base64 --decode > "$TMP_DIR/signature.bin"
 
-SIGNATURE_VALID="$(
+SIGNATURE_VALID="$({
   aws kms verify \
     --key-id "$SIGNING_KEY_ARN" \
     --message-type DIGEST \
@@ -185,7 +232,7 @@ SIGNATURE_VALID="$(
     --query SignatureValid \
     --output text \
     --no-cli-pager
-)"
+})"
 [[ "$SIGNATURE_VALID" == "True" ]] || fail "KMS Sign/Verify acceptance test failed."
 
 DNS_TARGET="$(aws cloudfront get-distribution --id "$DISTRIBUTION_ID" --query 'Distribution.DomainName' --output text --no-cli-pager)"
