@@ -1,0 +1,83 @@
+name: RTPSC Enterprise CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - development
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: AOL install
+        run: node ./tools/aol/bin/aol.mjs install
+
+      - name: Install Python tooling
+        run: python3 -m pip install -r requirements.txt
+
+      - name: Quality gates
+        run: |
+          node ./tools/aol/bin/aol.mjs run lint
+          node ./tools/aol/bin/aol.mjs run test
+          node ./tools/aol/bin/aol.mjs run build
+
+      - name: PDF engine smoke
+        run: python3 engines/pdf-fill-engine/src/fill.py --json
+
+      - name: Upload build manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: rtpsc-build
+          path: |
+            build/platform-manifest.json
+            requirements.txt
+            Dockerfile
+            .cursor/environment.json
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/development'
+
+    steps:
+      - name: Download Build
+        uses: actions/download-artifact@v4
+        with:
+          name: rtpsc-build
+
+      - name: Deploy to Environment
+        run: |
+          branch="${GITHUB_REF##*/}"
+          case "$branch" in
+            development)
+              echo "Deploying to DEV (scaffold placeholder)..."
+              ;;
+            staging)
+              echo "Deploying to STAGING (scaffold placeholder)..."
+              ;;
+            main)
+              echo "Deploying to PRODUCTION (scaffold placeholder)..."
+              ;;
+            *)
+              echo "No deploy mapping for branch: $branch"
+              ;;
+          esac

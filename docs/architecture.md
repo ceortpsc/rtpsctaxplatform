@@ -25,9 +25,11 @@ The platform provides a governed baseline for tax operations, secure integration
 [TC Code Engine]
 
 [API Gateway] ---> [Transmission Pipeline] ---> [Secure Tunnel Adapter Stub]
-                                      |
-                                      v
-                               [TDS Worker]
+      |                               |
+      |                               v
+      |                        [TDS Worker]
+      v
+[IRS Gateway] ---> IRS OAuth2 token endpoint (JWT client assertion, approved creds only)
 
 [Live Source Fetcher] ---> Approved external sources only (no scraping)
 ```
@@ -35,6 +37,7 @@ The platform provides a governed baseline for tax operations, secure integration
 ## Container View
 
 - **API Gateway**: exposes health and route metadata, accepts compliant transmission orchestration requests, and centralizes ingress concerns.
+- **IRS Gateway**: deterministic OAuth2 / TDS token surface using JWT client assertion; secrets remain environment-only.
 - **Refund Status Service**: owns event-driven refund status updates and subscription metadata.
 - **Transcript Service**: owns account transcript and TDS orchestration interfaces.
 - **Analytics Service**: aggregates analytics and refund intelligence endpoints.
@@ -65,5 +68,6 @@ Local/Dev/Stage/Prod
     |
     +-- Terraform env folder -> platform-service module -> compute/network/secret placeholders
     +-- CI workflow -> lint/test/build/compliance checks
+    +-- Production compliance runner -> checklist report + audit log
     +-- Docker Compose -> local Postgres/Redis placeholders for iterative development
 ```

@@ -6,6 +6,10 @@ coverage/
 .env.*
 !.env.example
 !env/*.example
+certs/*
+!certs/.gitkeep
+*.pem
+*.key
 package-lock.json
 npm-shrinkwrap.json
 yarn.lock

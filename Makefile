@@ -2,6 +2,7 @@ SHELL := /bin/bash
 AOL := node ./tools/aol/bin/aol.mjs
 
 .PHONY: setup lint test build start gateway workers bench aol ross ross-dev ross-doctor
+.PHONY: setup lint test build start gateway workers bench aol compliance compliance-checklist compliance-log
 
 setup:
 	./scripts/setup.sh
@@ -26,6 +27,15 @@ workers:
 
 bench:
 	$(AOL) bench
+
+compliance:
+	$(AOL) run compliance
+
+compliance-checklist:
+	$(AOL) run compliance:checklist
+
+compliance-log:
+	$(AOL) run compliance:log
 
 aol:
 	$(AOL) $(ARGS)
