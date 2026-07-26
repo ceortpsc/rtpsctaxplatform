@@ -1,0 +1,8 @@
+{
+  "name": "@rtp/gateway-comms-tunnel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs",
+  "description": "Gateway communications tunnel for Treasury TOPS / Fiscal Service — stub-safe, env-gated."
+}

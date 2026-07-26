@@ -26,3 +26,10 @@ workspace/plans/*.json
 workspace/data/
 workspace/user-scripts/
 !workspace/**/.gitkeep
+
+# Federal Full Report Export ledgers (may contain taxpayer PII)
+data/federal-returns/*.live.csv
+data/federal-returns/*.csv
+!data/federal-returns/.gitkeep
+!data/federal-returns/README.md
+!tests/fixtures/**/*.csv

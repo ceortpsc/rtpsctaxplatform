@@ -2,6 +2,8 @@ import { createServiceDescriptor } from '../../../packages/platform-core/src/ind
 import { describeWorkflow } from '../../../packages/workflow-engine/src/index.mjs';
 import { clientIdentityPlaceholders } from '../../../packages/client-config/src/index.mjs';
 import { createSecureTunnelAdapter } from '../../../packages/secure-tunnel/src/index.mjs';
+import { createGatewayCommsTunnelAdapter } from '../../../packages/gateway-comms-tunnel/src/index.mjs';
+import { describeFederalRefundTraceModule } from '../../../packages/federal-refund-trace/src/index.mjs';
 import { gatewayDescriptor } from '../../../services/api-gateway/src/index.mjs';
 import { refundStatusDescriptor } from '../../../services/refund-status-service/src/index.mjs';
 import { transcriptDescriptor } from '../../../services/transcript-service/src/index.mjs';
@@ -146,10 +148,22 @@ export function buildModuleCatalog() {
           detail: { channels: ['refund.status.received', 'refund.status.updated'] }
         },
         {
+          name: '@rtp/federal-refund-trace',
+          summary: 'Federal refund trace from Full Report Export ledger — RefundCase + TimelineEvent stages and phrasing.',
+          tags: ['refund', 'federal', 'ledger', 'trace'],
+          detail: describeFederalRefundTraceModule()
+        },
+        {
           name: '@rtp/secure-tunnel',
           summary: 'Compliant secure tunnel adapter interface (stub-safe).',
           tags: ['compliance'],
           detail: { status: createSecureTunnelAdapter().status }
+        },
+        {
+          name: '@rtp/gateway-comms-tunnel',
+          summary: 'Gateway communications tunnel for Treasury TOPS / Fiscal Service (stub-safe, env-gated).',
+          tags: ['compliance', 'treasury', 'tops', 'tunnel'],
+          detail: createGatewayCommsTunnelAdapter().describe()
         },
         {
           name: '@rtp/workflow-engine',

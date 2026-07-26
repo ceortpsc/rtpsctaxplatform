@@ -84,7 +84,12 @@ const requiredPaths = [
   'packages/canvas-core/src/index.mjs',
   '.cursor/skills/rtpsc-canvas/SKILL.md',
   'docs/CURSOR_TERMINAL_AGENT.md',
-  'scripts/cloud-doctor.mjs'
+  'scripts/cloud-doctor.mjs',
+  'packages/federal-refund-trace/package.json',
+  'packages/federal-refund-trace/src/index.mjs',
+  'packages/gateway-comms-tunnel/package.json',
+  'packages/gateway-comms-tunnel/src/index.mjs',
+  'docs/federal-refund-trace-tops-tunnel.md'
 ];
 
 const packageFiles = [
@@ -93,7 +98,9 @@ const packageFiles = [
   'packages/client-config/package.json',
   'packages/client-identity/package.json',
   'packages/refund-core/package.json',
+  'packages/federal-refund-trace/package.json',
   'packages/secure-tunnel/package.json',
+  'packages/gateway-comms-tunnel/package.json',
   'packages/agent-build-team/package.json',
   'packages/workflow-engine/package.json',
   'packages/module-advisor/package.json',

@@ -7,8 +7,24 @@ import { refundStatusPipeline } from '../../../pipelines/refund-status-pipeline/
 import { refundIntelligenceEngine } from '../../../engines/refund-intelligence-engine/src/index.mjs';
 import { scoreRefundIntelligence } from '../../ero-ops/src/index.mjs';
 import { PLATFORM_IDENTITY } from '../../platform-core/src/index.mjs';
+import {
+  buildFederalTraceTimeline,
+  parseFullReportExport,
+  findFederalTrace,
+  buildFederalTraces
+} from '../../federal-refund-trace/src/index.mjs';
 
 const FILING_STAGES = Object.freeze(['received', 'processing', 'approved', 'sent', 'paid', 'delay', 'review', 'offset']);
+const TRACE_STAGES = Object.freeze([
+  'ingested',
+  'transmitted',
+  'accepted',
+  'rejected',
+  'funded',
+  'fees_settled',
+  'protections',
+  'closed'
+]);
 
 let counter = 0;
 function defaultId(prefix) {
@@ -47,15 +63,18 @@ export function createRefundStore({
       const createdAt = now();
       record = {
         id,
+        caseId: id,
         taxpayerRef: seed.taxpayerRef ? String(seed.taxpayerRef) : 'unknown',
         status: 'status-unavailable',
         filingStage: seed.filingStage ?? 'received',
+        latestStage: seed.latestStage ?? 'ingested',
         priority: 'low',
         riskScore: 0,
         intelligence: null,
         timeline: [],
         source: seed.source ?? 'manual',
         amount: seed.amount != null ? Number(seed.amount) : null,
+        ledger: seed.ledger ?? null,
         createdAt,
         updatedAt: createdAt
       };
@@ -65,13 +84,23 @@ export function createRefundStore({
   }
 
   function appendTimeline(record, entry) {
+    const createdAt = now();
     record.timeline.unshift({
-      id: nextId('tl'),
-      at: now(),
-      ...entry
+      id: entry.id ?? nextId('evt'),
+      caseId: record.id,
+      stage: entry.stage ?? entry.type ?? 'event',
+      label: entry.label ?? entry.detail ?? entry.type ?? 'event',
+      details: entry.details ?? {},
+      phrase: entry.phrase ?? null,
+      createdAt,
+      // backward-compatible fields used by existing UI
+      at: createdAt,
+      type: entry.type ?? entry.stage ?? 'event',
+      detail: entry.detail ?? entry.label ?? ''
     });
+    if (entry.stage) record.latestStage = entry.stage;
     if (record.timeline.length > 200) record.timeline.length = 200;
-    record.updatedAt = now();
+    record.updatedAt = createdAt;
   }
 
   function runPipelineStages(record, event) {
@@ -230,24 +259,217 @@ export function createRefundStore({
     return events.slice(0, limit);
   }
 
+  /**
+   * Ingest a federal refund case (RefundCase + initial TimelineEvent).
+   * Spec: POST /rtpsc/cases/ingest
+   */
+  async function ingestCase(input = {}, meta = {}) {
+    const caseId = input.caseId ?? input.id;
+    if (!caseId) throw new Error('caseId is required.');
+    const result = await ingestEvent(
+      {
+        caseId,
+        taxpayerRef: input.taxpayerRef,
+        amount: input.amount,
+        filingStage: input.filingStage ?? 'sent',
+        source: input.source ?? 'api',
+        hasTranscript: input.hasTranscript !== false
+      },
+      meta
+    );
+    const record = getCase(caseId);
+    appendTimeline(record, {
+      stage: 'ingested',
+      type: 'ingested',
+      label: 'Case ingested from approved source',
+      detail: 'Case ingested from approved source',
+      details: {
+        amount: input.amount ?? null,
+        filingStage: input.filingStage ?? 'sent',
+        source: input.source ?? 'api'
+      }
+    });
+    if (input.ledger) record.ledger = input.ledger;
+    record.caseId = record.id;
+    return {
+      case: snapshot(record),
+      event: result.event,
+      pipeline: result.pipeline,
+      workflowRun: result.workflowRun
+    };
+  }
+
+  /**
+   * Run the full federal refund path — link ledger + append ordered TimelineEvents.
+   * Spec: POST /rtpsc/cases/{caseId}/run-full-path
+   */
+  async function runFullPath(caseId, options = {}) {
+    const id = String(caseId);
+    let record = getCase(id);
+    if (!record && !options.trace && !options.ledgerRow) {
+      throw new Error(`case_not_found: ${id}`);
+    }
+
+    let trace = options.trace ?? null;
+    if (!trace && options.ledgerRow) {
+      trace = buildFederalTraceTimeline(options.ledgerRow);
+    }
+    if (!trace && options.ledgerText) {
+      const parsed = parseFullReportExport(options.ledgerText);
+      const built = buildFederalTraces(parsed);
+      trace =
+        findFederalTrace(built.traces, {
+          taxpayerRef: options.taxpayerRef ?? record?.taxpayerRef,
+          returnId: options.returnId,
+          lastFour: options.lastFour
+        }) ?? built.traces[0] ?? null;
+    }
+
+    if (!record) {
+      record = ensureCase(id, {
+        taxpayerRef: trace?.taxpayerRef ?? options.taxpayerRef ?? 'unknown',
+        filingStage: trace?.filingStage ?? 'sent',
+        source: options.source ?? 'api',
+        amount: trace?.amount ?? options.amount ?? null,
+        ledger: trace?.ledger ?? null,
+        latestStage: 'ingested'
+      });
+    }
+
+    if (trace?.ledger) record.ledger = { ...(record.ledger ?? {}), ...trace.ledger };
+    if (trace?.amount != null) record.amount = trace.amount;
+    if (trace?.taxpayerRef) record.taxpayerRef = trace.taxpayerRef;
+    if (trace?.filingStage) record.filingStage = trace.filingStage;
+
+    const timeline = trace?.timeline ?? [];
+    for (const evt of timeline) {
+      // Skip duplicate stage labels already present
+      const exists = record.timeline.some((t) => t.stage === evt.stage && t.label === evt.label);
+      if (exists) continue;
+      appendTimeline(record, {
+        stage: evt.stage,
+        type: evt.stage,
+        label: evt.label,
+        detail: evt.label,
+        details: evt.details ?? {},
+        phrase: evt.phrase ?? null
+      });
+    }
+
+    // Drive pipeline/intelligence once at terminal stage
+    const terminal = record.latestStage || 'ingested';
+    const filingStage =
+      terminal === 'closed' || terminal === 'funded'
+        ? 'paid'
+        : terminal === 'accepted'
+          ? 'approved'
+          : terminal === 'transmitted'
+            ? 'sent'
+            : record.filingStage;
+    const intel = await ingestEvent(
+      {
+        caseId: id,
+        taxpayerRef: record.taxpayerRef,
+        amount: record.amount,
+        filingStage,
+        source: options.source ?? record.source ?? 'federal-refund-trace',
+        hasTranscript: true,
+        sbtpgEnrolled: Boolean(record.ledger?.bankProduct)
+      },
+      { source: metaSource(options), clientIdHint: options.clientIdHint }
+    );
+
+    record = getCase(id);
+    return {
+      case: snapshot(record),
+      timeline: [...record.timeline],
+      trace: trace
+        ? { caseId: trace.caseId, latestStage: trace.latestStage, ledger: trace.ledger }
+        : null,
+      workflowRun: intel.workflowRun
+    };
+  }
+
+  function metaSource(options = {}) {
+    return options.source ?? 'federal-refund-trace';
+  }
+
+  /** Import an entire Full Report Export CSV into cases + full paths. */
+  async function ingestFederalLedger(csvText, options = {}) {
+    const parsed = parseFullReportExport(csvText);
+    const built = buildFederalTraces(parsed);
+    const imported = [];
+    const limit = options.limit ?? built.traces.length;
+    for (const trace of built.traces.slice(0, limit)) {
+      const caseId = options.caseIdPrefix
+        ? `${options.caseIdPrefix}${trace.caseId}`
+        : trace.caseId;
+      await ingestCase(
+        {
+          caseId,
+          taxpayerRef: trace.taxpayerRef,
+          amount: trace.amount,
+          filingStage: trace.filingStage,
+          source: options.source ?? 'api',
+          ledger: trace.ledger
+        },
+        { source: 'federal-ledger-import', clientIdHint: options.clientIdHint }
+      );
+      const full = await runFullPath(caseId, {
+        trace: { ...trace, caseId },
+        source: options.source ?? 'api',
+        clientIdHint: options.clientIdHint
+      });
+      imported.push({
+        caseId,
+        taxpayerRef: full.case.taxpayerRef,
+        amount: full.case.amount,
+        latestStage: full.case.latestStage,
+        events: full.timeline.length
+      });
+    }
+    return {
+      count: imported.length,
+      source: 'full-report-export',
+      imported,
+      module: '@rtp/federal-refund-trace'
+    };
+  }
+
   function catalog() {
     return {
       pipeline: refundStatusPipeline,
       engine: refundIntelligenceEngine,
       workflow: workflow.name,
       filingStages: FILING_STAGES,
+      traceStages: TRACE_STAGES,
       channels: ['refund.status.received', 'refund.status.updated', 'refund.status.escalated'],
-      ingestionPolicy: 'Approved event sources only; no scraping.'
+      ingestionPolicy: 'Approved event sources and Full Report Export ledger only; no scraping.',
+      federalRefundTrace: '@rtp/federal-refund-trace'
     };
+  }
+
+  function listCasesMinimal(opts = {}) {
+    return listCases(opts).map((record) => ({
+      caseId: record.id,
+      taxpayerRef: record.taxpayerRef,
+      amount: record.amount,
+      filingStage: record.filingStage,
+      latestStage: record.latestStage ?? record.timeline[0]?.stage ?? 'ingested'
+    }));
   }
 
   return {
     ingestEvent,
+    ingestCase,
+    runFullPath,
+    ingestFederalLedger,
     getCase: (id) => {
       const record = getCase(id);
       return record ? snapshot(record) : null;
     },
     listCases: (opts) => listCases(opts).map(snapshot),
+    listCasesMinimal,
     getTimeline,
     listEvents,
     catalog,
@@ -259,4 +481,4 @@ export function createRefundStore({
   };
 }
 
-export { FILING_STAGES };
+export { FILING_STAGES, TRACE_STAGES };

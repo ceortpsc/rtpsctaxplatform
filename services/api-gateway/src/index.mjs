@@ -9,6 +9,10 @@ import {
   redactConfig
 } from '../../../packages/platform-core/src/index.mjs';
 import { createSecureTunnelAdapter } from '../../../packages/secure-tunnel/src/index.mjs';
+import {
+  createGatewayCommsTunnelAdapter,
+  probeGatewayCommsTunnel
+} from '../../../packages/gateway-comms-tunnel/src/index.mjs';
 import { createClientRegistry, extractClientCredentials } from '../../../packages/client-identity/src/index.mjs';
 
 const DEFAULT_PORT = 3000;
@@ -20,9 +24,16 @@ export const gatewayDescriptor = createServiceDescriptor({
   responsibilities: [
     'Authenticate API client id/secret at the ingress edge.',
     'Expose client registry status and proxy approved refund routes.',
-    'Declare secure tunnel prerequisites and transmission disclaimers.'
+    'Declare secure tunnel prerequisites and transmission disclaimers.',
+    'Expose Gateway Communications Tunnel (Treasury TOPS / Fiscal Service) health and proxy /rtpsc/*.'
   ],
-  dependencies: ['refund-status-service', 'transcript-service', 'analytics-service', '@rtp/client-identity']
+  dependencies: [
+    'refund-status-service',
+    'transcript-service',
+    'analytics-service',
+    '@rtp/client-identity',
+    '@rtp/gateway-comms-tunnel'
+  ]
 });
 
 function sendJson(response, statusCode, body) {
@@ -36,7 +47,7 @@ function readBody(request) {
     let size = 0;
     request.on('data', (chunk) => {
       size += chunk.length;
-      if (size > 400_000) {
+      if (size > 8_000_000) {
         reject(new Error('Request body too large.'));
         request.destroy();
         return;
@@ -87,12 +98,32 @@ export function createGatewayServer({ registry } = {}) {
           runtime: redactConfig(config),
           environmentProtection: evaluateEnvironmentProtection(config),
           secureTunnel: createSecureTunnelAdapter(),
+          gatewayCommsTunnel: createGatewayCommsTunnelAdapter().describe(),
           clients: clients.status(),
           metadata: {
             transmissionFlows: ['prepare', 'validate', 'queue', 'transmit', 'acknowledge'],
             refundUpstream: REFUND_UPSTREAM,
-            routes: ['/api/clients', '/api/auth/token', '/api/refund/*']
+            routes: ['/api/clients', '/api/auth/token', '/api/refund/*', '/rtpsc/*', '/rtpsc/tunnel']
           }
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/rtpsc/tunnel') {
+        return sendJson(response, 200, {
+          gateway: gatewayDescriptor.name,
+          secureTunnel: createSecureTunnelAdapter(),
+          gatewayCommsTunnel: createGatewayCommsTunnelAdapter().describe(),
+          probe: probeGatewayCommsTunnel(),
+          refundUpstream: REFUND_UPSTREAM
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/rtpsc/health') {
+        return sendJson(response, 200, {
+          status: 'ok',
+          service: gatewayDescriptor.name,
+          tunnel: probeGatewayCommsTunnel(),
+          refundUpstream: REFUND_UPSTREAM
         });
       }
 
@@ -150,6 +181,40 @@ export function createGatewayServer({ registry } = {}) {
         });
         const text = await upstream.text();
         response.writeHead(upstream.status, { 'content-type': upstream.headers.get('content-type') ?? 'application/json' });
+        response.end(text);
+        return;
+      }
+
+      // Proxy RTPSC federal refund trace routes (auth enforced upstream; gateway also gates writes)
+      if (pathname.startsWith('/rtpsc/') || pathname === '/rtpsc') {
+        const isRead = request.method === 'GET' || request.method === 'HEAD';
+        const bodyText = isRead ? null : JSON.stringify(await readBody(request));
+        const bodyObj = bodyText ? JSON.parse(bodyText) : {};
+        const creds = extractClientCredentials(request, bodyObj);
+        // Tunnel/health probes may be unauthenticated; write paths require API/TDS client.
+        if (!isRead || pathname === '/rtpsc/auth') {
+          const auth = await clients.authenticate({
+            clientId: creds.clientId,
+            clientSecret: creds.clientSecret,
+            requiredScope: pathname.includes('/auth') ? undefined : 'refund:ingest',
+            meta: { source: 'api-gateway-rtpsc-proxy' }
+          });
+          if (!auth.ok) return sendJson(response, 401, { error: auth.code, message: auth.message });
+        }
+
+        const target = new URL(pathname + url.search, REFUND_UPSTREAM);
+        const headers = { 'content-type': 'application/json' };
+        if (creds.clientId) headers['x-api-client-id'] = creds.clientId;
+        if (creds.clientSecret) headers['x-api-client-secret'] = creds.clientSecret;
+        const upstream = await fetch(target, {
+          method: request.method,
+          headers,
+          body: bodyText
+        });
+        const text = await upstream.text();
+        response.writeHead(upstream.status, {
+          'content-type': upstream.headers.get('content-type') ?? 'application/json'
+        });
         response.end(text);
         return;
       }
