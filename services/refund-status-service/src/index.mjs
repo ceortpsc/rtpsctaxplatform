@@ -11,6 +11,12 @@ import {
 } from '../../../packages/platform-core/src/index.mjs';
 import { createRefundStore } from '../../../packages/refund-core/src/index.mjs';
 import { createClientRegistry, extractClientCredentials } from '../../../packages/client-identity/src/index.mjs';
+import { describeFederalRefundTraceModule } from '../../../packages/federal-refund-trace/src/index.mjs';
+import {
+  createGatewayCommsTunnelAdapter,
+  probeGatewayCommsTunnel,
+  openGatewayCommsSession
+} from '../../../packages/gateway-comms-tunnel/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3001;
@@ -21,9 +27,17 @@ export const refundStatusDescriptor = createServiceDescriptor({
   responsibilities: [
     'Ingest refund status events from approved sources only (no scraping).',
     'Maintain full refund cases, timelines, pipeline stages, and intelligence.',
-    'Require API/TDS client authentication for write paths.'
+    'Require API/TDS client authentication for write paths.',
+    'Expose /rtpsc federal refund trace APIs and Treasury TOPS gateway tunnel probes.'
   ],
-  dependencies: ['refund-status-pipeline', 'refund-intelligence-engine', '@rtp/refund-core', '@rtp/client-identity']
+  dependencies: [
+    'refund-status-pipeline',
+    'refund-intelligence-engine',
+    '@rtp/refund-core',
+    '@rtp/client-identity',
+    '@rtp/federal-refund-trace',
+    '@rtp/gateway-comms-tunnel'
+  ]
 });
 
 const CONTENT_TYPES = {
@@ -44,7 +58,7 @@ function readBody(request) {
     let size = 0;
     request.on('data', (chunk) => {
       size += chunk.length;
-      if (size > 400_000) {
+      if (size > 8_000_000) {
         reject(new Error('Request body too large.'));
         request.destroy();
         return;
@@ -211,6 +225,115 @@ export function createRefundStatusServer({ registry, store } = {}) {
 
       if (request.method === 'GET' && pathname === '/api/events') {
         return sendJson(response, 200, { events: refunds.listEvents() });
+      }
+
+      /* ===== RTPSC federal refund trace + gateway tunnel surface ===== */
+
+      if (request.method === 'POST' && pathname === '/rtpsc/auth') {
+        const body = await readBody(request);
+        const client = await requireClient(request, body, { scope: 'refund:ingest' });
+        const accessToken = Buffer.from(`${client.id}:${Date.now()}`, 'utf8').toString('base64url');
+        return sendJson(response, 200, {
+          authenticated: true,
+          scope: client.kind === 'tds' ? 'tds' : 'api',
+          client,
+          accessToken,
+          tokenType: 'Bearer',
+          session_token: accessToken
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/rtpsc/cases') {
+        return sendJson(response, 200, refunds.listCasesMinimal());
+      }
+
+      const rtpscCase = pathname.match(/^\/rtpsc\/cases\/([^/]+)(?:\/(run-full-path))?$/);
+      if (rtpscCase) {
+        const caseId = decodeURIComponent(rtpscCase[1]);
+        if (request.method === 'GET' && !rtpscCase[2]) {
+          const record = refunds.getCase(caseId);
+          if (!record) return sendJson(response, 404, { error: 'case_not_found', caseId });
+          return sendJson(response, 200, { case: record, timeline: record.timeline });
+        }
+        if (request.method === 'POST' && rtpscCase[2] === 'run-full-path') {
+          const body = await readBody(request);
+          const client = await requireClient(request, body, { scope: 'refund:ingest' });
+          try {
+            const result = await refunds.runFullPath(caseId, {
+              ...body,
+              source: body.source ?? `client:${client.kind}`,
+              clientIdHint: client.idHint
+            });
+            // Open stub Treasury TOPS session for gateway communications audit
+            const tunnelSession = openGatewayCommsSession({
+              channel: body.channel ?? 'TOPS',
+              purpose: 'federal-refund-trace',
+              caseId,
+              taxpayerRef: result.case.taxpayerRef
+            });
+            return sendJson(response, 200, { ...result, tunnelSession, authenticatedClient: client });
+          } catch (error) {
+            const status = /case_not_found/.test(error.message) ? 404 : 400;
+            return sendJson(response, status, { error: 'run_full_path_failed', message: error.message });
+          }
+        }
+      }
+
+      if (request.method === 'POST' && pathname === '/rtpsc/cases/ingest') {
+        const body = await readBody(request);
+        const client = await requireClient(request, body, { scope: 'refund:ingest' });
+        try {
+          const result = await refunds.ingestCase(body, {
+            source: body.source ?? `client:${client.kind}`,
+            clientIdHint: client.idHint
+          });
+          return sendJson(response, 201, { ...result, authenticatedClient: client });
+        } catch (error) {
+          return sendJson(response, 400, { error: 'ingest_failed', message: error.message });
+        }
+      }
+
+      if (request.method === 'POST' && pathname === '/rtpsc/ledger/import') {
+        const body = await readBody(request);
+        const client = await requireClient(request, body, { scope: 'refund:ingest' });
+        const csvText = body.csv ?? body.ledger ?? body.text;
+        if (!csvText || typeof csvText !== 'string') {
+          return sendJson(response, 400, {
+            error: 'ledger_required',
+            message: 'Provide Full Report Export CSV in body.csv (approved ledger only).'
+          });
+        }
+        try {
+          const result = await refunds.ingestFederalLedger(csvText, {
+            limit: body.limit,
+            source: body.source ?? `client:${client.kind}`,
+            clientIdHint: client.idHint
+          });
+          return sendJson(response, 201, {
+            ...result,
+            module: describeFederalRefundTraceModule(),
+            authenticatedClient: client
+          });
+        } catch (error) {
+          return sendJson(response, 400, { error: 'ledger_import_failed', message: error.message });
+        }
+      }
+
+      if (request.method === 'GET' && pathname === '/rtpsc/tunnel') {
+        return sendJson(response, 200, {
+          secure: createGatewayCommsTunnelAdapter().describe(),
+          probe: probeGatewayCommsTunnel()
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/rtpsc/health') {
+        return sendJson(response, 200, {
+          status: 'ok',
+          service: refundStatusDescriptor.name,
+          federalRefundTrace: describeFederalRefundTraceModule(),
+          tunnel: probeGatewayCommsTunnel(),
+          cases: refunds.listCasesMinimal({ limit: 1000 }).length
+        });
       }
 
       if (request.method === 'GET') return serveStatic(response, pathname);

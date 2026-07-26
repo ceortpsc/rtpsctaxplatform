@@ -1,0 +1,8 @@
+{
+  "name": "@rtp/federal-refund-trace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs",
+  "description": "Federal refund trace — Full Report Export ledger ingest, timeline stages, ERO phrasing."
+}

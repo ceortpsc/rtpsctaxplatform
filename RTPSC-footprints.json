@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-26T08:55:04.723Z",
-  "count": 55,
+  "createdAt": "2026-07-26T09:28:15.344Z",
+  "count": 57,
   "ok": true,
   "footprints": [
     {
@@ -205,6 +205,26 @@
       "footprint": "7fea4205f1addbaa",
       "fingerprint": "7fea4205f1addbaa",
       "integrity": "sha256-7fea4205f1addbaa97f989e4f1b56cbbafb3f3fba8ee0f4fb42fd183f3c19fc2",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/federal-refund-trace",
+      "version": "0.1.0",
+      "location": "packages/federal-refund-trace",
+      "sector": "packages",
+      "footprint": "8f8cd0da23da47d3",
+      "fingerprint": "8f8cd0da23da47d3",
+      "integrity": "sha256-8f8cd0da23da47d36fe4eded048a571cfa4bb42dbf96c31e60188846e35a5dbb",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/gateway-comms-tunnel",
+      "version": "0.1.0",
+      "location": "packages/gateway-comms-tunnel",
+      "sector": "packages",
+      "footprint": "d3cf3c8d7dc8680f",
+      "fingerprint": "d3cf3c8d7dc8680f",
+      "integrity": "sha256-d3cf3c8d7dc8680f4deb1a9e7aca864d0ae9c48993c0d8e35e41f007871edbbb",
       "status": "sealed"
     },
     {
