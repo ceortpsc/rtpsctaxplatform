@@ -21,7 +21,7 @@ Versioned private S3 registry origin
         ↓
 CloudFront TLS distribution
         ↓
-registry.rosstaxsoftware.com
+registry.rosstaxprosoftware.com
 ```
 
 ## Native release sequence
@@ -48,21 +48,52 @@ Required CloudFormation parameters:
 
 | Parameter | Required value |
 |---|---|
-| `RegistryDomainName` | `registry.rosstaxsoftware.com` or another company-controlled FQDN |
-| `HostedZoneId` | Public Route 53 hosted-zone ID for the controlled domain |
+| `RegistryDomainName` | `registry.rosstaxprosoftware.com` |
+| `HostedZoneId` | Public Route 53 hosted-zone ID that contains the registry record |
+| `ExistingCertificateArn` | Issued ACM certificate ARN in `us-east-1`; may be blank only when the stack should request a new certificate |
 | `GitHubOidcProviderArn` | AWS IAM OIDC provider ARN for `token.actions.githubusercontent.com` |
 | `GitHubRepository` | `ceortpsc/rtpsctaxplatform` |
 | `RegistryBucketName` | Optional globally unique bucket name |
+
+Approved existing certificate for the current production path:
+
+```text
+arn:aws:acm:us-east-1:238395401086:certificate/2cf8291f-d58c-43b3-a21b-243fb57f7d5e
+```
+
+The approved certificate is issued for `rosstaxprosoftware.com` and `*.rosstaxprosoftware.com`; therefore it covers `registry.rosstaxprosoftware.com`. It does not cover `registry.rosstaxsoftware.com`.
 
 The stack creates:
 
 - Versioned private S3 artifact storage
 - CloudFront HTTPS delivery
-- ACM DNS-validated certificate
 - Route 53 A and AAAA aliases
 - ECC P-256 KMS signing key
 - GitHub OIDC deployment role
 - Least-privilege publication policy
+
+When `ExistingCertificateArn` is blank, the stack also requests and DNS-validates a new ACM certificate. When it is supplied, the existing issued certificate is reused and no duplicate certificate is requested.
+
+## CloudShell deployment
+
+```bash
+cd "$HOME/rtpsctaxplatform"
+
+export EXPECTED_AWS_ACCOUNT_ID="238395401086"
+export AWS_REGION="us-east-1"
+export AWS_DEFAULT_REGION="us-east-1"
+export AWS_PAGER=""
+export STACK_NAME="rossco-infinite-production"
+export ROOT_DOMAIN="rosstaxprosoftware.com"
+export REGISTRY_DOMAIN="registry.rosstaxprosoftware.com"
+export EXISTING_CERTIFICATE_ARN="arn:aws:acm:us-east-1:238395401086:certificate/2cf8291f-d58c-43b3-a21b-243fb57f7d5e"
+export GITHUB_REPOSITORY="ceortpsc/rtpsctaxplatform"
+export CREATE_HOSTED_ZONE_IF_MISSING="false"
+
+./infra/aws/deploy-rossco-registry-cloudshell.sh
+```
+
+If the parent domain is not hosted in Route 53, supply the exact Route 53 `HOSTED_ZONE_ID` for a properly delegated `registry.rosstaxprosoftware.com` child zone before running the script.
 
 ## Repository production variables
 
@@ -143,7 +174,7 @@ No repository file may claim registration until the Copyright Office issues an o
 | Artifact checksum | `SHA256SUMS` |
 | Build provenance | GitHub attestation record |
 | Registry stack | CloudFormation `CREATE_COMPLETE` |
-| TLS certificate | ACM `ISSUED` |
+| TLS certificate | ACM `ISSUED` and hostname coverage confirmed |
 | DNS | Public A/AAAA resolution to CloudFront |
 | Registry publication | S3 immutable release prefix |
 | Distribution health | HTTPS 200 response |
