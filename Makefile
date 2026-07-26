@@ -1,7 +1,9 @@
 SHELL := /bin/bash
 AOL := node ./tools/aol/bin/aol.mjs
 
-.PHONY: setup lint test build start gateway workers bench aol compliance compliance-checklist compliance-log
+ROSSCO := node ./tools/rossco/bin/rossco.mjs
+
+.PHONY: setup lint test build start gateway workers bench aol rossco itr compliance compliance-checklist compliance-log
 
 setup:
 	./scripts/setup.sh
@@ -38,3 +40,6 @@ compliance-log:
 
 aol:
 	$(AOL) $(ARGS)
+
+rossco itr:
+	$(ROSSCO) $(ARGS)

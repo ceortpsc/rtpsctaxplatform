@@ -18,9 +18,11 @@ const modules = [
   '../pipelines/masterfile-pipeline/src/index.mjs',
   '../pipelines/refund-status-pipeline/src/index.mjs',
   '../engines/refund-intelligence-engine/src/index.mjs',
+  '../engines/refund-optimization-engine/src/index.mjs',
   '../engines/analytics-center/src/index.mjs',
   '../engines/tc-code-engine/src/index.mjs',
-  '../tools/aol/src/index.mjs'
+  '../tools/aol/src/index.mjs',
+  '../tools/rossco/src/index.mjs'
 ];
 
 const manifest = [];

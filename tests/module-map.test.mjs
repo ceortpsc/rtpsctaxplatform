@@ -9,10 +9,12 @@ import { transmissionPipeline } from '../pipelines/transmission-pipeline/src/ind
 import { masterfilePipeline } from '../pipelines/masterfile-pipeline/src/index.mjs';
 import { refundStatusPipeline } from '../pipelines/refund-status-pipeline/src/index.mjs';
 import { refundIntelligenceEngine } from '../engines/refund-intelligence-engine/src/index.mjs';
+import { refundOptimizationEngine } from '../engines/refund-optimization-engine/src/index.mjs';
 import { analyticsCenter } from '../engines/analytics-center/src/index.mjs';
 import { tcCodeEngine } from '../engines/tc-code-engine/src/index.mjs';
 import { clientIdentityPlaceholders } from '../packages/client-config/src/index.mjs';
 import { createSecureTunnelAdapter } from '../packages/secure-tunnel/src/index.mjs';
+import { IP as rosscoIp } from '../tools/rossco/src/index.mjs';
 
 test('scaffold modules expose expected domain metadata', () => {
   assert.equal(gatewayDescriptor.name, 'api-gateway');
@@ -28,6 +30,9 @@ test('scaffold modules expose expected domain metadata', () => {
   assert.ok(masterfilePipeline.stages.includes('normalize-masterfile'));
   assert.ok(refundStatusPipeline.outputs.includes('refund-status-alert'));
   assert.ok(refundIntelligenceEngine.capabilities.includes('risk-flagging'));
+  assert.ok(refundIntelligenceEngine.capabilities.includes('lifecycle-state-machine'));
+  assert.ok(refundOptimizationEngine.capabilities.includes('refundable-credit-scan'));
+  assert.equal(rosscoIp.productName, 'ROSS.CO');
   assert.ok(analyticsCenter.outputs.includes('analytics-feed'));
   assert.ok(tcCodeEngine.capabilities.includes('tc-code-catalog'));
 });

@@ -28,6 +28,8 @@
     "worker:live-source": "node ./tools/aol/bin/aol.mjs run -w @rtp/live-source-fetcher start -- --once",
     "bench:aol": "node ./tools/aol/bin/aol.mjs bench",
     "aol": "node ./tools/aol/bin/aol.mjs",
+    "rossco": "node ./tools/rossco/bin/rossco.mjs",
+    "itr": "node ./tools/rossco/bin/rossco.mjs",
     "compliance": "node ./packages/production-compliance/bin/prodcheck.mjs run",
     "compliance:checklist": "node ./packages/production-compliance/bin/prodcheck.mjs checklist",
     "compliance:report": "node ./packages/production-compliance/bin/prodcheck.mjs report",

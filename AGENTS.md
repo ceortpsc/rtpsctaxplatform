@@ -7,9 +7,9 @@ stubs (`services/*`, `workers/*`, `pipelines/*`, `engines/*`, `packages/*`). All
 ES modules (`.mjs`) and only Node built-ins — there are **no external runtime
 dependencies**.
 
-### Package manager: AOL
+### Package managers: AOL + ROSS.CO ITR
 
-Use **AOL** (Adaptive Optimized Linker) instead of npm:
+Use **AOL** (Adaptive Optimized Linker) for workspace linking instead of npm:
 
 ```bash
 ./scripts/aol install          # parallel workspace link + RTPSC-package-lock.json
@@ -22,14 +22,28 @@ Use **AOL** (Adaptive Optimized Linker) instead of npm:
 ./scripts/aol run compliance   # live production checklist + compliance report/log
 ```
 
-Equivalent: `node ./tools/aol/bin/aol.mjs <cmd>` or `make setup|lint|test|build|start|bench|compliance`.
+Use **ROSS.CO** (Infinite Transfer Rate Package Manager) for product lifecycle /
+transfer-rate / register / presence / SEO:
 
-Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
-`docs/aol-intellectual-property.md`, `docs/live-production-checklist.md`,
-`docs/production-compliance-report.md`.
+```bash
+./scripts/rossco install       # ITR transfer (delegates link to AOL)
+./scripts/rossco lifecycle
+./scripts/rossco validate
+./scripts/rossco register
+./scripts/rossco presence
+./scripts/rossco seo
+```
+
+Equivalent: `node ./tools/aol/bin/aol.mjs <cmd>`, `node ./tools/rossco/bin/rossco.mjs <cmd>`,
+or `make setup|lint|test|build|start|bench|compliance|rossco`.
+
+Docs: `docs/aol-package-manager.md`, `docs/rossco-itr-package-manager.md`,
+`docs/rossco-intellectual-property.md`, `docs/refund-optimization-intelligence.md`,
+`docs/aol-api-and-config.md`, `docs/live-production-checklist.md`.
 
 Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
-`aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`.
+`aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`,
+`rossco lifecycle|plan|scope|stage|verify|register|seo`.
 
 ### Cursor Cloud environment
 
