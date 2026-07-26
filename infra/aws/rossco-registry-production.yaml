@@ -7,12 +7,19 @@ Description: >-
 Parameters:
   RegistryDomainName:
     Type: String
-    Default: registry.rosstaxsoftware.com
+    Default: registry.rosstaxprosoftware.com
     Description: Public registry FQDN controlled by Ross Tax Pro Software Co.
 
   HostedZoneId:
     Type: AWS::Route53::HostedZone::Id
     Description: Public Route 53 hosted zone that contains RegistryDomainName.
+
+  ExistingCertificateArn:
+    Type: String
+    Default: ''
+    Description: >-
+      Optional existing ACM certificate ARN in us-east-1. When supplied, the
+      stack reuses this certificate instead of requesting a new one.
 
   GitHubOidcProviderArn:
     Type: String
@@ -30,6 +37,8 @@ Parameters:
 
 Conditions:
   HasExplicitBucketName: !Not [!Equals [!Ref RegistryBucketName, '']]
+  HasExistingCertificate: !Not [!Equals [!Ref ExistingCertificateArn, '']]
+  CreateManagedCertificate: !Equals [!Ref ExistingCertificateArn, '']
 
 Resources:
   RegistrySigningKey:
@@ -92,6 +101,7 @@ Resources:
 
   RegistryCertificate:
     Type: AWS::CertificateManager::Certificate
+    Condition: CreateManagedCertificate
     Properties:
       DomainName: !Ref RegistryDomainName
       ValidationMethod: DNS
@@ -139,7 +149,10 @@ Resources:
               OriginAccessIdentity: ''
         PriceClass: PriceClass_100
         ViewerCertificate:
-          AcmCertificateArn: !Ref RegistryCertificate
+          AcmCertificateArn: !If
+            - HasExistingCertificate
+            - !Ref ExistingCertificateArn
+            - !Ref RegistryCertificate
           MinimumProtocolVersion: TLSv1.2_2021
           SslSupportMethod: sni-only
       Tags:
@@ -265,8 +278,11 @@ Outputs:
     Value: !Ref RegistryDistribution
 
   RegistryCertificateArn:
-    Description: ACM certificate ARN
-    Value: !Ref RegistryCertificate
+    Description: ACM certificate ARN used by CloudFront
+    Value: !If
+      - HasExistingCertificate
+      - !Ref ExistingCertificateArn
+      - !Ref RegistryCertificate
 
   RegistrySigningKeyArn:
     Description: KMS signing key ARN
