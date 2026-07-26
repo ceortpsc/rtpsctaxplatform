@@ -35,7 +35,7 @@ export async function runCli(argv) {
       case 'install':
       case 'transfer':
       case 'dial': {
-        const report = await infiniteTransfer(root, { force, quiet: false });
+        const report = await infiniteTransfer(root, { force });
         return print(json, report, () =>
           ui.panel('ROSS.CO Infinite Transfer', [
             `workspaces  ${report.workspaceCount}`,
