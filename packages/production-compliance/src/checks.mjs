@@ -7,7 +7,8 @@ const DEFAULT_LIVE_ENDPOINTS = Object.freeze([
   { id: 'api-gateway', url: 'http://127.0.0.1:3000/health' },
   { id: 'refund-status', url: 'http://127.0.0.1:3001/health' },
   { id: 'transcript', url: 'http://127.0.0.1:3002/health' },
-  { id: 'analytics', url: 'http://127.0.0.1:3003/health' }
+  { id: 'analytics', url: 'http://127.0.0.1:3003/health' },
+  { id: 'irs-gateway', url: 'http://127.0.0.1:8820/health' }
 ]);
 
 async function exists(root, relativePath) {

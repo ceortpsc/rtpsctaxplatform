@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="280" viewBox="0 0 1200 280" role="img" aria-label="RTPSC Enterprise Platform  PrimeWeb Edition">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1f33"/>
+      <stop offset="55%" stop-color="#12324d"/>
+      <stop offset="100%" stop-color="#1a4a3a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="280" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="6" fill="#c9a227"/>
+  <text x="60" y="110" fill="#f4f7f5" font-family="Georgia, 'Times New Roman', serif" font-size="64" font-weight="700" letter-spacing="4">RTPSC</text>
+  <text x="60" y="160" fill="#d8e6df" font-family="Georgia, 'Times New Roman', serif" font-size="28">Enterprise Platform  PrimeWeb Edition</text>
+  <text x="60" y="210" fill="#a8c3b5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16">Deterministic · Audit-Grade · IRS-Compliant · Production-Ready</text>
+</svg>

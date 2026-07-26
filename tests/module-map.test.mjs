@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { gatewayDescriptor } from '../services/api-gateway/src/index.mjs';
+import { irsGatewayDescriptor } from '../services/irs-gateway/src/index.mjs';
 import { refundStatusDescriptor } from '../services/refund-status-service/src/index.mjs';
 import { transcriptDescriptor } from '../services/transcript-service/src/index.mjs';
 import { analyticsDescriptor } from '../services/analytics-service/src/index.mjs';
@@ -15,10 +16,13 @@ import { createSecureTunnelAdapter } from '../packages/secure-tunnel/src/index.m
 
 test('scaffold modules expose expected domain metadata', () => {
   assert.equal(gatewayDescriptor.name, 'api-gateway');
+  assert.equal(irsGatewayDescriptor.name, 'irs-gateway');
+  assert.equal(irsGatewayDescriptor.domain, 'irs-oauth');
   assert.equal(refundStatusDescriptor.domain, 'refund-status');
   assert.equal(transcriptDescriptor.domain, 'transcripts');
   assert.equal(analyticsDescriptor.domain, 'analytics');
   assert.deepEqual(clientIdentityPlaceholders.api, ['API_CLIENT_ID', 'API_CLIENT_SECRET']);
+  assert.ok(clientIdentityPlaceholders.irs.includes('IRS_CLIENT_ID_PRIMARY'));
   assert.equal(createSecureTunnelAdapter().status, 'stub');
   assert.ok(transmissionPipeline.stages.includes('handoff-approved-tunnel'));
   assert.ok(masterfilePipeline.stages.includes('normalize-masterfile'));
