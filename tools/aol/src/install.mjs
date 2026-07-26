@@ -1,9 +1,12 @@
-import { mkdir, rm, symlink, lstat, readlink } from 'node:fs/promises';
+import { mkdir, rm, symlink, lstat, readlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { discoverWorkspaces, loadRootManifest } from './workspaces.mjs';
 import { buildLockfile, writeLockfile, readLockfile, lockMatches, LOCKFILE_NAME } from './lockfile.mjs';
 import { loadConfig } from './config.mjs';
+import { listFootprints, FOOTPRINTS_FILE } from './footprints.mjs';
 import * as ui from './ui.mjs';
+
+export { FOOTPRINTS_FILE };
 
 /**
  * Parallel workspace linker — the AOL fast path.
@@ -55,6 +58,34 @@ export async function install(root = process.cwd(), options = {}) {
     config
   });
   const lockPath = await writeLockfile(root, lock, { name: LOCKFILE_NAME });
+  const footprintsReport = await listFootprints(root);
+  const footprintsPath = path.join(root, FOOTPRINTS_FILE);
+  await writeFile(
+    footprintsPath,
+    `${JSON.stringify(
+      {
+        name: manifest.name,
+        version: manifest.version,
+        generatedBy: 'aol@0.1.0',
+        lockfile: LOCKFILE_NAME,
+        createdAt: new Date().toISOString(),
+        count: footprintsReport.count,
+        ok: footprintsReport.ok,
+        footprints: footprintsReport.footprints.map((e) => ({
+          name: e.name,
+          version: e.version,
+          location: e.location,
+          sector: e.sector,
+          footprint: e.footprint,
+          fingerprint: e.fingerprint,
+          integrity: e.integrity,
+          status: e.status
+        }))
+      },
+      null,
+      2
+    )}\n`
+  );
 
   const ms = performance.now() - started;
   if (!quiet) {
@@ -62,8 +93,18 @@ export async function install(root = process.cwd(), options = {}) {
     console.log(ui.buddyList(workspaces.map((w) => ({ name: w.name, location: w.location, ok: true }))));
     console.log(ui.success(ms, { linked: workspaces.length, kind: 'packages', scripts: true }));
     console.log(ui.info(`lockfile → ${path.relative(root, lockPath) || LOCKFILE_NAME}`));
+    console.log(ui.info(`footprints → ${FOOTPRINTS_FILE} (${footprintsReport.count})`));
   }
-  return { ms, linked: workspaces.length, workspaces, cached: false, lockfile: LOCKFILE_NAME, lock };
+  return {
+    ms,
+    linked: workspaces.length,
+    workspaces,
+    cached: false,
+    lockfile: LOCKFILE_NAME,
+    lock,
+    footprintsFile: FOOTPRINTS_FILE,
+    footprints: footprintsReport
+  };
 }
 
 async function linkWorkspace(nm, ws, root) {

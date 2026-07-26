@@ -1,0 +1,11 @@
+{
+  "name": "@rtp/canvas-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs",
+  "description": "Cursor Canvas creation — generate .canvas.tsx artifacts from RTPSC platform state.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

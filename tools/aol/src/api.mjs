@@ -17,6 +17,7 @@ import { IP, copyrightBanner, copyrightJson } from './ip.mjs';
 import { COMMANDS, resolveCommand, listCommands } from './commands.mjs';
 import { doctor } from './doctor.mjs';
 import { graph, mailStatus } from './graph.mjs';
+import { listFootprints, formatFootprintLedger, FOOTPRINTS_FILE } from './footprints.mjs';
 
 /**
  * Programmatic Adaptive Optimized Linker API.
@@ -58,6 +59,7 @@ export async function createAol(options = {}) {
     graph: () => graph(root),
     mail: () => mailStatus(root),
     doctor: () => doctor(root),
+    footprints: () => listFootprints(root),
     getConfig: () => loadConfig(root),
     initConfig: (opts) => initConfig(root, opts),
     get: async (key) => getConfigValue(await loadConfig(root), key),
@@ -90,6 +92,7 @@ export function describeApiSurface() {
         'graph()',
         'mail()',
         'doctor()',
+        'footprints()',
         'getConfig()',
         'initConfig(opts?)',
         'get(key)',
@@ -111,6 +114,7 @@ export function describeApiSurface() {
       commands: 'COMMANDS, resolveCommand(), listCommands()',
       doctor: 'doctor()',
       graph: 'graph(), mailStatus()',
+      footprints: 'listFootprints(), formatFootprintLedger()',
       cli: 'runCli(argv)',
       api: 'createAol(), describeApiSurface()'
     },
@@ -156,5 +160,8 @@ export {
   listCommands,
   doctor,
   graph,
-  mailStatus
+  mailStatus,
+  listFootprints,
+  formatFootprintLedger,
+  FOOTPRINTS_FILE
 };

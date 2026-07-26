@@ -80,6 +80,7 @@ export function helpText() {
     `  ${cyan('aol')} ${white('ls')}|${white('buddy')}         Workspace Buddy List`,
     `  ${cyan('aol')} ${white('why')} <name>              Explain a buddy link`,
     `  ${cyan('aol')} ${white('graph')}|${white('mail')}|${white('lock')}  Map / status / RTPSC lock`,
+    `  ${cyan('aol')} ${white('footprints')}|${white('fp')}     All package fingerprints ledger`,
     `  ${cyan('aol')} ${white('bench')}|${white('velocity')}   Speed report vs npm`,
     '',
     bold('Config · Codes · API · IP'),

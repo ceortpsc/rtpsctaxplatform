@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ross.co/schemas/rossco.config.schema.json",
+  "title": "ROSS.CO Infinite Transfer Rate Config",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "brand": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "expansion": { "type": "string" },
+        "tagline": { "type": "string" },
+        "domain": { "type": "string" },
+        "mark": { "type": "string" }
+      }
+    },
+    "transfer": {
+      "type": "object",
+      "properties": {
+        "mode": { "type": "string", "enum": ["infinite", "bounded", "benchmark"] },
+        "parallel": { "type": "boolean" },
+        "delegateLinker": { "type": "string" }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "properties": {
+        "stages": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "presence": {
+      "type": "object",
+      "properties": {
+        "siteRoot": { "type": "string" },
+        "seo": { "type": "object" }
+      }
+    },
+    "copyright": {
+      "type": "object",
+      "properties": {
+        "holder": { "type": "string" },
+        "year": { "type": "integer" },
+        "spdx": { "type": "string" }
+      }
+    }
+  }
+}

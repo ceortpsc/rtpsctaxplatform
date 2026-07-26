@@ -1,0 +1,12 @@
+██████╗ ████████╗██████╗ ███████╗ ██████╗  ██████╗
+██╔══██╗╚══██╔══╝██╔══██╗██╔════╝██╔═══██╗██╔════╝
+██████╔╝   ██║   ██████╔╝█████╗  ██║   ██║██║  ███╗
+██╔══██╗   ██║   ██╔══██╗██╔══╝  ██║   ██║██║   ██║
+██║  ██║   ██║   ██║  ██║███████╗╚██████╔╝╚██████╔╝
+╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝
+
+RTPSC ENTERPRISE PLATFORM — PRIMEWEB EDITION
+Deterministic • Audit-Grade • IRS-Compliant • Production-Ready
+
+Package manager: AOL  |  Node >=22  |  Gateway :3000  |  IRS Gateway :8820
+Secrets: Personal Cursor environment only — never commit credentials or keys.
