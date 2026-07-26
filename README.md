@@ -125,7 +125,10 @@ Use the built-in **`rtpsc`** command runner — a dependency-free CLI that drive
 ./rtpsc start         # api-gateway (or: ./rtpsc start dashboard)
 ./rtpsc deploy        # all services + background worker (add --smoke to verify & exit)
 ./rtpsc workflow run transcript-intake '{"requestId":"REQ-1","authorized":true}'
-./rtpsc agents        # deployment-assist & development team (./rtpsc agents docs writes markdown)
+./rtpsc agents        # deployment-assist & development team
+./rtpsc agents list   # required task assignments + triggers
+./rtpsc agents run required   # execute assigned agents for required tasks
+./rtpsc agents docs   # write docs/agents markdown
 ./rtpsc env           # environment protection status
 ```
 
@@ -268,13 +271,17 @@ deployment.
 | `markdown-agent` | Markdown generation engine (writes `docs/agents/*`) |
 
 ```bash
-pnpm run agents        # run the team, print a JSON summary
-pnpm run agents:docs   # regenerate docs/agents/*.md
-./scripts/aol run worker:tds
-./scripts/aol run worker:transcript-pull
-./scripts/aol run worker:live-source
+./rtpsc agents                 # run the team, print a JSON summary
+./rtpsc agents docs            # regenerate docs/agents/*.md
+./rtpsc agents list            # required task assignments + triggers
+./rtpsc agents run required    # execute assigned agents for required tasks
+./rtpsc agents trigger event '{"assignmentId":"validate-platform"}'
+./rtpsc agents workflow emit agent.task.requested '{"assignmentId":"assess-environment"}'
 ```
 
+Required tasks are pre-assigned on the agent assignment board and dispatched through
+`agent-assignment-dispatch` (manual), `agent-task-requested` (event), and
+`agent-assignment-cycle` (schedule). See [`docs/CURSOR_TERMINAL_AGENT.md`](./docs/CURSOR_TERMINAL_AGENT.md).
 Generated reports live in [`docs/agents/`](./docs/agents/README.md).
 
 ## Background Workflows

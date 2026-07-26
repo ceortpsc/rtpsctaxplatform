@@ -127,8 +127,17 @@ const packageFiles = [
   'workers/workflow-runner/package.json',
   'workflows/refund-status-workflow/package.json',
   'workflows/transcript-intake-workflow/package.json',
-  'workflows/transmission-workflow/package.json'
-  'workers/ai-persona-worker/package.json'
+  'workflows/transmission-workflow/package.json',
+  'workflows/agent-assignment-workflow/package.json',
+  'workers/ai-persona-worker/package.json',
+  'packages/agent-core/package.json',
+  'agents/planning-agent/package.json',
+  'agents/scoping-agent/package.json',
+  'agents/testing-agent/package.json',
+  'agents/mapping-agent/package.json',
+  'agents/staging-agent/package.json',
+  'agents/assessment-agent/package.json',
+  'agents/markdown-agent/package.json'
 ];
 
 for (const relativePath of packageFiles) {

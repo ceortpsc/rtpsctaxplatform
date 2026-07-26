@@ -42,7 +42,7 @@
     "workflow:run": "pnpm --filter @rtp/workflow-runner run-workflow",
     "agents": "node scripts/agents.mjs",
     "agents:docs": "node scripts/agents.mjs --write",
-    "clients": "node scripts/clients.mjs"
+    "clients": "node scripts/clients.mjs",
     "start:all": "./scripts/start-all.sh",
     "start:all:fg": "node ./scripts/start-all.mjs",
     "start:check": "node ./scripts/start-all.mjs --check-only",
@@ -65,7 +65,7 @@
     "ross:doctor": "python3 ./ross.py doctor",
     "ross:dev": "python3 ./ross.py dev",
     "ross:package": "python3 ./ross.py package build",
-    "ross:hello": "python3 ./ross.py runtime run hello"
+    "ross:hello": "python3 ./ross.py runtime run hello",
     "compliance": "node ./packages/production-compliance/bin/prodcheck.mjs run",
     "compliance:checklist": "node ./packages/production-compliance/bin/prodcheck.mjs checklist",
     "compliance:report": "node ./packages/production-compliance/bin/prodcheck.mjs report",
