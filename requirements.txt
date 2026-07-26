@@ -1,0 +1,4 @@
+# RTPSC Python tooling — PDF fill engine + IRS helper scaffold
+# Install: python3 -m pip install -r requirements.txt
+pypdf==5.1.0
+cryptography==44.0.2

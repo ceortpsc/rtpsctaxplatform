@@ -15,6 +15,7 @@ const requiredPaths = [
   'docs/aol-package-manager.md',
   'docs/aol-intellectual-property.md',
   'docs/aol-api-and-config.md',
+  'docs/cursor-environment.md',
   'tools/aol/bin/aol.mjs',
   'tools/aol/package.json',
   'tools/aol/NOTICE',
@@ -27,7 +28,13 @@ const requiredPaths = [
   'packages/production-compliance/src/index.mjs',
   'infra/terraform/modules/platform-service/main.tf',
   '.github/workflows/ci.yml',
-  '.github/workflows/compliance.yml'
+  '.github/workflows/compliance.yml',
+  '.github/workflows/rtpsc-deploy.yml',
+  '.cursor/environment.json',
+  '.cursor/Dockerfile',
+  'Dockerfile',
+  'requirements.txt',
+  '.env.example'
 ];
 
 for (const relativePath of requiredPaths) {
@@ -41,6 +48,7 @@ const packageFiles = [
   'packages/secure-tunnel/package.json',
   'packages/production-compliance/package.json',
   'services/api-gateway/package.json',
+  'services/irs-gateway/package.json',
   'services/refund-status-service/package.json',
   'services/transcript-service/package.json',
   'services/analytics-service/package.json',

@@ -27,7 +27,8 @@ The repository is organized as a lightweight monorepo with executable Node.js se
 - Monorepo directory structure for services, workers, pipelines, engines, shared packages, infrastructure, scripts, docs, policy assets, forms, letters, and static assets.
 - **AOL** package manager (`tools/aol`) for parallel workspace linking and script running.
 - Environment/configuration scaffold for local, dev, stage, and prod with explicit secret placeholders.
-- API gateway plus domain service skeletons for refund status, transcripts, and analytics.
+- API gateway plus domain service skeletons for refund status, transcripts, analytics, and IRS OAuth/TDS gateway.
+- Cursor Cloud environment pack (`.cursor/environment.json`), root `Dockerfile`, and Python `requirements.txt` for PDF fill tooling.
 - 24/7 worker skeletons for TDS, transcript pulls, and live-source fetch orchestration.
 - Transmission, masterfile, and refund-status pipeline starters.
 - Secure tunnel adapter scaffold with compliance checkpoints and TODO markers.
@@ -76,6 +77,7 @@ packages/
   secure-tunnel/         compliant tunnel adapter interface scaffold
 services/
   api-gateway/           route registry and transmission entrypoint skeleton
+  irs-gateway/           IRS OAuth2 / TDS token gateway (JWT client assertion)
   refund-status-service/ event-driven refund status surface
   transcript-service/    transcript intake and orchestration surface
   analytics-service/     analytics and refund intelligence API surface
@@ -91,13 +93,16 @@ engines/
   refund-intelligence-engine/
   analytics-center/
   tc-code-engine/
+  pdf-fill-engine/       Python PDF fill scaffold (`requirements.txt`)
 infra/
   terraform/             module and environment placeholders
+.cursor/
+  environment.json       Cursor Cloud agent environment definition
 ```
 
 ## Environment Model
 
-Use the example files in `/env`:
+Use the example files in `/env` and root `.env.example`. Cursor setup: [`docs/cursor-environment.md`](docs/cursor-environment.md).
 
 - `env/.env.local.example`
 - `env/.env.dev.example`
