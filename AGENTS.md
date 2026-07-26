@@ -25,6 +25,9 @@ Use **AOL** (Adaptive Optimized Linker) for workspace linking instead of npm:
 Use **ROSS.CO** (Infinite Transfer Rate Package Manager) for product lifecycle /
 transfer-rate / register / presence / SEO:
 
+Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
+`docs/aol-intellectual-property.md`, `docs/live-production-checklist.md`,
+`docs/enterprise-tax-software-checklist.md`, `docs/production-compliance-report.md`.
 ```bash
 ./scripts/rossco install       # ITR transfer (delegates link to AOL)
 ./scripts/rossco lifecycle
@@ -82,7 +85,15 @@ Docker (optional): `cp .env.example .env && docker compose -f docker-compose.ros
 
 ### Running services / commands
 
+- `./scripts/aol run start:all` (or `make start-all`) launches the **entire platform** under
+  tmux: api-gateway `:3000`, refund-status `:3001`, transcript `:3002`, analytics `:3003`,
+  then runs workers once (`tds`, `transcript-pull`, `live-source`). Status:
+  `build/platform-runtime-status.json`. Health: `./scripts/aol run start:check`.
 - `./scripts/aol run start` launches only the **api-gateway** on port `3000` and blocks
+  (long-running). Verify with `curl http://localhost:3000/health`.
+- Individual services: `start:refund-status`, `start:transcript`, `start:analytics`.
+- Workers one-shot: `worker:tds`, `worker:transcript-pull`, `worker:live-source`.
+- Docker Compose (Postgres/Redis) is optional and unused by stubs.
   (long-running). Start it in a background terminal/tmux session. Verify with
   `curl http://localhost:3000/health` and `curl http://localhost:3000/metadata`.
 - Other services are independent HTTP stubs on fixed ports: refund-status `3001`,

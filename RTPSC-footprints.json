@@ -1,0 +1,201 @@
+{
+  "name": "rtpsctaxplatform",
+  "version": "0.1.0",
+  "generatedBy": "aol@0.1.0",
+  "lockfile": "RTPSC-package-lock.json",
+  "createdAt": "2026-07-25T19:43:56.445Z",
+  "count": 19,
+  "ok": true,
+  "footprints": [
+    {
+      "name": "@rtp/ai-assist",
+      "version": "0.1.0",
+      "location": "packages/ai-assist",
+      "sector": "packages",
+      "footprint": "cc444c69e4927073",
+      "fingerprint": "cc444c69e4927073",
+      "integrity": "sha256-cc444c69e492707366a79be8430b2e2585530e59c8d4b6da4a10552de8700cf4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/analytics-center",
+      "version": "0.1.0",
+      "location": "engines/analytics-center",
+      "sector": "engines",
+      "footprint": "c512c0511aa05372",
+      "fingerprint": "c512c0511aa05372",
+      "integrity": "sha256-c512c0511aa053729e287f8b4aee96d359ffc7605124c42ac93b7373565b28fe",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/analytics-service",
+      "version": "0.1.0",
+      "location": "services/analytics-service",
+      "sector": "services",
+      "footprint": "93c2402f5dd1b5d8",
+      "fingerprint": "93c2402f5dd1b5d8",
+      "integrity": "sha256-93c2402f5dd1b5d8056e047dac25bb39c30ffd85a00dcf7aa7757e3e994f2755",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/aol",
+      "version": "0.1.0",
+      "location": "tools/aol",
+      "sector": "tools",
+      "footprint": "2c3e56e51fc69620",
+      "fingerprint": "2c3e56e51fc69620",
+      "integrity": "sha256-2c3e56e51fc69620426f96ec38d29097d252a3be9d259e6bb7560e8d4e653ed4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/api-gateway",
+      "version": "0.1.0",
+      "location": "services/api-gateway",
+      "sector": "services",
+      "footprint": "d3a3c81a78c2618d",
+      "fingerprint": "d3a3c81a78c2618d",
+      "integrity": "sha256-d3a3c81a78c2618df4040b3ff913f3cb08bab275c671772d7d56635afa02ff4a",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/client-config",
+      "version": "0.1.0",
+      "location": "packages/client-config",
+      "sector": "packages",
+      "footprint": "8ef391896df1e806",
+      "fingerprint": "8ef391896df1e806",
+      "integrity": "sha256-8ef391896df1e806efbfc20796c624345fbd94e89f6353836ddcc28111e906ea",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/live-source-fetcher",
+      "version": "0.1.0",
+      "location": "workers/live-source-fetcher",
+      "sector": "workers",
+      "footprint": "21102713312c4e12",
+      "fingerprint": "21102713312c4e12",
+      "integrity": "sha256-21102713312c4e120d4fd0bc4a442880e3f4fe831fca6e98068ab671292bf0a9",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/masterfile-pipeline",
+      "version": "0.1.0",
+      "location": "pipelines/masterfile-pipeline",
+      "sector": "pipelines",
+      "footprint": "186fe0b6edc35d1a",
+      "fingerprint": "186fe0b6edc35d1a",
+      "integrity": "sha256-186fe0b6edc35d1a604f5250a1b8fac7713c9fc9df06f19fb1db9a3aa10edd52",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/platform-core",
+      "version": "0.1.0",
+      "location": "packages/platform-core",
+      "sector": "packages",
+      "footprint": "961bfb7ade63a768",
+      "fingerprint": "961bfb7ade63a768",
+      "integrity": "sha256-961bfb7ade63a7689d60c2112765530a020f28ff2d355b38742b55b7b31870a4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/production-compliance",
+      "version": "0.1.0",
+      "location": "packages/production-compliance",
+      "sector": "packages",
+      "footprint": "21a8f700e2edabe0",
+      "fingerprint": "21a8f700e2edabe0",
+      "integrity": "sha256-21a8f700e2edabe0798a1e6f2ce693d5c6b566b3b53c275494f5e68ed1ed2551",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/refund-intelligence-engine",
+      "version": "0.1.0",
+      "location": "engines/refund-intelligence-engine",
+      "sector": "engines",
+      "footprint": "3990fda244e66f35",
+      "fingerprint": "3990fda244e66f35",
+      "integrity": "sha256-3990fda244e66f35e4dc5f6fd4becff58b573a9f578c8dc08a4e25a7bea95119",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/refund-status-pipeline",
+      "version": "0.1.0",
+      "location": "pipelines/refund-status-pipeline",
+      "sector": "pipelines",
+      "footprint": "11530ba4af16bbf9",
+      "fingerprint": "11530ba4af16bbf9",
+      "integrity": "sha256-11530ba4af16bbf9c61f59c274f304edf24da88e8dd11c528f1942a94619b159",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/refund-status-service",
+      "version": "0.1.0",
+      "location": "services/refund-status-service",
+      "sector": "services",
+      "footprint": "5442c41284ccac78",
+      "fingerprint": "5442c41284ccac78",
+      "integrity": "sha256-5442c41284ccac78c0329ed4bb7583452cce13e63445179f8720fa871e673802",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/secure-tunnel",
+      "version": "0.1.0",
+      "location": "packages/secure-tunnel",
+      "sector": "packages",
+      "footprint": "8e79948424fddc04",
+      "fingerprint": "8e79948424fddc04",
+      "integrity": "sha256-8e79948424fddc0465cbee5ddb62a3e26eab526daf1b8e7e0305efda9d78d37a",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/tc-code-engine",
+      "version": "0.1.0",
+      "location": "engines/tc-code-engine",
+      "sector": "engines",
+      "footprint": "447a09d18f5f1f82",
+      "fingerprint": "447a09d18f5f1f82",
+      "integrity": "sha256-447a09d18f5f1f82731a7a97f438afcdf99490d1910ca8ea91a7ce9d1c672856",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/tds-worker",
+      "version": "0.1.0",
+      "location": "workers/tds-worker",
+      "sector": "workers",
+      "footprint": "0b14c3654edf5d09",
+      "fingerprint": "0b14c3654edf5d09",
+      "integrity": "sha256-0b14c3654edf5d09945ef99da580b544adec050be3142898c23ca35896cab85e",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/transcript-pull-worker",
+      "version": "0.1.0",
+      "location": "workers/transcript-pull-worker",
+      "sector": "workers",
+      "footprint": "45233763e43ca405",
+      "fingerprint": "45233763e43ca405",
+      "integrity": "sha256-45233763e43ca405ceebe673a3134b8d6505babb0027ad2b7b408023c0d8e8f2",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/transcript-service",
+      "version": "0.1.0",
+      "location": "services/transcript-service",
+      "sector": "services",
+      "footprint": "c8fab56d52939bd5",
+      "fingerprint": "c8fab56d52939bd5",
+      "integrity": "sha256-c8fab56d52939bd5c515f65c4badd84be07561273443cbec55dcf864fdc5b9c4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/transmission-pipeline",
+      "version": "0.1.0",
+      "location": "pipelines/transmission-pipeline",
+      "sector": "pipelines",
+      "footprint": "135731a5287a397b",
+      "fingerprint": "135731a5287a397b",
+      "integrity": "sha256-135731a5287a397ba90552afdf13854c0a1c8e6867a76865c7600e1920efc67e",
+      "status": "sealed"
+    }
+  ]
+}

@@ -58,6 +58,7 @@ export async function bench(root = process.cwd(), rounds = 3) {
 async function resetNodeModules(root) {
   await rm(path.join(root, 'node_modules'), { recursive: true, force: true });
   await rm(path.join(root, 'RTPSC-package-lock.json'), { force: true });
+  await rm(path.join(root, 'RTPSC-footprints.json'), { force: true });
   await rm(path.join(root, 'aol.lock.json'), { force: true });
   // Keep npm package-lock out of the tree; npm will recreate links as needed.
 }

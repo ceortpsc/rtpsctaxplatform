@@ -46,6 +46,13 @@ export const COMMANDS = Object.freeze([
     usage: 'aol lock [--json] [--write|--seal]'
   },
   {
+    name: 'footprints',
+    aliases: ['fingerprint', 'fingerprints', 'prints', 'fp'],
+    concept: 'List all RTPSC package footprints (fingerprint + integrity ledger)',
+    category: 'core',
+    usage: 'aol footprints [--json]'
+  },
+  {
     name: 'bench',
     aliases: ['velocity', 'speed'],
     concept: 'Velocity report — AOL vs npm install wall-clock',
