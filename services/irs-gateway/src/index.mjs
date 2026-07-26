@@ -233,7 +233,7 @@ export function start(options = {}) {
 
     if (request.method === 'POST' && request.url === '/irs/token') {
       try {
-        await readJsonBody(request);
+        request.resume();
         const token = await requestIrsAccessToken(irs, { fetchImpl: options.fetchImpl });
         response.writeHead(200);
         response.end(
