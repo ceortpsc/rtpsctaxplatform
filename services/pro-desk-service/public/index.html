@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pro Desk · Ross Tax Pro Software Co</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+
+    <header class="hero">
+      <p class="brand">Ross Tax Pro Software Co</p>
+      <h1 class="headline">Built to outrun TaxSlayer Pro.</h1>
+      <p class="lede">
+        Interview, diagnostics, refund intelligence, and fail-safe e-file — one Pro Desk for the
+        modern ERO.
+      </p>
+      <div class="cta-row">
+        <a class="cta primary" href="#prep">Open tax prep</a>
+        <a class="cta ghost" href="#scorecard">View scorecard</a>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Pro Desk sections">
+      <button type="button" class="tab active" data-panel="scorecard">Scorecard</button>
+      <button type="button" class="tab" data-panel="prep">Tax prep</button>
+      <button type="button" class="tab" data-panel="guardrails">Guardrails</button>
+      <button type="button" class="tab" data-panel="ops">Ops links</button>
+    </nav>
+
+    <main>
+      <section id="scorecard" class="panel active" data-panel="scorecard">
+        <h2>Superiority scorecard</h2>
+        <p class="section-lede">
+          Honest comparison against TaxSlayer Pro–class desktop suites — not an affiliation.
+        </p>
+        <div id="scoreHero" class="score-hero"></div>
+        <div id="matrix" class="matrix" role="table" aria-label="Capability matrix"></div>
+      </section>
+
+      <section id="prep" class="panel" data-panel="prep" hidden>
+        <h2>Tax prep interview</h2>
+        <p class="section-lede">
+          Capture the return, run diagnostics, and surface ROI before any transmit attempt.
+        </p>
+        <div class="prep-layout">
+          <form id="prepForm" class="prep-form">
+            <div class="field">
+              <label for="displayName">Taxpayer name</label>
+              <input id="displayName" name="displayName" required placeholder="Jordan Ellis" />
+            </div>
+            <div class="field">
+              <label for="taxpayerRef">Taxpayer ref</label>
+              <input id="taxpayerRef" name="taxpayerRef" placeholder="TP-77" />
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="filingStatus">Filing status</label>
+                <select id="filingStatus" name="filingStatus">
+                  <option>Single</option>
+                  <option>MFJ</option>
+                  <option>MFS</option>
+                  <option>HOH</option>
+                  <option>QW</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="qualifyingChildren">Qualifying children</label>
+                <input id="qualifyingChildren" name="qualifyingChildren" type="number" min="0" value="0" />
+              </div>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="wages">Wages</label>
+                <input id="wages" name="wages" type="number" min="0" step="1" value="42000" />
+              </div>
+              <div class="field">
+                <label for="withholding">Withholding</label>
+                <input id="withholding" name="withholding" type="number" min="0" step="1" value="4800" />
+              </div>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="selfEmployment">Self-employment</label>
+                <input id="selfEmployment" name="selfEmployment" type="number" min="0" step="1" value="0" />
+              </div>
+              <div class="field">
+                <label for="taxLiability">Tax liability (optional)</label>
+                <input id="taxLiability" name="taxLiability" type="number" min="0" step="1" value="0" />
+              </div>
+            </div>
+            <fieldset class="checks">
+              <legend>Due diligence &amp; docs</legend>
+              <label><input type="checkbox" name="claimEitc" /> Claim EITC</label>
+              <label><input type="checkbox" name="claimActc" /> Claim ACTC</label>
+              <label><input type="checkbox" name="spousePresent" /> Spouse present</label>
+              <label><input type="checkbox" name="qualifyingPerson" /> Qualifying person (HOH)</label>
+              <label><input type="checkbox" name="doc8867" checked /> Form 8867 on file</label>
+              <label><input type="checkbox" name="docW2" checked /> W-2 on file</label>
+            </fieldset>
+            <div class="form-actions">
+              <button type="submit" class="cta primary">Create &amp; diagnose</button>
+            </div>
+          </form>
+          <div id="prepOut" class="prep-out" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="guardrails" class="panel" data-panel="guardrails" hidden>
+        <h2>Guardrails that keep Pro honest</h2>
+        <p class="section-lede">
+          AI cannot sign, transmit, or clear material HOLD — a hard line TaxSlayer Pro–class AI
+          add-ons rarely publish.
+        </p>
+        <ul id="guardList" class="guard-list"></ul>
+      </section>
+
+      <section id="ops" class="panel" data-panel="ops" hidden>
+        <h2>Connected desks</h2>
+        <p class="section-lede">Deep-link into the rest of the RTPSC platform.</p>
+        <ul id="opsList" class="ops-list"></ul>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>RTPSC · Pro Desk :3007</span>
+      <span>Comparison notice: not affiliated with TaxSlayer.</span>
+    </footer>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

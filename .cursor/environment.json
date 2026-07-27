@@ -11,6 +11,7 @@
     { "name": "refund-status", "port": 3001 },
     { "name": "transcript", "port": 3002 },
     { "name": "analytics", "port": 3003 },
+    { "name": "pro-desk", "port": 3007 },
     { "name": "irs-gateway", "port": 8820 },
     { "name": "ai-workforce-hub", "port": 8860 }
   ],

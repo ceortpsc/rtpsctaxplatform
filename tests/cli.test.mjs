@@ -32,6 +32,8 @@ test('start resolves services and rejects unknown ones', () => {
   assert.match(planCommand(['start', 'invoice']).args.join(' '), /invoice-service\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'pos-crm']).args.join(' '), /pos-crm-service\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'crm']).args.join(' '), /pos-crm-service\/src\/index\.mjs$/);
+  assert.match(planCommand(['start', 'pro-desk']).args.join(' '), /pro-desk-service\/src\/index\.mjs$/);
+  assert.match(planCommand(['start', 'pro']).args.join(' '), /pro-desk-service\/src\/index\.mjs$/);
   assert.match(planCommand(['start']).args.join(' '), /api-gateway\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'nope']).error, /Unknown service/);
 });
@@ -46,7 +48,7 @@ test('agents subcommands pass through to scripts/agents.mjs', () => {
 
 test('usage lists the commands', () => {
   const usage = buildUsage();
-  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'canvas', 'cloud', 'workflow', 'clients']) {
+  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'canvas', 'cloud', 'workflow', 'clients', 'pro']) {
     assert.ok(usage.includes(name), `usage should mention ${name}`);
   }
 });
@@ -54,6 +56,11 @@ test('usage lists the commands', () => {
 test('clients command resolves to scripts/clients.mjs', () => {
   assert.match(planCommand(['clients']).args.join(' '), /scripts\/clients\.mjs/);
   assert.match(planCommand(['clients', 'issue', 'api']).args.join(' '), /issue api$/);
+});
+
+test('pro command resolves to scripts/pro.mjs', () => {
+  assert.match(planCommand(['pro']).args.join(' '), /scripts\/pro\.mjs/);
+  assert.match(planCommand(['pro', 'scorecard']).args.join(' '), /scorecard$/);
 });
 
 test('canvas command resolves to scripts/canvas.mjs', () => {
