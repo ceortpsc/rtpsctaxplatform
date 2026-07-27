@@ -208,6 +208,16 @@ export function buildModuleCatalog() {
           detail: { phrases: listPhraseTemplates().map((t) => t.code) }
         },
         {
+          name: '@rtp/client-masterfile',
+          summary: 'Alphabetical client master file and Full ERO Client Status matrix (CRM · Refund · SBTPG · E-file).',
+          tags: ['masterfile', 'ero', 'matrix', 'directory'],
+          detail: {
+            channels: ['crm', 'refund', 'sbtpg', 'efile', 'overall'],
+            apis: ['GET /api/masterfile', 'GET /api/masterfile/lookup', 'GET /api/ero/matrix'],
+            sort: 'alphabetical last-name'
+          }
+        },
+        {
           name: '@rtp/canvas-core',
           summary: 'Cursor Canvas creation — generate .canvas.tsx artifacts from live platform state.',
           tags: ['canvas', 'cursor', 'devtools'],

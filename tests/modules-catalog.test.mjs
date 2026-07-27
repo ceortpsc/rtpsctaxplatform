@@ -63,3 +63,10 @@ test('catalog includes canvas-core for Cursor Canvas creation', () => {
   assert.ok(canvas.tags.includes('canvas'));
   assert.deepEqual(canvas.detail.kinds, ['platform', 'compliance', 'agents', 'modules']);
 });
+
+test('catalog includes client-masterfile for ERO status matrix', () => {
+  const packages = buildModuleCatalog().find((group) => group.category === 'packages');
+  const mf = packages.modules.find((m) => m.name === '@rtp/client-masterfile');
+  assert.ok(mf, 'expected @rtp/client-masterfile in packages category');
+  assert.ok(mf.detail.channels.includes('overall'));
+});

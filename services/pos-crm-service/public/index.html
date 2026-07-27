@@ -14,6 +14,8 @@
       </div>
       <nav class="tabs" id="tabs">
         <button type="button" data-tab="crm" class="active">CRM</button>
+        <button type="button" data-tab="master">Master File</button>
+        <button type="button" data-tab="matrix">ERO Status Matrix</button>
         <button type="button" data-tab="pos">Point of Sale</button>
         <button type="button" data-tab="ero">Refund Intel / SBTPG</button>
       </nav>
@@ -21,8 +23,8 @@
 
     <main class="wrap">
       <section class="banner">
-        Modular POS connected to CRM — checkout settles through the invoicing machine with state/parish tax,
-        receipts, SBTPG report tracing, and automated ERO phrasing for the refund intelligence center.
+        Modular POS connected to CRM — alphabetical client master file, Full ERO Client Status matrix
+        (CRM · Refund · SBTPG · E-file), checkout via the invoicing machine, and automated ERO phrasing.
       </section>
 
       <!-- CRM -->
@@ -40,12 +42,65 @@
             <button type="button" id="createContact" class="primary-btn">Save to CRM</button>
           </div>
           <div class="col">
-            <h2>Directory</h2>
+            <h2>Directory <span class="hint">(A–Z by last name)</span></h2>
             <div class="field"><label>Search</label><input id="cSearch" placeholder="Name, tag, taxpayer ref…" /></div>
+            <div class="alpha-bar" id="crmLetters"></div>
             <div id="contactList" class="list">Loading…</div>
             <div id="contactDetail" class="detail" hidden></div>
           </div>
         </div>
+      </section>
+
+      <!-- Master File -->
+      <section class="panel" id="tab-master" hidden>
+        <div class="grid">
+          <div class="col">
+            <h2>Client master file</h2>
+            <p class="lede">Canonical ERO client directory — alphabetical, searchable by name, taxpayer ref, email, or phone.</p>
+            <div class="field"><label>Lookup by name</label><input id="mfLookup" placeholder="Start typing a client name…" autocomplete="off" /></div>
+            <div id="mfLookupResults" class="list"></div>
+            <div class="field"><label>Or taxpayer ref</label><input id="mfRefLookup" placeholder="TP-…" /></div>
+            <button type="button" id="mfRefBtn" class="secondary-btn">Find by taxpayer ref</button>
+            <button type="button" id="mfSyncBtn" class="ghost-btn">Resync from CRM</button>
+            <div id="mfDetail" class="detail" hidden></div>
+          </div>
+          <div class="col">
+            <h2>Alphabetical index</h2>
+            <div class="field"><label>Filter directory</label><input id="mfSearch" placeholder="Search master file…" /></div>
+            <div class="alpha-bar" id="mfLetters"></div>
+            <div id="mfList" class="list">Loading…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ERO Status Matrix -->
+      <section class="panel" id="tab-matrix" hidden>
+        <h2>Full ERO Client Status Matrix</h2>
+        <p class="lede">One row per client across CRM, refund, SBTPG, and e-file channels. Sorted A–Z by last name.</p>
+        <div class="matrix-toolbar">
+          <div class="field grow"><label>Search</label><input id="mxSearch" placeholder="Name or taxpayer ref…" /></div>
+          <div class="alpha-bar" id="mxLetters"></div>
+        </div>
+        <div class="matrix-wrap">
+          <table class="matrix" id="mxTable">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Taxpayer</th>
+                <th>CRM</th>
+                <th>Refund</th>
+                <th>SBTPG</th>
+                <th>E-file</th>
+                <th>Overall</th>
+                <th>Intel</th>
+              </tr>
+            </thead>
+            <tbody id="mxBody">
+              <tr><td colspan="8">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="mxMeta" class="hint"></div>
       </section>
 
       <!-- POS -->
