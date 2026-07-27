@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="No invoices yet">
+  <rect width="320" height="200" rx="16" fill="#eef1f6"/>
+  <rect x="40" y="36" width="240" height="128" rx="12" fill="#fff" stroke="#c9d1de"/>
+  <rect x="110" y="60" width="100" height="80" rx="4" fill="#f7f8fb" stroke="#97a3b8"/><path d="M125 80h70M125 95h55M125 110h60" stroke="#c9d1de" stroke-width="3"/>
+  <text x="160" y="178" text-anchor="middle" font-family="Avenir Next, Segoe UI, sans-serif" font-size="12" fill="#6b778d">No invoices yet</text>
+</svg>

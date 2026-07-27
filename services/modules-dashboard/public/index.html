@@ -3,71 +3,90 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ross Tax Pro Software Co · Efile Transmission Software</title>
+    <title>RTPSC Platform Hub</title>
+    <link rel="stylesheet" href="/shared/theme.css" />
+    <link rel="stylesheet" href="/shared/shell.css" />
+    <link rel="stylesheet" href="/shared/components.css" />
     <link rel="stylesheet" href="/theme.css" />
     <link rel="stylesheet" href="/styles.css" />
-    <link rel="icon" href="/assets/emblem.svg" />
+    <link rel="icon" href="/shared/brand/icons/favicon.svg" />
   </head>
   <body>
-    <div class="bg-decor" aria-hidden="true">
-      <img class="decor-rosette decor-rosette--tr" src="/assets/guilloche.svg" alt="" />
-      <img class="decor-rosette decor-rosette--bl" src="/assets/guilloche.svg" alt="" />
-    </div>
-
-    <div class="app">
-      <aside class="sidebar">
-        <div class="brand">
-          <img class="brand-emblem u-float" src="/assets/emblem.svg" alt="RTPSC emblem" />
-          <div class="brand-text">
-            <span class="brand-mark">RTPSC</span>
-            <span class="brand-sub">Efile Transmission</span>
-            <span class="brand-co">Ross Tax Pro Software Co</span>
-          </div>
-        </div>
-        <div class="env-badge" id="env-badge" hidden></div>
-        <nav class="nav" id="nav">
-          <button class="nav-item active" data-view="catalog"><span class="nav-ico">▦</span> Catalog</button>
-          <button class="nav-item" data-view="insights"><span class="nav-ico">✦</span> Insights</button>
-          <button class="nav-item" data-view="assistant"><span class="nav-ico">✨</span> AI Assistant</button>
-          <button class="nav-item" data-view="graph"><span class="nav-ico">⧉</span> Dependency Graph</button>
-          <button class="nav-item" data-view="status"><span class="nav-ico">◉</span> System Status</button>
-          <button class="nav-item" data-view="design"><span class="nav-ico">❖</span> Design System</button>
-        </nav>
-        <button class="palette-hint" id="open-palette">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="app-shell" data-app-shell data-active="dashboard" data-service="modules-dashboard" data-env="local">
+      <div class="app-shell__drawer-backdrop" data-action="close-drawer"></div>
+      <aside class="app-shell__sidebar" aria-label="Primary">
+        <a class="app-shell__brand" href="#dashboard">
+          <img class="app-shell__monogram" src="/shared/brand/marks/monogram.svg" alt="" />
+          <span class="app-shell__brand-text">
+            <span class="app-shell__brand-mark">RTPSC</span>
+            <span class="app-shell__brand-sub">Platform Hub</span>
+          </span>
+        </a>
+        <div class="app-shell__env" data-shell-env id="env-badge">local · modules-dashboard</div>
+        <nav class="app-shell__nav" id="app-nav" data-shell-nav></nav>
+        <button type="button" class="palette-hint" id="open-palette">
           <span>Search modules</span>
           <span><kbd>Ctrl</kbd><kbd>K</kbd></span>
         </button>
-        <div class="sidebar-foot">
-          Workflows run in the background via <code>workflow-runner</code>. This dashboard is
-          modules-only.
+        <div class="app-shell__sidebar-foot">
+          Workflows run via <code>workflow-runner</code>. This hub catalogs modules and limited ops surfaces.
         </div>
       </aside>
 
-      <main class="main">
-        <header class="topbar">
-          <div class="topbar-lead">
-            <h1 class="view-title" id="view-title">Catalog</h1>
-            <p class="view-kicker" id="view-kicker">Platform module inventory</p>
-          </div>
-          <div class="topbar-right">
-            <div class="topbar-actions">
-              <button class="icon-btn" id="btn-export" title="Export catalog JSON">⬇</button>
-              <button class="icon-btn" id="btn-shortcuts" title="Keyboard shortcuts (?)">⌨</button>
-              <button class="icon-btn" id="btn-settings" title="Settings">⚙</button>
-            </div>
+      <div class="app-shell__main">
+        <div class="app-shell__command">
+          <button type="button" class="app-shell__menu-btn" data-action="open-drawer" aria-label="Open menu">☰</button>
+          <button type="button" class="app-shell__search" data-action="open-search" id="cmd-search">
+            <span>Search modules &amp; actions…</span>
+            <kbd>Ctrl</kbd><kbd>K</kbd>
+          </button>
+          <div class="app-shell__command-actions">
             <div class="stats" id="stats">
               <div class="stat"><span class="stat-value" id="stat-modules" data-count="0">0</span><span class="stat-label">Modules</span></div>
               <div class="stat"><span class="stat-value" id="stat-categories" data-count="0">0</span><span class="stat-label">Categories</span></div>
             </div>
+            <button type="button" class="app-shell__icon-btn" id="btn-export" title="Export catalog JSON" aria-label="Export">⬇</button>
+            <button type="button" class="app-shell__icon-btn" id="btn-shortcuts" title="Keyboard shortcuts" aria-label="Shortcuts">⌨</button>
+            <button type="button" class="app-shell__icon-btn" id="btn-settings" title="Settings" aria-label="Settings">⚙</button>
+            <button type="button" class="app-shell__icon-btn" data-action="cycle-theme" aria-label="Cycle theme">◐</button>
+            <button type="button" class="app-shell__icon-btn" data-action="toggle-sidebar" aria-label="Collapse sidebar">⊟</button>
+            <span class="app-shell__session">Operator session</span>
           </div>
-        </header>
-        <div class="view" id="view"></div>
-      </main>
+        </div>
+
+        <main class="app-shell__content is-workspace" id="main-content">
+          <header class="page-header topbar">
+            <nav class="page-header__crumbs" aria-label="Breadcrumb">
+              <a href="#dashboard">Platform</a><span aria-hidden="true">/</span>
+              <span aria-current="page" id="crumb-current">Dashboard</span>
+            </nav>
+            <div class="page-header__category" id="view-kicker">Operations overview</div>
+            <div class="page-header__row">
+              <div class="page-header__titles topbar-lead">
+                <h1 class="page-header__title view-title" id="view-title">Dashboard</h1>
+              </div>
+            </div>
+          </header>
+          <div class="view" id="view"></div>
+        </main>
+
+        <nav class="app-shell__mobile-bar" aria-label="Mobile">
+          <a class="btn btn--secondary btn--sm" href="#dashboard">Home</a>
+          <a class="btn btn--secondary btn--sm" href="#catalog">Catalog</a>
+          <a class="btn btn--primary btn--sm" href="#assistant">Assist</a>
+        </nav>
+      </div>
     </div>
+
+    <!-- Hidden legacy nav for fav-badge hook compatibility -->
+    <nav id="nav" hidden aria-hidden="true">
+      <button class="nav-item active" data-view="catalog" type="button">Catalog</button>
+    </nav>
 
     <div class="palette-overlay" id="palette" hidden>
       <div class="palette">
-        <input id="palette-input" class="palette-input" type="text" placeholder="Search modules & actions…" autocomplete="off" />
+        <input id="palette-input" class="palette-input field__control" type="text" placeholder="Search modules & actions…" autocomplete="off" />
         <ul class="palette-results" id="palette-results"></ul>
         <div class="palette-foot"><kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>↵</kbd> open · <kbd>Esc</kbd> close</div>
       </div>
@@ -80,7 +99,7 @@
       <div class="modal">
         <div class="modal-head">
           <h2>Settings</h2>
-          <button class="icon-btn" data-close-modal="settings-modal">✕</button>
+          <button type="button" class="btn btn--icon btn--quiet" data-close-modal="settings-modal" aria-label="Close">✕</button>
         </div>
         <div class="modal-body" id="settings-body"></div>
       </div>
@@ -90,14 +109,14 @@
       <div class="modal">
         <div class="modal-head">
           <h2>Keyboard shortcuts</h2>
-          <button class="icon-btn" data-close-modal="shortcuts-modal">✕</button>
+          <button type="button" class="btn btn--icon btn--quiet" data-close-modal="shortcuts-modal" aria-label="Close">✕</button>
         </div>
         <div class="modal-body">
           <div class="kbd-list">
             <div class="kbd-row"><span>Command palette</span><span><kbd>Ctrl</kbd><kbd>K</kbd></span></div>
             <div class="kbd-row"><span>Keyboard shortcuts</span><span><kbd>?</kbd></span></div>
-            <div class="kbd-row"><span>Toggle theme</span><span><kbd>T</kbd></span></div>
-            <div class="kbd-row"><span>Go to Catalog / Insights / Status</span><span><kbd>G</kbd> then <kbd>C</kbd>/<kbd>I</kbd>/<kbd>S</kbd></span></div>
+            <div class="kbd-row"><span>Cycle theme</span><span><kbd>T</kbd></span></div>
+            <div class="kbd-row"><span>Catalog / Insights / Status</span><span><kbd>G</kbd> then <kbd>C</kbd>/<kbd>I</kbd>/<kbd>S</kbd></span></div>
             <div class="kbd-row"><span>Close overlay</span><span><kbd>Esc</kbd></span></div>
           </div>
         </div>
@@ -105,7 +124,7 @@
     </div>
 
     <div class="toasts" id="toasts"></div>
-
+    <script src="/shared/shell.js"></script>
     <script src="/app.js"></script>
   </body>
 </html>

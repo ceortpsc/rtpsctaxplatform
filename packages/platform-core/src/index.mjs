@@ -162,26 +162,31 @@ function contentTypeFor(filePath) {
   }
 }
 
-export function serveStaticFile(response, rootDir, requestPath) {
-  let decodedPath;
+export async function serveStaticFile(response, rootDir, requestPath) {
   try {
-    decodedPath = decodeURIComponent(String(requestPath || '').split('?')[0]);
+    const { servePublicOrShared } = await import('../../ui-system/src/serve.mjs');
+    return servePublicOrShared(response, requestPath, rootDir);
   } catch {
-    sendJson(response, 400, { error: 'bad_request', message: 'Malformed URL encoding' });
+    let decodedPath;
+    try {
+      decodedPath = decodeURIComponent(String(requestPath || '').split('?')[0]);
+    } catch {
+      sendJson(response, 400, { error: 'bad_request', message: 'Malformed URL encoding' });
+      return true;
+    }
+    const safePath = path.normalize(decodedPath).replace(/^(\.\.[/\\])+/, '');
+    const relative = safePath === '/' || safePath === '' ? 'index.html' : safePath.replace(/^\//, '');
+    const absolute = path.join(rootDir, relative);
+    if (!absolute.startsWith(path.resolve(rootDir))) {
+      sendJson(response, 403, { error: 'forbidden' });
+      return true;
+    }
+    if (!fs.existsSync(absolute) || fs.statSync(absolute).isDirectory()) return false;
+    response.setHeader('content-type', contentTypeFor(absolute));
+    response.writeHead(200);
+    fs.createReadStream(absolute).pipe(response);
     return true;
   }
-  const safePath = path.normalize(decodedPath).replace(/^(\.\.[/\\])+/, '');
-  const relative = safePath === '/' || safePath === '' ? 'index.html' : safePath.replace(/^\//, '');
-  const absolute = path.join(rootDir, relative);
-  if (!absolute.startsWith(path.resolve(rootDir))) {
-    sendJson(response, 403, { error: 'forbidden' });
-    return true;
-  }
-  if (!fs.existsSync(absolute) || fs.statSync(absolute).isDirectory()) return false;
-  response.setHeader('content-type', contentTypeFor(absolute));
-  response.writeHead(200);
-  fs.createReadStream(absolute).pipe(response);
-  return true;
 }
 
 export function startHttpService({
@@ -222,9 +227,25 @@ export function startHttpService({
       }
 
       if (staticDir && request.method === 'GET') {
-        if (serveStaticFile(response, staticDir, url.pathname)) return;
+        if (url.pathname === '/design-system') {
+          try {
+            const { sendDesignSystemPage } = await import('../../ui-system/src/serve.mjs');
+            return sendDesignSystemPage(response, { serviceName: descriptor.name });
+          } catch {
+            response.writeHead(302, { Location: '/' });
+            response.end();
+            return;
+          }
+        }
+        if (await serveStaticFile(response, staticDir, url.pathname)) return;
         if (url.pathname === '/' || !path.extname(url.pathname)) {
-          if (serveStaticFile(response, staticDir, '/index.html')) return;
+          if (await serveStaticFile(response, staticDir, '/index.html')) return;
+        }
+        try {
+          const { sendNotFoundPage } = await import('../../ui-system/src/serve.mjs');
+          return sendNotFoundPage(response);
+        } catch {
+          /* fall through */
         }
       }
 
