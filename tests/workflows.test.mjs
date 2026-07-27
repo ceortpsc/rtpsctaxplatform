@@ -5,6 +5,7 @@ import { refundStatusWorkflow } from '../workflows/refund-status-workflow/src/in
 import { transcriptIntakeWorkflow } from '../workflows/transcript-intake-workflow/src/index.mjs';
 import { transmissionWorkflow } from '../workflows/transmission-workflow/src/index.mjs';
 import { createPlatformRegistry, platformWorkflows } from '../workers/workflow-runner/src/registry.mjs';
+import { automationWebhookWorkflow } from '../workflows/automation-webhook-workflow/src/index.mjs';
 
 function runnerFor(workflow) {
   const registry = createWorkflowRegistry([workflow]);
@@ -59,13 +60,41 @@ test('transmission workflow holds transmission while tunnel is a stub', async ()
 });
 
 test('platform registry composes all modular workflows with a working trigger manager', async () => {
-  assert.equal(platformWorkflows.length, 6);
+  assert.equal(platformWorkflows.length, 7);
   const { registry, triggers } = createPlatformRegistry();
-  assert.equal(registry.list().length, 6);
-  assert.deepEqual(triggers.eventNames().sort(), ['agent.task.requested', 'refund.status.received']);
+  assert.equal(registry.list().length, 7);
+  assert.deepEqual(triggers.eventNames().sort(), [
+    'agent.task.requested',
+    'automation.webhook.received',
+    'refund.status.received'
+  ]);
   assert.deepEqual(triggers.scheduledWorkflows().sort(), ['agent-assignment-cycle', 'transmission-cycle']);
 
   const runs = await triggers.emit('refund.status.received', { caseId: 'CASE-1', filingStage: 'sent' });
   assert.equal(runs.length, 1);
   assert.equal(runs[0].output.refundStatus, 'refund-sent');
+});
+
+test('automation-webhook workflow processes a valid payload and emits processed event', async () => {
+  const runner = runnerFor(automationWebhookWorkflow);
+  const record = await runner.run('automation-webhook', {
+    event_type: 'notify',
+    event_id: 'evt-notify-1',
+    resource_id: 'res-1',
+    data: { channel: 'operator' },
+    __now: '2026-07-27T12:00:00.000Z'
+  });
+  assert.equal(record.status, 'succeeded');
+  assert.equal(record.output.actionTaken, 'notify');
+  assert.equal(record.output.normalizedPayload.event_id, 'EVT-NOTIFY-1');
+  assert.equal(record.output.emittedEvent.type, 'automation.webhook.processed');
+});
+
+test('automation-webhook workflow fails on incomplete payloads', async () => {
+  const runner = runnerFor(automationWebhookWorkflow);
+  const record = await runner.run('automation-webhook', {
+    automationId: '3065c81f-89b2-11f1-b532-320a589b8025'
+  });
+  assert.equal(record.status, 'failed');
+  assert.match(record.error, /payload_incomplete|event_type/i);
 });

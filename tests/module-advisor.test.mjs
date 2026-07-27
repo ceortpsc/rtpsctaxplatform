@@ -8,8 +8,8 @@ const catalog = buildModuleCatalog();
 test('buildInsights summarizes triggers, dependencies, and recommendations', () => {
   const insights = buildInsights(catalog);
   assert.equal(insights.totalModules, catalog.reduce((n, g) => n + g.modules.length, 0));
-  assert.equal(insights.triggerCounts.event + insights.triggerCounts.schedule + insights.triggerCounts.manual, 6);
-  assert.equal(insights.triggerCounts.event, 2);
+  assert.equal(insights.triggerCounts.event + insights.triggerCounts.schedule + insights.triggerCounts.manual, 7);
+  assert.equal(insights.triggerCounts.event, 3);
   assert.equal(insights.triggerCounts.schedule, 2);
   assert.equal(insights.triggerCounts.manual, 2);
   assert.equal(insights.backgroundWorkflows, insights.triggerCounts.event + insights.triggerCounts.schedule);

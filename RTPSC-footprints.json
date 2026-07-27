@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-26T08:55:04.723Z",
-  "count": 55,
+  "createdAt": "2026-07-27T12:04:29.488Z",
+  "count": 57,
   "ok": true,
   "footprints": [
     {
@@ -125,6 +125,26 @@
       "footprint": "778e7e5ff2e0de6c",
       "fingerprint": "778e7e5ff2e0de6c",
       "integrity": "sha256-778e7e5ff2e0de6c1ef76922cd79c4870569579c59d7a7086d663ec19940acd6",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/automation-agent",
+      "version": "0.1.0",
+      "location": "packages/automation-agent",
+      "sector": "packages",
+      "footprint": "bc5b39548a0149a9",
+      "fingerprint": "bc5b39548a0149a9",
+      "integrity": "sha256-bc5b39548a0149a9e5ec071cbb3aeffb69df9208ab9d837b485526efa1dbce40",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/automation-webhook-workflow",
+      "version": "0.1.0",
+      "location": "workflows/automation-webhook-workflow",
+      "sector": "workflows",
+      "footprint": "0e0e3f3fa330cab6",
+      "fingerprint": "0e0e3f3fa330cab6",
+      "integrity": "sha256-0e0e3f3fa330cab68c95f809bdfc00cacd73d96559ac0b8efc5aadd5646537c9",
       "status": "sealed"
     },
     {

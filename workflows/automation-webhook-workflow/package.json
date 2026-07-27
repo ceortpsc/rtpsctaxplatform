@@ -1,0 +1,8 @@
+{
+  "name": "@rtp/automation-webhook-workflow",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs",
+  "description": "Event workflow that processes automation webhook payloads via @rtp/automation-agent."
+}
