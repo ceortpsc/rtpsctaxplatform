@@ -6,6 +6,7 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildServiceCliMap } from '../packages/platform-core/src/registry.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -19,31 +20,20 @@ function nodeRaw(args) {
   return { command: process.execPath, args };
 }
 
-const SERVICE_ENTRIES = {
-  gateway: 'services/api-gateway/src/index.mjs',
-  'api-gateway': 'services/api-gateway/src/index.mjs',
-  'refund-status': 'services/refund-status-service/src/index.mjs',
-  transcript: 'services/transcript-service/src/index.mjs',
-  analytics: 'services/analytics-service/src/index.mjs',
-  enrollment: 'services/enrollment-service/src/index.mjs',
-  invoice: 'services/invoice-service/src/index.mjs',
-  'pos-crm': 'services/pos-crm-service/src/index.mjs',
-  pos: 'services/pos-crm-service/src/index.mjs',
-  crm: 'services/pos-crm-service/src/index.mjs',
-  dashboard: 'services/modules-dashboard/src/index.mjs'
-};
+const SERVICE_ENTRIES = buildServiceCliMap();
+const SERVICE_OPTIONS = [...new Set(Object.keys(SERVICE_ENTRIES))].sort().join(', ');
 
 export const COMMANDS = {
   lint: { usage: 'lint', desc: 'Run scaffold lint checks', plan: () => node('scripts/lint.mjs') },
   test: { usage: 'test', desc: 'Run the automated test suite', plan: () => nodeRaw(['--test']) },
   build: { usage: 'build', desc: 'Build the platform manifest', plan: () => node('scripts/build.mjs') },
   start: {
-    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard]',
-    desc: 'Start a service (defaults to the api-gateway)',
+    usage: 'start [service]',
+    desc: `Start a service (defaults to api-gateway). Options: ${SERVICE_OPTIONS}`,
     plan: (rest) => {
       const target = rest[0] ?? 'gateway';
       const entry = SERVICE_ENTRIES[target];
-      if (!entry) return { error: `Unknown service "${target}". Options: ${Object.keys(SERVICE_ENTRIES).join(', ')}` };
+      if (!entry) return { error: `Unknown service "${target}". Options: ${SERVICE_OPTIONS}` };
       return node(entry);
     }
   },

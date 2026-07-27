@@ -9,7 +9,7 @@ import {
   redactConfig
 } from '../../../packages/platform-core/src/index.mjs';
 import { answerQuery, buildDependencyGraph, buildInsights } from '../../../packages/module-advisor/src/index.mjs';
-import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor, SERVICE_ENDPOINTS } from './catalog.mjs';
+import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor, SERVICE_ENDPOINTS, buildRouteRegistry } from './catalog.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3010;
@@ -151,6 +151,11 @@ export function createDashboardServer() {
         healthy: services.every((service) => service.ok),
         services
       });
+      return;
+    }
+
+    if (request.method === 'GET' && pathname === '/api/routes') {
+      sendJson(response, 200, buildRouteRegistry());
       return;
     }
 

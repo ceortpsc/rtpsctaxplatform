@@ -264,3 +264,14 @@ export function runWorker({ descriptor, steps = [] }) {
 export function packageDir(importMetaUrl, ...segments) {
   return path.join(path.dirname(fileURLToPath(importMetaUrl)), ...segments);
 }
+
+export {
+  PLATFORM_SERVICES,
+  PLATFORM_ENGINES,
+  listServiceEndpoints,
+  listPlatformPages,
+  listPlatformRoutes,
+  resolveServiceEntry,
+  buildServiceCliMap,
+  platformRegistrySummary
+} from './registry.mjs';

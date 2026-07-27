@@ -32,6 +32,8 @@ test('start resolves services and rejects unknown ones', () => {
   assert.match(planCommand(['start', 'invoice']).args.join(' '), /invoice-service\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'pos-crm']).args.join(' '), /pos-crm-service\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'crm']).args.join(' '), /pos-crm-service\/src\/index\.mjs$/);
+  assert.match(planCommand(['start', 'irs']).args.join(' '), /irs-gateway\/src\/index\.mjs$/);
+  assert.match(planCommand(['start', 'ai-workforce']).args.join(' '), /ai-workforce-hub\/src\/index\.mjs$/);
   assert.match(planCommand(['start']).args.join(' '), /api-gateway\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'nope']).error, /Unknown service/);
 });
