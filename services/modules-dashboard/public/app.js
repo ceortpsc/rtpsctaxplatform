@@ -150,6 +150,7 @@ const VIEW_META = {
   staff: { title: "Staff", kicker: "Team directory · Limited", navId: "staff", limited: true },
   settings: { title: "System settings", kicker: "Hub preferences", navId: "system_settings" },
   help: { title: "Help Center", kicker: "Support · Limited", navId: "help", limited: true },
+  "client-portal": { title: "Client portal", kicker: "Client-facing workspace · Limited", navId: "documents", limited: true },
   catalog: { title: "Module Catalog", kicker: "Platform module inventory", navId: "modules" },
   insights: { title: "Insights", kicker: "AI-assisted analysis & recommendations", navId: "insights" },
   assistant: { title: "AI Assistant", kicker: "Ask the platform about its modules", navId: "assistant" },
@@ -195,6 +196,11 @@ const LIMITED_COPY = {
     illus: "empty-search.svg",
     title: "Help Center limited",
     body: "In-product help articles are not published yet. See repository docs under docs/ and contact your platform administrator."
+  },
+  "client-portal": {
+    illus: "secure-login.svg",
+    title: "Client portal preview",
+    body: "A simpler client-facing shell is ready visually (Overview, Tasks, Documents, Invoices, Payments, Messages, Profile). Multi-tenant client auth and document APIs are not provisioned in this scaffold."
   }
 };
 
@@ -236,8 +242,45 @@ function render() {
   else if (state.view === "design") renderDesign(view);
   else if (state.view === "status") renderStatus(view);
   else if (state.view === "settings") renderSettingsPage(view);
+  else if (state.view === "client-portal") renderClientPortal(view);
   else if (LIMITED_COPY[state.view]) renderLimitedEmpty(view, state.view);
   else view.innerHTML = `<p class="empty">Unknown view.</p>`;
+}
+
+function renderClientPortal(view) {
+  const links = [
+    ["Overview", "Plain-language summary of open items"],
+    ["Tasks", "Items waiting on the client"],
+    ["Documents", "Upload and review requests"],
+    ["Tax returns", "Status only — filing stays with your preparer"],
+    ["Signatures", "Requests awaiting signature"],
+    ["Invoices", "Amounts due and history"],
+    ["Payments", "Recorded payments and receipts"],
+    ["Messages", "Secure messages with the office"],
+    ["Profile", "Contact and preferences"]
+  ];
+  view.innerHTML = `<div class="stack reveal in">
+    <div class="alert alert--info"><strong>Client portal pattern.</strong> Simpler labels than the staff hub; same RTPSC brand. Backend client auth is limited.</div>
+    <div class="grid-metrics">
+      ${links
+        .map(
+          ([label, desc]) => `<article class="card card--metric">
+        <div class="metric-label">${label}</div>
+        <p class="field__hint" style="margin:8px 0 0">${desc}</p>
+        <span class="badge badge--neutral" style="margin-top:10px">Limited</span>
+      </article>`
+        )
+        .join("")}
+    </div>
+    <div class="empty-state">
+      <img src="/shared/illustrations/secure-login.svg" alt="" />
+      <h2>No client session</h2>
+      <p>Sign-in for clients is not enabled in this scaffold. Staff can continue in the operator hub.</p>
+      <div class="ds-row" style="justify-content:center">
+        <a class="btn btn--primary" href="#dashboard">Return to staff dashboard</a>
+      </div>
+    </div>
+  </div>`;
 }
 
 function renderLimitedEmpty(view, key) {
@@ -712,15 +755,16 @@ function openModule(name) {
 
 /* ---------- Design System ---------- */
 const PALETTE_SWATCHES = [
-  { name: "Cream (base)", hex: "#f1e8d2", ink: "#14213d" },
-  { name: "Cream 100", hex: "#f8f2e2", ink: "#14213d" },
-  { name: "Gold", hex: "#b8860b", ink: "#ffffff" },
-  { name: "Gold bright", hex: "#d4af37", ink: "#14213d" },
-  { name: "Navy (ink)", hex: "#14213d", ink: "#ffffff" },
-  { name: "Navy 500", hex: "#22345f", ink: "#ffffff" },
-  { name: "Black trim", hex: "#16181d", ink: "#ffffff" },
-  { name: "White", hex: "#ffffff", ink: "#14213d" },
-  { name: "Silver", hex: "#9aa1ac", ink: "#14213d" }
+  { name: "Slate 50 (bg)", hex: "#f7f8fb", ink: "#0f1726" },
+  { name: "Slate 100", hex: "#eef1f6", ink: "#0f1726" },
+  { name: "Gold 500", hex: "#b08900", ink: "#ffffff" },
+  { name: "Gold bright", hex: "#d4af37", ink: "#0f1726" },
+  { name: "Navy 900 (ink)", hex: "#0f1726", ink: "#ffffff" },
+  { name: "Navy 700", hex: "#122044", ink: "#ffffff" },
+  { name: "Slate 500", hex: "#6b778d", ink: "#ffffff" },
+  { name: "White", hex: "#ffffff", ink: "#0f1726" },
+  { name: "Success", hex: "#1f7a4d", ink: "#ffffff" },
+  { name: "Danger", hex: "#b42318", ink: "#ffffff" }
 ];
 
 function dsPanel(title, note, children) {

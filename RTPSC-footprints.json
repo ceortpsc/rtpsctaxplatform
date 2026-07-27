@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-26T08:55:04.723Z",
-  "count": 55,
+  "createdAt": "2026-07-27T13:57:38.032Z",
+  "count": 56,
   "ok": true,
   "footprints": [
     {
@@ -535,6 +535,16 @@
       "footprint": "743c9412b0fb2db0",
       "fingerprint": "743c9412b0fb2db0",
       "integrity": "sha256-743c9412b0fb2db0594c7db956bbc379bd8457037a6428cf3669985776ad1ab4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/ui-system",
+      "version": "0.1.0",
+      "location": "packages/ui-system",
+      "sector": "packages",
+      "footprint": "2f6f7b5aa4d8933c",
+      "fingerprint": "2f6f7b5aa4d8933c",
+      "integrity": "sha256-2f6f7b5aa4d8933c1b61750f3dbf25a9b3e6d983a8c6d53c7799fabe883d542b",
       "status": "sealed"
     },
     {

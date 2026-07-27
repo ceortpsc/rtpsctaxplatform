@@ -34,7 +34,10 @@ const CRITICAL = [
   'illustrations/payment-success.svg',
   'illustrations/approval-complete.svg',
   'illustrations/document-upload.svg',
-  'illustrations/service-unavailable.svg'
+  'illustrations/service-unavailable.svg',
+  'email-templates/_layout.html',
+  'email-templates/invoice.html',
+  'email-templates/password-reset.html'
 ];
 
 test('critical brand and illustration assets exist under packages/ui-system/public', () => {
