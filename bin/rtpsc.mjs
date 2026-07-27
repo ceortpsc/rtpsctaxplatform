@@ -121,6 +121,17 @@ export const COMMANDS = {
     usage: 'practitioner [lifecycle|account|integrations] [--json]',
     desc: 'Execute ERO tax practitioner suite (TC 570/810 → release → reconcile)',
     plan: (rest) => node('scripts/practitioner.mjs', rest.length ? rest : ['lifecycle'])
+  },
+  provision: {
+    usage: 'provision irs-keys [--production] [--enable-transmission] [--force] [--json]',
+    desc: 'Provision IRS JWT signing keys under certs/ and optionally promote APP_ENV=production',
+    plan: (rest) => {
+      const target = rest[0] ?? 'irs-keys';
+      if (target !== 'irs-keys' && target !== 'irs') {
+        return { error: `Unknown provision target "${target}". Use: ./rtpsc provision irs-keys` };
+      }
+      return node('scripts/provision-irs-keys.mjs', rest.slice(1));
+    }
   }
 };
 
@@ -151,9 +162,10 @@ export function planCommand(argv) {
 function main() {
   const argv = process.argv.slice(2);
   const commandName = argv[0];
-  // Keep unit tests deterministic — do not inject operator .env into the test process.
+  // Prefer gitignored .env as the operator source of truth for service launches
+  // (shell exports like APP_ENV=local must not silently pin local after production provision).
   if (commandName && commandName !== 'test' && commandName !== 'lint' && commandName !== 'help') {
-    bootstrapEnv({ cwd: repoRoot });
+    bootstrapEnv({ cwd: repoRoot, override: true });
   }
   const plan = planCommand(argv);
   if (plan.help) {

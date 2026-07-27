@@ -6,10 +6,13 @@ import {
   evaluateEnvironmentProtection,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
-  redactConfig
+  redactConfig,
+  bootstrapEnv
 } from '../../../packages/platform-core/src/index.mjs';
 import { createPractitionerSuite } from '../../../packages/irs-practitioner/src/index.mjs';
 import { servePublicOrShared, sendNotFoundPage, sendDesignSystemPage } from '../../../packages/ui-system/src/serve.mjs';
+
+bootstrapEnv();
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 8880;
