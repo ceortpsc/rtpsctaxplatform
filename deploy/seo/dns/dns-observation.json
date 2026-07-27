@@ -1,12 +1,12 @@
 {
   "host": "ross.co",
-  "observedAt": "2026-07-27T17:01:42.933Z",
+  "observedAt": "2026-07-27T17:02:36.372Z",
   "txt": [
     "v=spf1 -all"
   ],
   "ns": [
-    "ns2.namefind.com",
-    "ns1.namefind.com"
+    "ns1.namefind.com",
+    "ns2.namefind.com"
   ],
   "a": [
     "13.248.169.48",

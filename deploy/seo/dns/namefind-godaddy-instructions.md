@@ -1,6 +1,6 @@
 # Apply ROSS.CO DNS verification at current registrar
 
-Observed nameservers: `ns2.namefind.com, ns1.namefind.com`
+Observed nameservers: `ns1.namefind.com, ns2.namefind.com`
 
 ## Google domain property TXT
 

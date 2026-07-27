@@ -1,13 +1,13 @@
 {
   "product": "ROSS.CO Infinite",
-  "deployedAt": "2026-07-27T17:01:42.940Z",
+  "deployedAt": "2026-07-27T17:02:36.377Z",
   "state": "DEPLOYED",
   "primaryHost": "ross.co",
   "indexNowKey": "ef76e5a3d8eea7b561115a17ef8d31fe44a6bea9b144d0d2fb432921955e6f3d",
-  "receipt": "release-evidence/seo/seo-dns-token-deploy-1785171702939-cbb6f4c9950c.json",
+  "receipt": "release-evidence/seo/seo-dns-token-deploy-1785171756377-ed67d6e9dfdb.json",
   "liveNameservers": [
-    "ns2.namefind.com",
-    "ns1.namefind.com"
+    "ns1.namefind.com",
+    "ns2.namefind.com"
   ],
   "dnsApply": {
     "attempted": false,

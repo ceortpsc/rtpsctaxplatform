@@ -1,5 +1,5 @@
 ; ROSS.CO SEO ownership DNS artifact
-; Generated for registrar apply (current NS observed: ns2.namefind.com, ns1.namefind.com)
+; Generated for registrar apply (current NS observed: ns1.namefind.com, ns2.namefind.com)
 $ORIGIN ross.co.
 $TTL 300
 

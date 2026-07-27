@@ -1,8 +1,8 @@
 {
   "providerHint": "GoDaddy/Namefind DNS panel",
   "observedNameservers": [
-    "ns2.namefind.com",
-    "ns1.namefind.com"
+    "ns1.namefind.com",
+    "ns2.namefind.com"
   ],
   "observedTxt": [
     "v=spf1 -all"
