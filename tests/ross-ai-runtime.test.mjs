@@ -171,8 +171,11 @@ describe('Ross Tax Pro Software Co | RunTime AI Assist', () => {
       for (const p of ['/signin', '/login', '/signup']) {
         const page = await fetchText(`${base}${p}`);
         assert.equal(page.status, 200, p);
-        assert.match(page.body, /Access gate|password/i);
+        assert.match(page.body, /Secure access|Access gate|password/i);
         assert.match(page.body, /rel="canonical"/);
+        assert.match(page.body, /skip-link|Skip to main/i);
+        assert.match(page.body, /RTPSC/);
+        assert.match(page.body, /brand\/marks\/monogram\.svg/);
       }
 
       const marketplacePublic = await fetchText(`${base}/marketplace`);

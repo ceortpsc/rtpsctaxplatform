@@ -6,9 +6,13 @@ import { fileURLToPath } from 'node:url';
 import {
   createServiceDescriptor,
   loadRuntimeConfig,
-  redactConfig
+  redactConfig,
+  bootstrapEnv
 } from '../../../packages/platform-core/src/index.mjs';
 import { clientIdentityPlaceholders } from '../../../packages/client-config/src/index.mjs';
+
+// Load gitignored .env before reading IRS credential paths.
+bootstrapEnv();
 
 export const irsGatewayDescriptor = createServiceDescriptor({
   name: 'irs-gateway',

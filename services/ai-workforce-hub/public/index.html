@@ -1,85 +1,126 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>RTPSC AI Workforce Hub — ERO Persona Employees</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>AI Workforce · RTPSC</title>
+    <link rel="stylesheet" href="/shared/theme.css" />
+    <link rel="stylesheet" href="/shared/shell.css" />
+    <link rel="stylesheet" href="/shared/components.css" />
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="icon" href="/shared/brand/icons/favicon.svg" />
   </head>
   <body>
-    <div class="wash" aria-hidden="true"></div>
-    <header class="hero">
-      <nav>
-        <a class="brand" href="#top">RTPSC</a>
-        <div class="links">
-          <a href="#roster">Personas</a>
-          <a href="#hire">Hire & Pay</a>
-          <a href="#live">Live board</a>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="app-shell" data-app-shell data-active="ai_workforce" data-service="ai-workforce-hub" data-env="local">
+      <div class="app-shell__drawer-backdrop" data-action="close-drawer"></div>
+      <aside class="app-shell__sidebar" aria-label="Primary">
+        <a class="app-shell__brand" href="/">
+          <img class="app-shell__monogram" src="/shared/brand/marks/monogram.svg" alt="" />
+          <span class="app-shell__brand-text">
+            <span class="app-shell__brand-mark">RTPSC</span>
+            <span class="app-shell__brand-sub">AI Workforce Hub</span>
+          </span>
+        </a>
+        <div class="app-shell__env" data-shell-env>local · ai-workforce</div>
+        <nav class="app-shell__nav" id="app-nav" data-shell-nav></nav>
+        <div class="app-shell__sidebar-foot">RTP-AI-001 · AI cannot sign, transmit, or clear HOLD</div>
+      </aside>
+      <div class="app-shell__main">
+        <div class="app-shell__command">
+          <button type="button" class="app-shell__menu-btn" data-action="open-drawer" aria-label="Open menu">☰</button>
+          <button type="button" class="app-shell__search" data-action="open-search">
+            <span>Search personas…</span>
+            <kbd>Ctrl</kbd><kbd>K</kbd>
+          </button>
+          <div class="app-shell__command-actions">
+            <span class="badge badge--info">Limited</span>
+            <span class="app-shell__session">Operator session</span>
+            <button type="button" class="app-shell__icon-btn" data-action="cycle-theme" aria-label="Cycle theme">◐</button>
+            <button type="button" class="app-shell__icon-btn" data-action="toggle-sidebar" aria-label="Collapse sidebar">⊟</button>
+          </div>
         </div>
-      </nav>
-      <div class="hero-copy">
-        <p class="eyebrow">AI Persona Employees · ERO Governance</p>
-        <h1>Hire realtime AI staff under IRM-style controls.</h1>
-        <p class="lede">
-          Assistive personas complete paid catalog services for the ERO — never signing,
-          transmitting, or clearing HOLD without a human.
-        </p>
-        <div class="cta">
-          <a class="primary" href="#hire">Hire a persona</a>
-          <a class="ghost" href="#roster">View roster</a>
-        </div>
+        <main class="app-shell__content" id="main-content">
+          <header class="page-header">
+            <nav class="page-header__crumbs" aria-label="Breadcrumb">
+              <a href="http://localhost:3010/">Platform</a><span aria-hidden="true">/</span>
+              <span aria-current="page">AI Workforce</span>
+            </nav>
+            <div class="page-header__category">Tax Operations · Limited</div>
+            <div class="page-header__row">
+              <div class="page-header__titles">
+                <h1 class="page-header__title">AI Workforce Hub</h1>
+                <p class="page-header__desc">
+                  Hire realtime AI persona employees under IRM-style controls. Assistive only — never signing, transmitting, or clearing material HOLD without a human.
+                </p>
+              </div>
+              <div class="page-header__actions">
+                <a class="btn btn--secondary" href="#roster">Roster</a>
+                <a class="btn btn--primary" href="#hire">Hire a persona</a>
+              </div>
+            </div>
+          </header>
+
+          <section class="panel" id="roster">
+            <div class="panel__head">
+              <h2 class="panel__title">Online persona roster</h2>
+              <p class="panel__sub">RTP-AI-001 register — role-scoped, logged, revocable, human-overseen.</p>
+            </div>
+            <div id="personas" class="persona-grid"></div>
+          </section>
+
+          <section class="panel" id="hire">
+            <div class="panel__head">
+              <h2 class="panel__title">Hire · pay · run</h2>
+              <p class="panel__sub">Payment-gated live service on the practitioner-for-hire catalog.</p>
+            </div>
+            <form id="hire-form" class="hire-form">
+              <div class="field">
+                <label class="field__label" for="service-select">Service</label>
+                <select class="field__control" name="serviceCode" id="service-select" required></select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="persona-select">Persona</label>
+                <select class="field__control" name="personaId" id="persona-select" required></select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="clientReference">Client reference</label>
+                <input class="field__control" name="clientReference" id="clientReference" placeholder="client-2026-0042" required />
+              </div>
+              <div class="field">
+                <label class="field__label" for="scopeNotes">Scope notes</label>
+                <input class="field__control" name="scopeNotes" id="scopeNotes" placeholder="Documents ready; tax year 2025" />
+              </div>
+              <label class="check"><input type="checkbox" name="autoHumanApprove" /> Demo: auto human-approve after review gate</label>
+              <button type="submit" class="btn btn--primary">Hire, pay &amp; run live</button>
+            </form>
+            <pre id="hire-out" class="output" hidden></pre>
+          </section>
+
+          <section class="panel" id="live">
+            <div class="panel__head">
+              <h2 class="panel__title">Live task board</h2>
+              <p class="panel__sub">Realtime tasks and governance events (polled).</p>
+            </div>
+            <div id="tasks" class="task-stack"></div>
+            <h3 class="section-label">Event stream</h3>
+            <pre id="events" class="output"></pre>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head">
+              <h2 class="panel__title">Governance banner</h2>
+            </div>
+            <pre id="gov" class="output"></pre>
+          </section>
+        </main>
+        <nav class="app-shell__mobile-bar" aria-label="Mobile">
+          <a class="btn btn--secondary btn--sm" href="#roster">Roster</a>
+          <a class="btn btn--primary btn--sm" href="#hire">Hire</a>
+        </nav>
       </div>
-    </header>
-
-    <main>
-      <section id="roster" class="section">
-        <h2>Online persona roster</h2>
-        <p class="section-lede">RTP-AI-001 register — role-scoped, logged, revocable, human-overseen.</p>
-        <div id="personas" class="grid"></div>
-      </section>
-
-      <section id="hire" class="section">
-        <h2>Hire · pay · run</h2>
-        <p class="section-lede">Payment-gated live service on the practitioner-for-hire catalog.</p>
-        <form id="hire-form" class="panel">
-          <label>Service
-            <select name="serviceCode" id="service-select" required></select>
-          </label>
-          <label>Persona
-            <select name="personaId" id="persona-select" required></select>
-          </label>
-          <label>Client reference
-            <input name="clientReference" placeholder="client-2026-0042" required />
-          </label>
-          <label>Scope notes
-            <input name="scopeNotes" placeholder="Documents ready; tax year 2025" />
-          </label>
-          <label class="check"><input type="checkbox" name="autoHumanApprove" /> Demo: auto human-approve after review gate</label>
-          <button type="submit">Hire, pay & run live</button>
-        </form>
-        <pre id="hire-out" class="output" hidden></pre>
-      </section>
-
-      <section id="live" class="section">
-        <h2>Live task board</h2>
-        <p class="section-lede">Realtime tasks and governance events (polled).</p>
-        <div id="tasks" class="stack"></div>
-        <h3>Event stream</h3>
-        <pre id="events" class="output"></pre>
-      </section>
-
-      <section class="section">
-        <h2>Governance banner</h2>
-        <pre id="gov" class="output"></pre>
-      </section>
-    </main>
-
-    <footer>
-      <p>Private-company controls (RTP-MASTER-002) — not an IRS publication. AI cannot sign, transmit, or clear material HOLD.</p>
-    </footer>
+    </div>
+    <script src="/shared/shell.js"></script>
     <script src="/app.js" type="module"></script>
   </body>
 </html>

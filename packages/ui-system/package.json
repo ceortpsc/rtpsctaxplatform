@@ -1,0 +1,20 @@
+{
+  "name": "@rtp/ui-system",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "RTPSC Enterprise UI System — shared theme, shell, components, status taxonomy, and brand assets",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./theme.css": "./public/theme.css",
+    "./shell.css": "./public/shell.css",
+    "./components.css": "./public/components.css",
+    "./shell.js": "./public/shell.js",
+    "./public/*": "./public/*"
+  },
+  "files": [
+    "src",
+    "public"
+  ]
+}

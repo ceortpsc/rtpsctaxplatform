@@ -4,8 +4,14 @@ let clearanceToken = sessionStorage.getItem("sbtpgClearanceToken") || null;
 
 const $ = (id) => document.getElementById(id);
 
-function toast(message) {
+function toast(message, tone) {
+  if (globalThis.RTPSCShell?.toast) {
+    RTPSCShell.toast(message, tone || "success");
+    return;
+  }
   const node = $("toast");
+  if (!node) return;
+  node.hidden = false;
   node.textContent = message;
   node.classList.add("show");
   clearTimeout(toast.timer);
@@ -209,6 +215,9 @@ async function loadEnrollments() {
 $("enroll").addEventListener("click", enroll);
 $("loginBtn").addEventListener("click", () => login());
 $("logoutBtn").addEventListener("click", () => logout());
+if (globalThis.RTPSCShell) {
+  RTPSCShell.mount({ activeId: "intake", serviceName: "enrollment-service", env: "local" });
+}
 loadGate();
 loadProducts();
 loadEnrollments();

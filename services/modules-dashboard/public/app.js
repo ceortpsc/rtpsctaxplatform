@@ -2,7 +2,7 @@ const state = {
   catalog: [],
   summary: { totalModules: 0, categories: [] },
   allModules: [],
-  view: "catalog",
+  view: "dashboard",
   catalogFilter: "all",
   catalogSearch: "",
   thread: [],
@@ -31,7 +31,7 @@ function saveJSON(key, value) {
 }
 
 const favorites = new Set(loadJSON(STORE.fav, []));
-const prefs = Object.assign({ theme: "cream", motion: "on", statusMs: 5000 }, loadJSON(STORE.prefs, {}));
+const prefs = Object.assign({ theme: "light", motion: "on", statusMs: 5000 }, loadJSON(STORE.prefs, {}));
 let statusTimer = null;
 let navKeyArmed = false;
 
@@ -69,6 +69,16 @@ async function postJSON(path, body) {
 }
 
 async function boot() {
+  if (globalThis.RTPSCShell) {
+    RTPSCShell.mount({
+      activeId: "dashboard",
+      serviceName: "modules-dashboard",
+      env: "local",
+      title: "Platform Hub"
+    });
+    // Prefer the module-aware palette over the generic shell palette.
+    RTPSCShell.openCommandPalette = () => openPalette();
+  }
   applyPrefs();
   try {
     const data = await getJSON("/api/modules");
@@ -87,30 +97,133 @@ async function boot() {
   wirePalette();
   initFeatures();
   loadEnvironment();
-  render();
+  const hashView = (location.hash || "#dashboard").replace(/^#/, "") || "dashboard";
+  setView(KNOWN_VIEWS.has(hashView) ? hashView : "dashboard", { skipHash: true });
+  window.addEventListener("hashchange", () => {
+    const v = location.hash.replace(/^#/, "") || "dashboard";
+    if (KNOWN_VIEWS.has(v) && v !== state.view) setView(v, { skipHash: true });
+  });
 }
 
 function wireNav() {
   document.querySelectorAll(".nav-item").forEach((button) => {
     button.addEventListener("click", () => setView(button.dataset.view));
   });
+  document.querySelectorAll(".app-shell__nav-item, .app-shell__mobile-bar a, .app-shell__brand").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const href = link.getAttribute("href") || "";
+      if (!href.startsWith("#")) return;
+      const id = href.slice(1);
+      if (!KNOWN_VIEWS.has(id)) return;
+      event.preventDefault();
+      setView(id);
+    });
+  });
+  // After shell renders nav, re-bind (shell replaces innerHTML)
+  const nav = document.getElementById("app-nav");
+  if (nav) {
+    const observer = new MutationObserver(() => {
+      nav.querySelectorAll(".app-shell__nav-item").forEach((link) => {
+        if (link.dataset.bound) return;
+        link.dataset.bound = "1";
+        link.addEventListener("click", (event) => {
+          const href = link.getAttribute("href") || "";
+          if (!href.startsWith("#")) return;
+          const id = href.slice(1);
+          if (!KNOWN_VIEWS.has(id)) return;
+          event.preventDefault();
+          setView(id);
+        });
+      });
+    });
+    observer.observe(nav, { childList: true, subtree: true });
+  }
 }
 
 const VIEW_META = {
-  catalog: { title: "Catalog", kicker: "Platform module inventory" },
-  insights: { title: "Insights", kicker: "AI-assisted analysis & recommendations" },
-  assistant: { title: "AI Assistant", kicker: "Ask the platform about its modules" },
-  graph: { title: "Dependency Graph", kicker: "How the modules connect" },
-  design: { title: "Design System", kicker: "The Sovereign Ledger visual language" }
+  dashboard: { title: "Dashboard", kicker: "Operations overview", navId: "dashboard" },
+  activity: { title: "Activity", kicker: "Recent platform events · Limited", navId: "activity", limited: true },
+  tasks: { title: "Tasks", kicker: "Operator work queue · Limited", navId: "tasks", limited: true },
+  notifications: { title: "Notifications", kicker: "Alerts & digests · Limited", navId: "notifications", limited: true },
+  documents: { title: "Documents", kicker: "Client document vault · Limited", navId: "documents", limited: true },
+  reports: { title: "Reports", kicker: "Financial & ops reports · Limited", navId: "financial_reports", limited: true },
+  staff: { title: "Staff", kicker: "Team directory · Limited", navId: "staff", limited: true },
+  settings: { title: "System settings", kicker: "Hub preferences", navId: "system_settings" },
+  help: { title: "Help Center", kicker: "Support · Limited", navId: "help", limited: true },
+  "client-portal": { title: "Client portal", kicker: "Client-facing workspace · Limited", navId: "documents", limited: true },
+  catalog: { title: "Module Catalog", kicker: "Platform module inventory", navId: "modules" },
+  insights: { title: "Insights", kicker: "AI-assisted analysis & recommendations", navId: "insights" },
+  assistant: { title: "AI Assistant", kicker: "Ask the platform about its modules", navId: "assistant" },
+  graph: { title: "Dependency Graph", kicker: "How the modules connect", navId: "graph" },
+  design: { title: "Design System", kicker: "RTPSC Enterprise UI components", navId: "design_system" },
+  status: { title: "System Status", kicker: "Live health of HTTP services", navId: "status" }
 };
 
-function setView(view) {
+const KNOWN_VIEWS = new Set(Object.keys(VIEW_META));
+
+const LIMITED_COPY = {
+  activity: {
+    illus: "empty-search.svg",
+    title: "Activity feed not configured",
+    body: "No durable activity stream is wired in this scaffold. Event history stays in service logs until an audit pipeline is provisioned."
+  },
+  tasks: {
+    illus: "empty-tasks.svg",
+    title: "Task queue unavailable",
+    body: "Operator assignments require the agent-assignment workflow and a persisted task store. Configuration required before work items appear here."
+  },
+  notifications: {
+    illus: "empty-search.svg",
+    title: "No notification channel",
+    body: "Push and inbox notifications are limited. Connect an alerting backend (or Ross control plane digests) to enable this surface."
+  },
+  documents: {
+    illus: "empty-documents.svg",
+    title: "Document vault empty",
+    body: "Client document storage is not provisioned in the scaffold. Upload, retention, and review policies must be configured first."
+  },
+  reports: {
+    illus: "empty-invoices.svg",
+    title: "Reports require configuration",
+    body: "Financial and compliance report packs are limited until reporting datasets and export jobs are connected."
+  },
+  staff: {
+    illus: "empty-clients.svg",
+    title: "Staff directory limited",
+    body: "No staff identity source is linked. Use Roles in the Ross control plane when RBAC is configured."
+  },
+  help: {
+    illus: "empty-search.svg",
+    title: "Help Center limited",
+    body: "In-product help articles are not published yet. See repository docs under docs/ and contact your platform administrator."
+  },
+  "client-portal": {
+    illus: "secure-login.svg",
+    title: "Client portal preview",
+    body: "A simpler client-facing shell is ready visually (Overview, Tasks, Documents, Invoices, Payments, Messages, Profile). Multi-tenant client auth and document APIs are not provisioned in this scaffold."
+  }
+};
+
+function setView(view, { skipHash } = {}) {
+  if (!KNOWN_VIEWS.has(view)) view = "dashboard";
   state.view = view;
   document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
   const meta = VIEW_META[view] ?? { title: view, kicker: "" };
   document.getElementById("view-title").textContent = meta.title;
   const kicker = document.getElementById("view-kicker");
   if (kicker) kicker.textContent = meta.kicker;
+  const crumb = document.getElementById("crumb-current");
+  if (crumb) crumb.textContent = meta.title;
+  document.querySelectorAll(".app-shell__nav-item").forEach((a) => {
+    const id = a.getAttribute("data-nav-id");
+    const active = id === meta.navId || id === view;
+    a.classList.toggle("is-active", active);
+    if (active) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
+  });
+  if (!skipHash && location.hash !== `#${view}`) {
+    history.replaceState(null, "", `#${view}`);
+  }
   render();
 }
 
@@ -121,12 +234,117 @@ function render() {
   }
   const view = document.getElementById("view");
   view.innerHTML = "";
-  if (state.view === "catalog") view.appendChild(renderCatalog());
+  if (state.view === "dashboard") renderHubDashboard(view);
+  else if (state.view === "catalog") view.appendChild(renderCatalog());
   else if (state.view === "insights") renderInsights(view);
   else if (state.view === "assistant") view.appendChild(renderAssistant());
   else if (state.view === "graph") renderGraph(view);
   else if (state.view === "design") renderDesign(view);
   else if (state.view === "status") renderStatus(view);
+  else if (state.view === "settings") renderSettingsPage(view);
+  else if (state.view === "client-portal") renderClientPortal(view);
+  else if (LIMITED_COPY[state.view]) renderLimitedEmpty(view, state.view);
+  else view.innerHTML = `<p class="empty">Unknown view.</p>`;
+}
+
+function renderClientPortal(view) {
+  const links = [
+    ["Overview", "Plain-language summary of open items"],
+    ["Tasks", "Items waiting on the client"],
+    ["Documents", "Upload and review requests"],
+    ["Tax returns", "Status only — filing stays with your preparer"],
+    ["Signatures", "Requests awaiting signature"],
+    ["Invoices", "Amounts due and history"],
+    ["Payments", "Recorded payments and receipts"],
+    ["Messages", "Secure messages with the office"],
+    ["Profile", "Contact and preferences"]
+  ];
+  view.innerHTML = `<div class="stack reveal in">
+    <div class="alert alert--info"><strong>Client portal pattern.</strong> Simpler labels than the staff hub; same RTPSC brand. Backend client auth is limited.</div>
+    <div class="grid-metrics">
+      ${links
+        .map(
+          ([label, desc]) => `<article class="card card--metric">
+        <div class="metric-label">${label}</div>
+        <p class="field__hint" style="margin:8px 0 0">${desc}</p>
+        <span class="badge badge--neutral" style="margin-top:10px">Limited</span>
+      </article>`
+        )
+        .join("")}
+    </div>
+    <div class="empty-state">
+      <img src="/shared/illustrations/secure-login.svg" alt="" />
+      <h2>No client session</h2>
+      <p>Sign-in for clients is not enabled in this scaffold. Staff can continue in the operator hub.</p>
+      <div class="ds-row" style="justify-content:center">
+        <a class="btn btn--primary" href="#dashboard">Return to staff dashboard</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderLimitedEmpty(view, key) {
+  const copy = LIMITED_COPY[key];
+  view.innerHTML = `<div class="empty-state reveal in">
+    <span class="badge badge--info">Limited</span>
+    <img src="/shared/illustrations/${copy.illus}" alt="" />
+    <h2>${copy.title}</h2>
+    <p>${copy.body}</p>
+    <p class="field__hint">Honest empty state — no fabricated metrics or sample rows.</p>
+    <div class="ds-row" style="justify-content:center">
+      <a class="btn btn--secondary" href="#dashboard">Back to dashboard</a>
+      <a class="btn btn--primary" href="#help">Help</a>
+    </div>
+  </div>`;
+}
+
+function renderHubDashboard(view) {
+  const healthyHint = "Service health is live on Status; metrics below stay empty until ops telemetry is configured.";
+  view.appendChild(
+    el("div", { class: "metric-grid reveal in" }, [
+      el("div", { class: "card card--metric" }, [
+        el("div", { class: "metric-value", text: String(state.summary.totalModules || 0) }),
+        el("div", { class: "metric-label", text: "Catalogued modules" })
+      ]),
+      el("div", { class: "card card--metric" }, [
+        el("div", { class: "metric-value", text: String(state.summary.categories?.length || 0) }),
+        el("div", { class: "metric-label", text: "Categories" })
+      ]),
+      el("div", { class: "card card--metric card--empty" }, [
+        el("div", { class: "metric-value", text: "—" }),
+        el("div", { class: "metric-label", text: "Open tasks (not configured)" })
+      ]),
+      el("div", { class: "card card--metric card--empty" }, [
+        el("div", { class: "metric-value", text: "—" }),
+        el("div", { class: "metric-label", text: "Unread notifications (not configured)" })
+      ])
+    ])
+  );
+  view.appendChild(
+    el("div", { class: "empty-state" }, [
+      el("img", { src: "/shared/illustrations/empty-search.svg", alt: "" }),
+      el("h2", { text: "Platform hub" }),
+      el("p", { text: healthyHint }),
+      el("div", { class: "ds-row", style: "justify-content:center" }, [
+        el("a", { class: "btn btn--primary", href: "#catalog", text: "Open module catalog", onclick: (e) => { e.preventDefault(); setView("catalog"); } }),
+        el("a", { class: "btn btn--secondary", href: "#status", text: "System status", onclick: (e) => { e.preventDefault(); setView("status"); } })
+      ])
+    ])
+  );
+}
+
+function renderSettingsPage(view) {
+  view.appendChild(
+    el("div", { class: "ds-panel" }, [
+      el("h2", { text: "Hub settings" }),
+      el("p", { class: "ds-note", text: "Local preferences for this browser. Organization-wide settings require control-plane configuration." }),
+      el("button", {
+        class: "btn btn--primary",
+        text: "Open settings panel",
+        onclick: () => openSettings()
+      })
+    ])
+  );
 }
 
 /* ---------- Animation helpers ---------- */
@@ -537,15 +755,16 @@ function openModule(name) {
 
 /* ---------- Design System ---------- */
 const PALETTE_SWATCHES = [
-  { name: "Cream (base)", hex: "#f1e8d2", ink: "#14213d" },
-  { name: "Cream 100", hex: "#f8f2e2", ink: "#14213d" },
-  { name: "Gold", hex: "#b8860b", ink: "#ffffff" },
-  { name: "Gold bright", hex: "#d4af37", ink: "#14213d" },
-  { name: "Navy (ink)", hex: "#14213d", ink: "#ffffff" },
-  { name: "Navy 500", hex: "#22345f", ink: "#ffffff" },
-  { name: "Black trim", hex: "#16181d", ink: "#ffffff" },
-  { name: "White", hex: "#ffffff", ink: "#14213d" },
-  { name: "Silver", hex: "#9aa1ac", ink: "#14213d" }
+  { name: "Slate 50 (bg)", hex: "#f7f8fb", ink: "#0f1726" },
+  { name: "Slate 100", hex: "#eef1f6", ink: "#0f1726" },
+  { name: "Gold 500", hex: "#b08900", ink: "#ffffff" },
+  { name: "Gold bright", hex: "#d4af37", ink: "#0f1726" },
+  { name: "Navy 900 (ink)", hex: "#0f1726", ink: "#ffffff" },
+  { name: "Navy 700", hex: "#122044", ink: "#ffffff" },
+  { name: "Slate 500", hex: "#6b778d", ink: "#ffffff" },
+  { name: "White", hex: "#ffffff", ink: "#0f1726" },
+  { name: "Success", hex: "#1f7a4d", ink: "#ffffff" },
+  { name: "Danger", hex: "#b42318", ink: "#ffffff" }
 ];
 
 function dsPanel(title, note, children) {
@@ -557,24 +776,98 @@ function dsPanel(title, note, children) {
 }
 
 function renderDesign(view) {
-  const hero = el("div", { class: "ds-hero reveal" }, [
-    el("img", { class: "ds-hero-rosette", src: "/assets/guilloche.svg", alt: "" }),
-    el("p", { class: "ds-hero-eyebrow", text: "Ross Tax Pro Software Co · Design Language" }),
-    el("h1", { class: "ds-hero-title", html: 'The <span class="grad">Sovereign Ledger</span> System' }),
-    el("p", {
-      class: "ds-hero-sub",
-      text:
-        "A treasury-grade visual language — engraved guilloché artwork, an embossed seal, " +
-        "a cream-and-navy canvas, and gold that behaves like light on metal. Every token, " +
-        "curve, and motion cue is tuned to feel considered, official, and unmistakably premium."
-    }),
-    el("div", { class: "ds-hero-rule" })
-  ]);
-  view.appendChild(hero);
+  view.appendChild(
+    dsPanel("Buttons", "Shared .btn variants from /shared/components.css", [
+      el("div", { class: "ds-row" }, [
+        el("button", { class: "btn btn--primary", text: "Primary" }),
+        el("button", { class: "btn btn--secondary", text: "Secondary" }),
+        el("button", { class: "btn btn--tertiary", text: "Tertiary" }),
+        el("button", { class: "btn btn--destructive", text: "Destructive" }),
+        el("button", { class: "btn btn--success", text: "Success" }),
+        el("button", { class: "btn btn--link", text: "Link action" })
+      ])
+    ])
+  );
 
-  // Palette
+  view.appendChild(
+    dsPanel("Forms", "Shared .field controls — minimum 16px text", [
+      el("div", { class: "field", style: "max-width:360px" }, [
+        el("label", { class: "field__label", for: "ds-field", text: "Client name" }),
+        el("input", { class: "field__control", id: "ds-field", placeholder: "Client legal name" }),
+        el("div", { class: "field__hint", text: "Hint text uses --color-muted." })
+      ]),
+      el("div", { class: "field", style: "max-width:360px" }, [
+        el("label", { class: "field__label", for: "ds-select", text: "Jurisdiction" }),
+        el("select", { class: "field__control", id: "ds-select" }, [
+          el("option", { text: "Louisiana" }),
+          el("option", { text: "Texas" })
+        ])
+      ])
+    ])
+  );
+
+  view.appendChild(
+    dsPanel("Tables", "Shared .table with empty state", [
+      el("div", { class: "table-wrap" }, [
+        el("table", { class: "table" }, [
+          el("thead", {}, [
+            el("tr", {}, [
+              el("th", { text: "Module" }),
+              el("th", { text: "Category" }),
+              el("th", { text: "Status" })
+            ])
+          ]),
+          el("tbody", {}, [
+            el("tr", {}, [
+              el("td", { text: "invoice-service" }),
+              el("td", { text: "services" }),
+              el("td", { html: globalThis.RTPSCShell ? RTPSCShell.statusBadge("active") : '<span class="badge badge--success">Active</span>' })
+            ]),
+            el("tr", {}, [
+              el("td", { text: "enrollment-service" }),
+              el("td", { text: "services" }),
+              el("td", { html: '<span class="badge badge--info">Limited</span>' })
+            ])
+          ])
+        ])
+      ])
+    ])
+  );
+
+  view.appendChild(
+    dsPanel("Cards · badges · alerts", "Shared surface components", [
+      el("div", { class: "metric-grid" }, [
+        el("div", { class: "card card--metric" }, [
+          el("div", { class: "metric-value", text: "42" }),
+          el("div", { class: "metric-label", text: "Sample metric" })
+        ]),
+        el("div", { class: "card card--status" }, [
+          el("strong", { text: "Status card" }),
+          el("p", { class: "ds-note", text: "Left gold trim marks operational context." })
+        ])
+      ]),
+      el("div", { class: "ds-row" }, [
+        el("span", { class: "badge badge--success", text: "Approved" }),
+        el("span", { class: "badge badge--warning", text: "Pending" }),
+        el("span", { class: "badge badge--danger", text: "Rejected" }),
+        el("span", { class: "badge badge--info", text: "Limited" }),
+        el("span", { class: "badge badge--neutral", text: "Draft" })
+      ]),
+      el("div", { class: "alert alert--info", text: "Informational alert — shared .alert tokens." }),
+      el("div", { class: "alert alert--warning", style: "margin-top:12px", text: "Warning alert — never rely on color alone; labels accompany tone." }),
+      el("div", { class: "alert alert--danger", style: "margin-top:12px", text: "Danger alert — destructive or blocked state." }),
+      el("div", { class: "alert alert--success", style: "margin-top:12px", text: "Success alert — completed action." })
+    ])
+  );
+
   const swatchGrid = el("div", { class: "swatch-grid" });
-  PALETTE_SWATCHES.forEach((s) => {
+  [
+    { name: "Slate 50", hex: "#f7f8fb" },
+    { name: "Navy 700", hex: "#122044" },
+    { name: "Gold 500", hex: "#b08900" },
+    { name: "Success", hex: "#1f7a4d" },
+    { name: "Danger", hex: "#b42318" }
+  ].forEach((s) => {
     swatchGrid.appendChild(
       el("div", { class: "swatch" }, [
         el("div", { class: "swatch-chip", style: `background:${s.hex}` }),
@@ -585,60 +878,17 @@ function renderDesign(view) {
       ])
     );
   });
-  view.appendChild(dsPanel("Color", "Cream base · gold · navy blue · black trim · white · silver.", swatchGrid));
+  view.appendChild(dsPanel("Color tokens", "Cool slate enterprise surfaces — no cream canvas.", swatchGrid));
 
-  // Typography
-  const typeRows = [
-    ["Display / 46", "display", "Sovereign Ledger", "font-family: var(--font-display); font-size: 46px;"],
-    ["Display / 26", "display", "Platform Modules", "font-size: 26px;"],
-    ["Body / 16", "", "Every module is an executable, compliant stub.", "font-size: 16px;"],
-    ["Body / 14", "", "Read-only inventory of the platform surface.", "font-size: 14px;"],
-    ["Mono / 13", "mono", "workflow-runner · api-gateway", "font-family: var(--font-mono);"]
-  ].map(([tag, cls, sample, style]) =>
-    el("div", { class: "type-row" }, [
-      el("span", { class: "type-tag", text: tag }),
-      el("span", { class: `type-sample ${cls}`, style, text: sample })
+  view.appendChild(
+    dsPanel("Brand & illustrations", "Shared assets under /shared/", [
+      el("div", { class: "ds-row" }, [
+        el("img", { src: "/shared/brand/marks/monogram.svg", alt: "Monogram", width: "64", height: "64" }),
+        el("img", { src: "/shared/brand/logos/wordmark-horizontal.svg", alt: "Wordmark", height: "40" }),
+        el("img", { src: "/shared/illustrations/empty-invoices.svg", alt: "", width: "120" })
+      ])
     ])
   );
-  view.appendChild(dsPanel("Typography", "Serif display for authority, humanist sans for clarity, mono for identifiers.", typeRows));
-
-  // Components
-  const gallery = el("div", { class: "gallery" }, [
-    el("button", { class: "ask-btn", text: "Primary action", style: "height:40px" }),
-    el("button", { class: "filter-btn active", text: "active filter" }),
-    el("button", { class: "filter-btn", text: "filter" }),
-    el("span", { class: "tag", text: "event-driven" }),
-    el("span", { class: "chip", text: "suggested prompt" })
-  ]);
-  const barDemo = el("div", { class: "bar-row", style: "max-width:360px;margin-top:16px" }, [
-    el("span", { class: "bar-label", text: "sample" }),
-    el("div", { class: "bar-track" }, [el("div", { class: "bar-fill", style: "width:72%" })]),
-    el("span", { class: "bar-value", text: "72" })
-  ]);
-  view.appendChild(dsPanel("Components", "Buttons, filters, tags, chips, and data bars share one gold→navy accent system.", [gallery, barDemo]));
-
-  // Motion
-  const motion = el("div", { class: "motion-grid" }, [
-    motionCard("Float", el("div", { class: "demo-coin u-float" })),
-    motionCard("Gold shimmer", el("div", { class: "demo-shimmer" })),
-    motionCard("Bar reveal", el("div", { class: "demo-bar-track" }, [el("div", { class: "demo-bar-fill" })])),
-    motionCard("Rosette spin", el("img", { src: "/assets/guilloche.svg", alt: "", style: "width:52px;animation:rtp-spin-slow 14s linear infinite" }))
-  ]);
-  view.appendChild(dsPanel("Motion", "Calm, purposeful motion: fade-rise entrances, staggered reveals, metallic shimmer, and slow engraving spins. Honors prefers-reduced-motion.", motion));
-
-  // Artwork
-  const art = el("div", { class: "ds-art" }, [
-    el("img", { src: "/assets/emblem.svg", alt: "RTPSC seal", width: "128", height: "128" }),
-    el("img", { src: "/assets/guilloche.svg", alt: "Guilloché rosette", width: "180", height: "180" }),
-    el("p", {
-      class: "ds-note",
-      style: "max-width:34ch",
-      text:
-        "The seal fuses a ledger crest, ascending bars, and a milled coin edge. The guilloché rosette " +
-        "echoes currency-grade security engraving — hand-tuned overlapping ellipses."
-    })
-  ]);
-  view.appendChild(dsPanel("Concept artwork", "Original, dependency-free SVG graphics — no external assets.", art));
 
   animateReveal(view);
 }
@@ -689,13 +939,16 @@ function wirePalette() {
 function paletteEntries(term) {
   const q = term.toLowerCase();
   const commands = [
+    { label: "Go to Dashboard", sub: "view", run: () => setView("dashboard") },
     { label: "Go to Catalog", sub: "view", run: () => setView("catalog") },
     { label: "Go to Insights", sub: "view", run: () => setView("insights") },
     { label: "Go to AI Assistant", sub: "view", run: () => setView("assistant") },
     { label: "Go to Dependency Graph", sub: "view", run: () => setView("graph") },
     { label: "Go to System Status", sub: "view", run: () => setView("status") },
     { label: "Go to Design System", sub: "view", run: () => setView("design") },
-    { label: "Toggle theme (Cream / Midnight)", sub: "action", run: toggleTheme },
+    { label: "Go to Activity (limited)", sub: "view", run: () => setView("activity") },
+    { label: "Go to Tasks (limited)", sub: "view", run: () => setView("tasks") },
+    { label: "Toggle theme", sub: "action", run: toggleTheme },
     { label: "Export catalog JSON", sub: "action", run: exportCatalog },
     { label: "Open settings", sub: "action", run: openSettings },
     { label: "Show keyboard shortcuts", sub: "action", run: openShortcuts }
@@ -769,14 +1022,12 @@ function renderEnvBadge() {
   const env = state.environment;
   if (!badge || !env) return;
   badge.hidden = false;
-  badge.className = "env-badge " + (env.transmissionAllowed ? "live" : "protected");
+  badge.className = "app-shell__env " + (env.transmissionAllowed ? "is-live" : "is-protected");
+  badge.setAttribute("data-env", env.environment === "production" || env.environment === "prod" ? "prod" : env.environment);
   badge.title = env.transmissionAllowed
     ? "E-file transmission is LIVE in this environment"
     : "Environment protection active — live transmission blocked";
-  badge.innerHTML = "";
-  badge.appendChild(el("span", { class: "env-shield", text: env.transmissionAllowed ? "⚠" : "🛡" }));
-  badge.appendChild(el("span", { class: "env-env", text: env.environment }));
-  badge.appendChild(el("span", { class: "env-state", text: env.transmissionAllowed ? "E-file LIVE" : "Protected" }));
+  badge.textContent = `${env.environment} · ${env.transmissionAllowed ? "E-file LIVE" : "Protected"} · modules-dashboard`;
 }
 
 function envPanelContent(env) {
@@ -1013,9 +1264,16 @@ function exportCatalog() {
 /* ---------- Preferences & theme ---------- */
 function applyPrefs() {
   const root = document.documentElement;
-  if (prefs.theme === "midnight") root.setAttribute("data-theme", "midnight");
-  else root.removeAttribute("data-theme");
+  const theme = prefs.theme === "midnight" || prefs.theme === "dark" ? "dark" : prefs.theme === "high-contrast" ? "high-contrast" : "light";
+  prefs.theme = theme === "light" ? "light" : theme;
+  if (theme === "light") root.removeAttribute("data-theme");
+  else root.setAttribute("data-theme", theme);
   root.setAttribute("data-motion", prefs.motion === "off" ? "off" : "on");
+  try {
+    localStorage.setItem("rtpsc.theme", theme);
+  } catch {
+    /* ignore */
+  }
 }
 
 function setTheme(theme) {
@@ -1025,8 +1283,15 @@ function setTheme(theme) {
 }
 
 function toggleTheme() {
-  setTheme(prefs.theme === "midnight" ? "cream" : "midnight");
-  toast(`Theme: ${prefs.theme === "midnight" ? "Midnight" : "Cream"}`);
+  if (globalThis.RTPSCShell?.cycleTheme) {
+    RTPSCShell.cycleTheme();
+    const next = localStorage.getItem("rtpsc.theme") || "light";
+    prefs.theme = next;
+    saveJSON(STORE.prefs, prefs);
+    return;
+  }
+  setTheme(prefs.theme === "dark" ? "light" : "dark");
+  toast(`Theme: ${prefs.theme}`);
 }
 
 /* ---------- Modals (settings / shortcuts) ---------- */
@@ -1064,8 +1329,8 @@ function openSettings() {
   body.appendChild(
     settingRow(
       "Theme",
-      "Cream or Midnight canvas",
-      segControl([["Cream", "cream"], ["Midnight", "midnight"]], prefs.theme, (v) => {
+      "Light, dark, or high-contrast canvas",
+      segControl([["Light", "light"], ["Dark", "dark"], ["High contrast", "high-contrast"]], prefs.theme === "midnight" ? "dark" : prefs.theme, (v) => {
         setTheme(v);
         openSettings();
       })
@@ -1119,7 +1384,7 @@ function onGlobalKey(event) {
       navKeyArmed = false;
     }, 1200);
   } else if (navKeyArmed) {
-    const map = { c: "catalog", i: "insights", a: "assistant", d: "graph", s: "status", y: "design" };
+    const map = { c: "catalog", i: "insights", a: "assistant", d: "graph", s: "status", y: "design", h: "dashboard" };
     const target = map[event.key.toLowerCase()];
     if (target) setView(target);
     navKeyArmed = false;
@@ -1132,6 +1397,11 @@ function initFeatures() {
   document.getElementById("btn-settings").addEventListener("click", openSettings);
   document.getElementById("btn-shortcuts").addEventListener("click", openShortcuts);
   document.getElementById("drawer-overlay").addEventListener("click", closeDrawer);
+  document.getElementById("cmd-search")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openPalette();
+  });
   document.querySelectorAll("[data-close-modal]").forEach((btn) =>
     btn.addEventListener("click", () => closeModal(btn.dataset.closeModal))
   );

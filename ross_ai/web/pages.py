@@ -68,22 +68,32 @@ def layout(
     head = render_head(seo)
 
     return f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 {head}
 </head>
 <body data-nav="{esc(nav)}" data-authed="{1 if user else 0}" data-app="{esc(APP_NAME)}">
+  <a class="skip-link" href="#main">Skip to main content</a>
   <div class="atmosphere" aria-hidden="true"></div>
   <header class="topbar">
-    <a class="mark" href="/" aria-label="{esc(APP_FULL_NAME)} home"><strong>{esc(APP_NAME)}</strong> <em>{esc(COMPANY)}</em></a>
+    <a class="mark" href="/" aria-label="{esc(APP_FULL_NAME)} home">
+      <img class="mark-monogram" src="/static/brand/marks/monogram.svg" width="32" height="32" alt="" />
+      <span>
+        <strong>{esc(APP_NAME)}</strong>
+        <em>{esc(COMPANY)}</em>
+        <span class="rtpsc-chip">RTPSC</span>
+      </span>
+    </a>
     <nav class="nav" aria-label="Primary">{auth_links}</nav>
   </header>
   {flash_html}
+  <div id="main">
   {body}
+  </div>
   <footer class="site-footer">
     <div>
       <strong>{esc(APP_NAME)}</strong> — {esc(APP_FULL_NAME)}
-      <span>{esc(TAGLINE)}</span>
+      <span>RTPSC Tax Platform · {esc(TAGLINE)}</span>
     </div>
     <div>
       <a href="/marketplace">Marketplace</a>
@@ -103,12 +113,12 @@ def layout(
 def landing_page(**kwargs) -> str:
     body = f"""
 <main class="hero" itemscope itemtype="https://schema.org/SoftwareApplication">
-  <p class="eyebrow animate-in" itemprop="author">{esc(COMPANY)}</p>
+  <p class="eyebrow animate-in" itemprop="author">RTPSC · {esc(COMPANY)}</p>
   <h1 class="brand-hero animate-in delay-1" itemprop="name"><span class="app-mark">{esc(APP_NAME)}</span><br/><span class="app-full">{esc(APP_FULL_NAME)}</span></h1>
   <p class="lede animate-in delay-2" itemprop="description">{esc(TAGLINE)} Hardened operator control for command packages, membership, RBAC, and transparent execution.</p>
   <meta itemprop="applicationCategory" content="FinanceApplication" />
   <div class="cta-row animate-in delay-3">
-    <a class="btn primary" href="/signup">Create {esc(APP_NAME)} account</a>
+    <a class="btn primary" href="/signup">Request secure access</a>
     <a class="btn ghost" href="/marketplace">View membership tiers</a>
     <a class="btn ghost" href="/auth/github">Continue with GitHub</a>
   </div>
@@ -116,7 +126,7 @@ def landing_page(**kwargs) -> str:
 </main>
 <section class="presence animate-in delay-2" aria-label="Product presence">
   <h2>Built for operators who need governed runtime power</h2>
-  <p>{esc(APP_NAME)} is the production control plane from {esc(COMPANY)} — not a generic dashboard template. One brand composition: packages, runtime, membership, and disciplined access.</p>
+  <p>{esc(APP_NAME)} is the RTPSC control plane from {esc(COMPANY)} — not a generic dashboard template. One brand composition: packages, runtime, membership, and disciplined access.</p>
 </section>
 <section class="strip" aria-label="Platform pillars">
   <div><strong>Packages</strong><span>.rpkg build + checksum seal</span></div>
@@ -161,12 +171,17 @@ def gate_page(
         if mode == "signup"
         else '<p class="gate-alt">Need an account? <a href="/signup">Create access</a></p>'
     )
+    secure_sub = (
+        f"{sub} Secure RTPSC operator access — credentials stay on this control plane."
+        if sub
+        else "Secure RTPSC operator access — credentials stay on this control plane."
+    )
     body = f"""
 <main class="gate">
   <div class="gate-panel animate-in">
-    <p class="eyebrow">Access gate</p>
+    <p class="eyebrow">Secure access</p>
     <h1>{esc(heading)}</h1>
-    <p class="lede tight">{esc(sub)}</p>
+    <p class="lede tight">{esc(secure_sub)}</p>
     {err}
     <form method="post" action="{esc(action)}" class="gate-form">
       <input type="hidden" name="csrf" value="{esc(csrf)}" />
@@ -194,9 +209,9 @@ def gate_page(
         index=True,
         breadcrumbs=[("Home", "/"), (heading, path)],
         description=(
-            f"Create your {APP_NAME} account at {COMPANY}."
+            f"Create your {APP_NAME} account at {COMPANY}. Secure RTPSC operator access."
             if mode == "signup"
-            else f"Sign in to {APP_NAME} — {APP_FULL_NAME}."
+            else f"Sign in to {APP_NAME} — {APP_FULL_NAME}. Secure RTPSC operator access."
         ),
         **kwargs,
     )

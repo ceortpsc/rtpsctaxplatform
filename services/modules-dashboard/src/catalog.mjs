@@ -9,6 +9,9 @@ import { analyticsDescriptor } from '../../../services/analytics-service/src/ind
 import { enrollmentDescriptor } from '../../../services/enrollment-service/src/index.mjs';
 import { invoiceDescriptor } from '../../../services/invoice-service/src/index.mjs';
 import { posCrmDescriptor } from '../../../services/pos-crm-service/src/index.mjs';
+import { appleDeveloperConsoleDescriptor } from '../../../services/apple-developer-console/src/index.mjs';
+import { irsPractitionerDescriptor } from '../../../services/irs-practitioner-service/src/index.mjs';
+import { descriptor as appleConnectDescriptor } from '../../../packages/apple-connect/src/index.mjs';
 import { TAX_DATA_NOTICE } from '../../../packages/tax-data/src/index.mjs';
 import { listServiceCatalog } from '../../../packages/invoice-core/src/index.mjs';
 import { listPhraseTemplates } from '../../../packages/ero-ops/src/index.mjs';
@@ -29,6 +32,10 @@ import {
   agentTaskRequestedWorkflow,
   agentAssignmentCycleWorkflow
 } from '../../../workflows/agent-assignment-workflow/src/index.mjs';
+import {
+  refundReleaseWorkflow,
+  refundReleaseRequestWorkflow
+} from '../../../workflows/refund-release-workflow/src/index.mjs';
 
 // Descriptor for the modules-dashboard itself, defined here to avoid a circular
 // import between the catalog and the HTTP service entrypoint.
@@ -51,7 +58,9 @@ const SERVICE_PORTS = {
   'enrollment-service': 3004,
   'invoice-service': 3005,
   'pos-crm-service': 3006,
-  'modules-dashboard': 3010
+  'modules-dashboard': 3010,
+  'apple-developer-console': 8870,
+  'irs-practitioner-service': 8880
 };
 
 /** Service name/port pairs used for live status checks. */
@@ -146,10 +155,43 @@ export function buildModuleCatalog() {
           detail: { channels: ['refund.status.received', 'refund.status.updated'] }
         },
         {
+          name: '@rtp/operational-seed',
+          summary: 'Firm/ERO/catalog/topology seed and service wiring — no demo taxpayer data.',
+          tags: ['seed', 'wiring', 'operations'],
+          detail: {
+            commands: ['./rtpsc seed', './rtpsc seed --json'],
+            persists: ['logs/operational/seed-manifest.json']
+          }
+        },
+        {
+          name: '@rtp/irs-xml',
+          summary: 'Custom XHTML/XML builders for practitioner account, masterfile rectification, and refund release.',
+          tags: ['xml', 'xhtml', 'irs', 'practitioner'],
+          detail: { namespaces: ['practitioner', 'masterfile', 'release', 'reconcile'] }
+        },
+        {
+          name: '@rtp/irs-practitioner',
+          summary: 'Tax Practitioner / ERO suite facade — integrations, TC rectify, release lifecycle, AI assist.',
+          tags: ['ero', 'practitioner', 'irs'],
+          detail: { commands: ['./rtpsc practitioner lifecycle', './rtpsc start practitioner'] }
+        },
+        {
+          name: '@rtp/refund-release-core',
+          summary: 'Refund release request, approval, scaffold issuance, and reconciliation after TC holds clear.',
+          tags: ['refund', 'release', 'reconcile'],
+          detail: { gates: ['tc-570', 'tc-810', 'environment-protection'] }
+        },
+        {
+          name: '@rtp/ai-assist',
+          summary: 'Local heuristic AI assist with compliance guardrails for ERO / refund guidance.',
+          tags: ['ai', 'assist', 'compliance'],
+          detail: { mode: 'local', commands: ['./rtpsc practitioner lifecycle'] }
+        },
+        {
           name: '@rtp/secure-tunnel',
-          summary: 'Compliant secure tunnel adapter interface (stub-safe).',
-          tags: ['compliance'],
-          detail: { status: createSecureTunnelAdapter().status }
+          summary: 'Approved secure tunnel adapter with actual endpoint allowlist and fail-safe transmit handoff.',
+          tags: ['compliance', 'tunnel', 'transmitter'],
+          detail: createSecureTunnelAdapter().describe()
         },
         {
           name: '@rtp/workflow-engine',
@@ -216,6 +258,18 @@ export function buildModuleCatalog() {
             commands: ['./rtpsc canvas create all', './rtpsc canvas list'],
             output: '.cursor/canvases/*.canvas.tsx'
           }
+        },
+        {
+          name: '@rtp/apple-connect',
+          summary: 'App Store Connect JWT (ES256) auth, gated live Apple API client, and setup checklist.',
+          tags: ['apple', 'app-store-connect', 'integrations'],
+          detail: appleConnectDescriptor()
+        },
+        {
+          name: '@rtp/ui-system',
+          summary: 'Shared enterprise theme, App Shell, components, brand assets, and status taxonomy.',
+          tags: ['design-system', 'ui'],
+          detail: { shared: ['/shared/theme.css', '/shared/shell.css', '/shared/components.css'] }
         }
       ]
     },
@@ -230,7 +284,9 @@ export function buildModuleCatalog() {
         serviceEntry(enrollmentDescriptor),
         serviceEntry(invoiceDescriptor),
         serviceEntry(posCrmDescriptor),
-        serviceEntry(modulesDashboardDescriptor)
+        serviceEntry(modulesDashboardDescriptor),
+        serviceEntry(appleDeveloperConsoleDescriptor),
+        serviceEntry(irsPractitionerDescriptor)
       ]
     },
     {
@@ -251,7 +307,9 @@ export function buildModuleCatalog() {
               'transmission-cycle',
               'agent-assignment-dispatch',
               'agent-task-requested',
-              'agent-assignment-cycle'
+              'agent-assignment-cycle',
+              'refund-release-after-tc-rectify',
+              'refund-release-request'
             ]
           }
         }
@@ -276,7 +334,9 @@ export function buildModuleCatalog() {
         workflowEntry(transmissionWorkflow),
         workflowEntry(agentAssignmentDispatchWorkflow),
         workflowEntry(agentTaskRequestedWorkflow),
-        workflowEntry(agentAssignmentCycleWorkflow)
+        workflowEntry(agentAssignmentCycleWorkflow),
+        workflowEntry(refundReleaseWorkflow),
+        workflowEntry(refundReleaseRequestWorkflow)
       ]
     }
   ];

@@ -45,8 +45,27 @@ const APPROVED_CATALOG = Object.freeze([
   {
     id: 'irs-api-credentials',
     title: 'IRS API client identity',
-    modules: ['@rtp/client-config', '@rtp/platform-core'],
-    summary: 'API_CLIENT_ID / API_CLIENT_SECRET environment placeholders only — no hard-coded secrets.'
+    modules: ['@rtp/client-config', '@rtp/platform-core', '@rtp/client-identity', '@rtp/irs-gateway'],
+    summary: 'API_CLIENT_ID / TDS_CLIENT_ID / IRS OAuth client assertion — environment-provisioned only.'
+  },
+  {
+    id: 'practitioner-suite',
+    title: 'Tax practitioner / ERO suite',
+    modules: [
+      '@rtp/irs-practitioner',
+      '@rtp/irs-practitioner-service',
+      '@rtp/irs-xml',
+      '@rtp/refund-release-core',
+      '@rtp/tc-code-engine',
+      '@rtp/masterfile-pipeline'
+    ],
+    summary: 'ERO account interface, TC 570/810 rectification, refund release request, and reconciliation.'
+  },
+  {
+    id: 'refund-release',
+    title: 'Refund release after masterfile holds',
+    modules: ['@rtp/refund-release-workflow', '@rtp/refund-intelligence-engine', '@rtp/ai-assist'],
+    summary: 'Workflow triggers for masterfile.tc.rectified and refund.release.requested with AI assist.'
   }
 ]);
 

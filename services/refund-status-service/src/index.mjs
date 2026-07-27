@@ -1,5 +1,4 @@
 import http from 'node:http';
-import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import {
@@ -11,6 +10,13 @@ import {
 } from '../../../packages/platform-core/src/index.mjs';
 import { createRefundStore } from '../../../packages/refund-core/src/index.mjs';
 import { createClientRegistry, extractClientCredentials } from '../../../packages/client-identity/src/index.mjs';
+import { servePublicOrShared, sendNotFoundPage, sendDesignSystemPage } from '../../../packages/ui-system/src/serve.mjs';
+import {
+  applyOperationalSeed,
+  buildOperationalSeed,
+  loadFirmIdentity,
+  resolveServiceWiring
+} from '../../../packages/operational-seed/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3001;
@@ -25,13 +31,6 @@ export const refundStatusDescriptor = createServiceDescriptor({
   ],
   dependencies: ['refund-status-pipeline', 'refund-intelligence-engine', '@rtp/refund-core', '@rtp/client-identity']
 });
-
-const CONTENT_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8'
-};
 
 function sendJson(response, statusCode, body) {
   response.writeHead(statusCode, { 'content-type': 'application/json; charset=utf-8' });
@@ -65,16 +64,13 @@ function readBody(request) {
 }
 
 async function serveStatic(response, urlPath) {
-  const relative = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
-  const resolved = path.join(publicDir, relative);
-  if (!resolved.startsWith(publicDir)) return sendJson(response, 403, { error: 'forbidden' });
-  try {
-    const file = await readFile(resolved);
-    response.writeHead(200, { 'content-type': CONTENT_TYPES[path.extname(resolved)] ?? 'application/octet-stream' });
-    response.end(file);
-  } catch {
-    sendJson(response, 404, { error: 'not_found', path: urlPath });
+  if (urlPath === '/design-system') {
+    return sendDesignSystemPage(response, { serviceName: 'Refund Center', homeHref: '/' });
   }
+  if (await servePublicOrShared(response, urlPath, publicDir)) return;
+  const looksHtml = !path.extname(urlPath) || urlPath.endsWith('.html');
+  if (looksHtml) return sendNotFoundPage(response);
+  sendJson(response, 404, { error: 'not_found', path: urlPath });
 }
 
 function clientMeta(request) {
@@ -88,13 +84,18 @@ export function createRefundStatusServer({ registry, store } = {}) {
   const config = loadRuntimeConfig({ servicePort: DEFAULT_PORT });
   const clients = registry ?? createClientRegistry();
   const refunds = store ?? createRefundStore();
+  const firm = loadFirmIdentity();
+  const operational = buildOperationalSeed();
+  const wiring = resolveServiceWiring();
   let bootstrapped = false;
+  let seedApplied = null;
 
   async function ensureClients() {
     if (bootstrapped) return;
     await clients.loadPersisted();
     clients.seedFromEnv();
     await clients.ensureLocalClients();
+    seedApplied = await applyOperationalSeed({ refunds, seedRefunds: true });
     bootstrapped = true;
   }
 
@@ -139,8 +140,29 @@ export function createRefundStatusServer({ registry, store } = {}) {
           metadata: {
             cases: refunds.listCases({ limit: 1000 }).length,
             channels: refunds.catalog().channels,
-            ingestionPolicy: refunds.catalog().ingestionPolicy
+            ingestionPolicy: refunds.catalog().ingestionPolicy,
+            firm: {
+              company: firm.company,
+              operator: firm.operator?.name ?? null,
+              completeness: firm.completeness
+            },
+            operationalSeed: seedApplied,
+            unfundedInquiries: operational.unfundedRefundInquiries.length,
+            wiring: {
+              gateway: wiring.byId['api-gateway']?.baseUrl,
+              transcript: wiring.byId['transcript-service']?.baseUrl,
+              irsGateway: wiring.byId['irs-gateway']?.baseUrl
+            }
           }
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/api/operational') {
+        return sendJson(response, 200, {
+          firm,
+          seed: seedApplied,
+          unfundedRefundInquiries: operational.unfundedRefundInquiries,
+          wiring: wiring.services
         });
       }
 
@@ -188,20 +210,33 @@ export function createRefundStatusServer({ registry, store } = {}) {
         // Convenience: create a full refund case in one shot (still requires auth)
         const body = await readBody(request);
         const client = await requireClient(request, body, { scope: 'refund:ingest' });
-        const caseId = body.caseId ?? `CASE-${Date.now().toString(36).toUpperCase()}`;
+        const caseId = String(body.caseId ?? '').trim();
+        const taxpayerRef = String(body.taxpayerRef ?? '').trim();
+        if (!caseId) {
+          return sendJson(response, 400, { error: 'case_id_required', message: 'caseId is required — no generated demo ids.' });
+        }
+        if (!taxpayerRef) {
+          return sendJson(response, 400, {
+            error: 'taxpayer_ref_required',
+            message: 'taxpayerRef is required — no placeholder taxpayer refs.'
+          });
+        }
+        if (body.amount == null || Number.isNaN(Number(body.amount))) {
+          return sendJson(response, 400, { error: 'amount_required', message: 'amount is required.' });
+        }
         const stages = body.stages ?? ['received', 'processing', 'approved', 'sent'];
         let latest = null;
         for (const filingStage of stages) {
           latest = await refunds.ingestEvent(
             {
               caseId,
-              taxpayerRef: body.taxpayerRef ?? 'TP-FULL',
+              taxpayerRef,
               filingStage,
-              amount: body.amount ?? 3200,
+              amount: Number(body.amount),
               hasTranscript: body.hasTranscript !== false,
               sbtpgEnrolled: body.sbtpgEnrolled === true,
               posPaid: body.posPaid === true,
-              source: body.source ?? 'full-refund-demo'
+              source: body.source ?? 'operator-ingest'
             },
             { source: `full:${client.kind}`, clientIdHint: client.idHint }
           );
