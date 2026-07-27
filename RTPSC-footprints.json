@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-27T14:38:13.716Z",
-  "count": 59,
+  "createdAt": "2026-07-27T14:45:06.709Z",
+  "count": 64,
   "ok": true,
   "footprints": [
     {
@@ -258,6 +258,36 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/irs-practitioner",
+      "version": "0.1.0",
+      "location": "packages/irs-practitioner",
+      "sector": "packages",
+      "footprint": "c339725930af761d",
+      "fingerprint": "c339725930af761d",
+      "integrity": "sha256-c339725930af761db44d4d30428fa1362b8a1e8fcdd1afb8e0124297166ff182",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/irs-practitioner-service",
+      "version": "0.1.0",
+      "location": "services/irs-practitioner-service",
+      "sector": "services",
+      "footprint": "b45e3081744dc24d",
+      "fingerprint": "b45e3081744dc24d",
+      "integrity": "sha256-b45e3081744dc24ddcdcebc8e7d7b6f0b84c9f315d23a9e89cff8d52508e3509",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/irs-xml",
+      "version": "0.1.0",
+      "location": "packages/irs-xml",
+      "sector": "packages",
+      "footprint": "b3a584f7a64e4ffd",
+      "fingerprint": "b3a584f7a64e4ffd",
+      "integrity": "sha256-b3a584f7a64e4ffdf87231c9fee7c5368ec068f810c9d7fbcb3c7899be2a0852",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/live-source-fetcher",
       "version": "0.1.0",
       "location": "workers/live-source-fetcher",
@@ -405,6 +435,26 @@
       "footprint": "419e32f0ce4b4251",
       "fingerprint": "419e32f0ce4b4251",
       "integrity": "sha256-419e32f0ce4b42513a1a08c258570e23c499b1abdd9e7d1b9ce30ca58d6ef91f",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/refund-release-core",
+      "version": "0.1.0",
+      "location": "packages/refund-release-core",
+      "sector": "packages",
+      "footprint": "a59553373916df6e",
+      "fingerprint": "a59553373916df6e",
+      "integrity": "sha256-a59553373916df6e716366c7f885811b7ee6638f693907b299936b6dfdf18526",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/refund-release-workflow",
+      "version": "0.1.0",
+      "location": "workflows/refund-release-workflow",
+      "sector": "workflows",
+      "footprint": "7763f6394bc23bf5",
+      "fingerprint": "7763f6394bc23bf5",
+      "integrity": "sha256-7763f6394bc23bf532236624299d706d12c1243313e43a9f1be25fb8b90f87d5",
       "status": "sealed"
     },
     {

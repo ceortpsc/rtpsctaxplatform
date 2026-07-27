@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RTPSC · Tax Practitioner Suite</title>
+    <link rel="stylesheet" href="/shared/theme.css" />
+    <link rel="stylesheet" href="/shared/shell.css" />
+    <link rel="stylesheet" href="/shared/components.css" />
+    <link rel="icon" href="/shared/brand/icons/favicon.svg" type="image/svg+xml" />
+    <style>
+      .suite-grid { display: grid; gap: var(--sp-6); grid-template-columns: 1fr; }
+      @media (min-width: 960px) { .suite-grid { grid-template-columns: 1fr 1fr; } }
+      .mono { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.85rem; white-space: pre-wrap; }
+      .result { margin-top: var(--sp-4); }
+    </style>
+  </head>
+  <body class="app-shell-body">
+    <div id="app-root"></div>
+    <div class="app-shell">
+      <div class="app-shell__main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Ross Tax Pro Software Co</p>
+            <h1 class="topbar__title">Tax Practitioner Suite</h1>
+            <p class="topbar__sub">ERO · API / TDS / IRS integrations · TC 570/810 rectify · refund release</p>
+          </div>
+          <div class="topbar__actions">
+            <a class="btn btn--secondary btn--sm" href="/api/account.xml">Account XML</a>
+            <a class="btn btn--secondary btn--sm" href="/api/suite.xhtml">Suite XHTML</a>
+          </div>
+        </header>
+        <main class="content">
+          <section class="panel" id="account-panel">
+            <div class="panel__head"><h2 class="panel__title">Practitioner account</h2></div>
+            <div id="account" class="mono">Loading…</div>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head"><h2 class="panel__title">Integration interfaces</h2></div>
+            <div id="integrations" class="list">Loading…</div>
+          </section>
+
+          <div class="suite-grid">
+            <section class="panel">
+              <div class="panel__head"><h2 class="panel__title">Masterfile · TC 570 / 810</h2></div>
+              <div class="field"><label class="field__label" for="caseId">Case ID</label><input class="field__control" id="caseId" value="UF-2026-001" /></div>
+              <div class="field"><label class="field__label" for="taxpayerRef">Taxpayer ref</label><input class="field__control" id="taxpayerRef" value="TP-UF-001" /></div>
+              <div class="field"><label class="field__label" for="amount">Refund amount</label><input class="field__control" id="amount" type="number" value="3200" /></div>
+              <button type="button" class="btn btn--secondary" id="rectifyBtn">Rectify holds + evaluate gate</button>
+              <div id="masterfileOut" class="result mono" hidden></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel__head"><h2 class="panel__title">Release · intelligence · AI assist</h2></div>
+              <div class="field"><label class="field__label" for="assistPrompt">AI assist prompt</label>
+                <textarea class="field__control" id="assistPrompt" rows="3">Rectify TC 570 and TC 810 then request refund release and reconcile.</textarea>
+              </div>
+              <div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn btn--secondary" id="assistBtn">Ask AI assist</button>
+                <button type="button" class="btn btn--secondary" id="intelBtn">Run intelligence</button>
+                <button type="button" class="btn btn--primary" id="lifecycleBtn">Execute full release lifecycle</button>
+              </div>
+              <div id="lifecycleOut" class="result mono" hidden></div>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel__head"><h2 class="panel__title">Recent releases</h2></div>
+            <div id="releases" class="list">None yet.</div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <div class="toast" id="toast" hidden></div>
+    <script src="/shared/shell.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

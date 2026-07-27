@@ -1,0 +1,9 @@
+{
+  "name": "@rtp/irs-xml",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Custom XHTML/XML builders for IRS tax practitioner / ERO payloads",
+  "main": "./src/index.mjs",
+  "exports": { ".": "./src/index.mjs" }
+}

@@ -34,7 +34,12 @@ const SERVICE_ENTRIES = {
   dashboard: 'services/modules-dashboard/src/index.mjs',
   apple: 'services/apple-developer-console/src/index.mjs',
   'apple-developer-console': 'services/apple-developer-console/src/index.mjs',
-  'apple-console': 'services/apple-developer-console/src/index.mjs'
+  'apple-console': 'services/apple-developer-console/src/index.mjs',
+  practitioner: 'services/irs-practitioner-service/src/index.mjs',
+  'irs-practitioner': 'services/irs-practitioner-service/src/index.mjs',
+  'tax-pro': 'services/irs-practitioner-service/src/index.mjs',
+  'irs-gateway': 'services/irs-gateway/src/index.mjs',
+  irs: 'services/irs-gateway/src/index.mjs'
 };
 
 export const COMMANDS = {
@@ -50,7 +55,7 @@ export const COMMANDS = {
   },
   build: { usage: 'build', desc: 'Build the platform manifest', plan: () => node('scripts/build.mjs') },
   start: {
-    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard|apple]',
+    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard|apple|practitioner|irs]',
     desc: 'Start a service (defaults to the api-gateway)',
     plan: (rest) => {
       const target = rest[0] ?? 'gateway';
@@ -111,6 +116,11 @@ export const COMMANDS = {
     usage: 'seed [--json] [--no-persist]',
     desc: 'Fully seed and wire firm/catalog/topology (no demo placeholders)',
     plan: (rest) => node('scripts/seed.mjs', rest)
+  },
+  practitioner: {
+    usage: 'practitioner [lifecycle|account|integrations] [--json]',
+    desc: 'Execute ERO tax practitioner suite (TC 570/810 → release → reconcile)',
+    plan: (rest) => node('scripts/practitioner.mjs', rest.length ? rest : ['lifecycle'])
   }
 };
 

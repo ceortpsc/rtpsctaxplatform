@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture: practitioner account shape for validation / docs -->
+<TaxPractitionerAccount xmlns="urn:rtpsc:irs:practitioner:v1" company="Ross Tax Pro Software Co">
+  <Application>Efile Transmission Software</Application>
+  <Representative>
+    <Name>ERO Operator</Name>
+    <Form8821Status>on-file</Form8821Status>
+    <CAFNumber>031***228</CAFNumber>
+    <PTIN>P032***</PTIN>
+    <EFIN>unset</EFIN>
+    <ETIN>unset</ETIN>
+    <Jurisdiction>TX</Jurisdiction>
+  </Representative>
+  <Integrations>
+    <ApiClient configured="true"/>
+    <TdsClient configured="true"/>
+    <IrsOAuth configured="false"/>
+  </Integrations>
+  <Notice>Secrets never embedded. Live IRS calls require production gates + approved tunnel.</Notice>
+</TaxPractitionerAccount>

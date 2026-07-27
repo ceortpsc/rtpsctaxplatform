@@ -17,7 +17,8 @@ export const SERVICE_TOPOLOGY = Object.freeze([
   { id: 'ross-ai-runtime', kind: 'control-plane', port: 8787, baseUrl: 'http://127.0.0.1:8787', routes: ['/', '/signin', '/dashboard', '/api/*'] },
   { id: 'irs-gateway', kind: 'gateway', port: 8820, baseUrl: 'http://127.0.0.1:8820', routes: ['/health', '/metadata', '/irs/token'] },
   { id: 'ai-workforce-hub', kind: 'service', port: 8860, baseUrl: 'http://127.0.0.1:8860', routes: ['/health', '/metadata', '/v1/*'] },
-  { id: 'apple-developer-console', kind: 'integration', port: 8870, baseUrl: 'http://127.0.0.1:8870', routes: ['/health', '/metadata', '/api/apple/*'] }
+  { id: 'apple-developer-console', kind: 'integration', port: 8870, baseUrl: 'http://127.0.0.1:8870', routes: ['/health', '/metadata', '/api/apple/*'] },
+  { id: 'irs-practitioner-service', kind: 'service', port: 8880, baseUrl: 'http://127.0.0.1:8880', routes: ['/health', '/metadata', '/api/account', '/api/release/*', '/api/masterfile/*'] }
 ]);
 
 export const WORKER_TOPOLOGY = Object.freeze([
@@ -30,7 +31,7 @@ export const WORKER_TOPOLOGY = Object.freeze([
 
 export const PIPELINE_TOPOLOGY = Object.freeze([
   { id: 'transmission-pipeline', stages: ['prepare', 'validate', 'queue', 'transmit', 'acknowledge'], transmitter: true },
-  { id: 'masterfile-pipeline', stages: ['ingest-approved-record', 'normalize-masterfile', 'enrich-tax-indicators', 'publish-canonical-event'], transmitter: false },
+  { id: 'masterfile-pipeline', stages: ['ingest-approved-record', 'normalize-masterfile', 'enrich-tax-indicators', 'publish-canonical-event', 'rectify-hold-codes', 'evaluate-refund-release-gate'], transmitter: false },
   { id: 'refund-status-pipeline', stages: ['ingest-approved-event', 'deduplicate', 'update-status-timeline', 'trigger-escalation-rules'], transmitter: false }
 ]);
 

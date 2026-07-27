@@ -18,7 +18,8 @@ const ENV_URL_KEYS = Object.freeze({
   'ross-ai-runtime': 'ROSS_AI_URL',
   'irs-gateway': 'IRS_GATEWAY_URL',
   'ai-workforce-hub': 'AI_WORKFORCE_URL',
-  'apple-developer-console': 'APPLE_CONSOLE_URL'
+  'apple-developer-console': 'APPLE_CONSOLE_URL',
+  'irs-practitioner-service': 'IRS_PRACTITIONER_URL'
 });
 
 /** Resolve service base URLs from topology with optional env overrides. */

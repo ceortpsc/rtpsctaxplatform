@@ -36,6 +36,7 @@
     "start:dashboard": "pnpm --filter @rtp/modules-dashboard start",
     "start:apple": "pnpm --filter @rtp/apple-developer-console start",
     "start:apple-console": "pnpm --filter @rtp/apple-developer-console start",
+    "start:practitioner": "pnpm --filter @rtp/irs-practitioner-service start",
     "start:workflows": "pnpm --filter @rtp/workflow-runner start",
     "start:all": "./scripts/start-all.sh",
     "start:all:fg": "node ./scripts/start-all.mjs",

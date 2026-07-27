@@ -11,6 +11,10 @@ import {
   agentTaskRequestedWorkflow,
   agentAssignmentCycleWorkflow
 } from '../../../workflows/agent-assignment-workflow/src/index.mjs';
+import {
+  refundReleaseWorkflow,
+  refundReleaseRequestWorkflow
+} from '../../../workflows/refund-release-workflow/src/index.mjs';
 
 // Central composition point for the background workflow runner: registers every
 // modular workflow and wires a runner + trigger manager. Workflows execute here
@@ -21,7 +25,9 @@ export const platformWorkflows = [
   transmissionWorkflow,
   agentAssignmentDispatchWorkflow,
   agentTaskRequestedWorkflow,
-  agentAssignmentCycleWorkflow
+  agentAssignmentCycleWorkflow,
+  refundReleaseWorkflow,
+  refundReleaseRequestWorkflow
 ];
 
 // Representative inputs used to drive workflows during background cycles.
@@ -33,7 +39,19 @@ export const sampleInputs = Object.freeze({
   'transmission-cycle': { batchId: 'scheduled-batch', documents: ['doc-1', 'doc-2'] },
   'agent-assignment-dispatch': { assignmentId: 'validate-platform' },
   'agent-task-requested': { assignmentId: 'validate-platform' },
-  'agent-assignment-cycle': {}
+  'agent-assignment-cycle': {},
+  'refund-release-after-tc-rectify': {
+    caseId: 'UF-2026-001',
+    taxpayerRef: 'TP-UF-001',
+    amount: 3200,
+    rectifyCodes: ['570', '810']
+  },
+  'refund-release-request': {
+    caseId: 'UF-2026-002',
+    taxpayerRef: 'TP-UF-002',
+    amount: 2800,
+    rectifyCodes: ['570', '810']
+  }
 });
 
 export function createPlatformRegistry() {
