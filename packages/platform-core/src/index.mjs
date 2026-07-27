@@ -2,6 +2,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadPlatformEnv } from './env-file.mjs';
 
 // Product identity for Ross Tax Pro Software Co (RTPSC).
 export const PLATFORM_IDENTITY = Object.freeze({
@@ -9,6 +10,16 @@ export const PLATFORM_IDENTITY = Object.freeze({
   application: 'Efile Transmission Software',
   abbreviation: 'RTPSC'
 });
+
+export { loadEnvFile, loadPlatformEnv } from './env-file.mjs';
+
+/** Call once from process entrypoints (CLI / services) to load gitignored .env */
+export function bootstrapEnv({ cwd = process.cwd(), override = false } = {}) {
+  if (process.env.RTPSC_SKIP_ENV_FILE === '1') {
+    return { loaded: false, path: null, keys: [], skipped: true };
+  }
+  return loadPlatformEnv({ cwd, override });
+}
 
 const defaultComplianceNotice = [
   'No unauthorized access to IRS systems.',
@@ -35,7 +46,11 @@ export function loadRuntimeConfig(overrides = {}) {
     tunnelClientSecret: overrides.tunnelClientSecret ?? process.env.TUNNEL_CLIENT_SECRET ?? 'unset',
     approvedTunnelEndpoint: overrides.approvedTunnelEndpoint ?? process.env.APPROVED_TUNNEL_ENDPOINT ?? 'unset',
     efileTransmissionEnabled:
-      overrides.efileTransmissionEnabled ?? process.env.EFILE_TRANSMISSION_ENABLED === 'true'
+      overrides.efileTransmissionEnabled ?? process.env.EFILE_TRANSMISSION_ENABLED === 'true',
+    eroPtin: overrides.eroPtin ?? process.env.ERO_PTIN ?? process.env.PTIN ?? 'unset',
+    eroCaf: overrides.eroCaf ?? process.env.ERO_CAF_NUMBER ?? process.env.CAF_NUMBER ?? 'unset',
+    efin: overrides.efin ?? process.env.EFIN ?? 'unset',
+    etin: overrides.etin ?? process.env.ETIN ?? 'unset'
   };
 }
 
@@ -49,7 +64,13 @@ export function redactConfig(config) {
     tunnelClientId: config.tunnelClientId,
     approvedTunnelEndpoint: config.approvedTunnelEndpoint,
     efileTransmissionEnabled: config.efileTransmissionEnabled === true,
-    secretsConfigured: [config.apiClientSecret, config.tdsClientSecret, config.tunnelClientSecret].every((value) => value !== 'unset')
+    eroPtin: config.eroPtin && config.eroPtin !== 'unset' ? `${String(config.eroPtin).slice(0, 4)}***` : 'unset',
+    eroCaf: config.eroCaf && config.eroCaf !== 'unset' ? `${String(config.eroCaf).slice(0, 3)}***` : 'unset',
+    efin: config.efin ?? 'unset',
+    etin: config.etin ?? 'unset',
+    secretsConfigured: [config.apiClientSecret, config.tdsClientSecret, config.tunnelClientSecret].every(
+      (value) => value && value !== 'unset'
+    )
   };
 }
 
@@ -197,6 +218,7 @@ export function startHttpService({
   staticDir = null,
   onReady = null
 } = {}) {
+  bootstrapEnv();
   const config = loadRuntimeConfig({ servicePort: defaultPort });
   const payload = {
     identity: PLATFORM_IDENTITY,
@@ -263,6 +285,7 @@ export function startHttpService({
 }
 
 export function runWorker({ descriptor, steps = [] }) {
+  bootstrapEnv();
   const config = loadRuntimeConfig();
   const output = { worker: descriptor, runtime: redactConfig(config), steps };
 

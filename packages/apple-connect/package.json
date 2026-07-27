@@ -1,0 +1,11 @@
+{
+  "name": "@rtp/apple-connect",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "App Store Connect / Apple Developer Console integration primitives (JWT ES256, gated live calls)",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  }
+}

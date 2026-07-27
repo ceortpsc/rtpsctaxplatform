@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-27T13:57:38.032Z",
-  "count": 56,
+  "createdAt": "2026-07-27T14:21:19.909Z",
+  "count": 58,
   "ok": true,
   "footprints": [
     {
@@ -115,6 +115,26 @@
       "footprint": "d3a3c81a78c2618d",
       "fingerprint": "d3a3c81a78c2618d",
       "integrity": "sha256-d3a3c81a78c2618df4040b3ff913f3cb08bab275c671772d7d56635afa02ff4a",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/apple-connect",
+      "version": "0.1.0",
+      "location": "packages/apple-connect",
+      "sector": "packages",
+      "footprint": "883b120546d88093",
+      "fingerprint": "883b120546d88093",
+      "integrity": "sha256-883b120546d88093d2f90c05b2abef7fce7be347db4c7e9f0825afc1982d119f",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/apple-developer-console",
+      "version": "0.1.0",
+      "location": "services/apple-developer-console",
+      "sector": "services",
+      "footprint": "d49d573c8f5d2b06",
+      "fingerprint": "d49d573c8f5d2b06",
+      "integrity": "sha256-d49d573c8f5d2b06fadad79ab9b8c75c5da65fb145a2407a916ff4139e6af5b5",
       "status": "sealed"
     },
     {

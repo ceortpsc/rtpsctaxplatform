@@ -203,7 +203,7 @@ export const NAVIGATION = Object.freeze([
       { id: 'roles', label: 'Roles and Permissions', href: 'http://127.0.0.1:8787/rbac', service: 'ross-ai', implemented: true },
       { id: 'offices', label: 'Offices', implemented: false },
       { id: 'jurisdictions', label: 'Jurisdictions', href: 'http://localhost:3005/', service: 'invoice', implemented: true, limited: true },
-      { id: 'integrations', label: 'Integrations', implemented: false },
+      { id: 'integrations', label: 'Integrations', href: 'http://localhost:8870/', service: 'apple-developer-console', implemented: true },
       { id: 'security', label: 'Security', href: 'http://127.0.0.1:8787/infrastructure', service: 'ross-ai', implemented: true, limited: true },
       { id: 'audit_logs', label: 'Audit Logs', href: 'http://localhost:3004/', service: 'enrollment', implemented: true, limited: true },
       { id: 'system_settings', label: 'System Settings', href: '/#settings', service: 'modules-dashboard', implemented: true }

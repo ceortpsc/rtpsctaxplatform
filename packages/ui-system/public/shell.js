@@ -36,6 +36,7 @@
     status: "◉",
     design_system: "❖",
     control_plane: "▣",
+    apple_console: "",
     help: "?",
     contact: "✉"
   };
@@ -93,9 +94,18 @@
       items: [
         { id: "staff", label: "Staff", href: "#staff", limited: true },
         { id: "roles", label: "Roles and Permissions", href: "http://127.0.0.1:8787/rbac" },
+        { id: "apple_console", label: "Apple Developer Console", href: "http://localhost:8870/" },
         { id: "security", label: "Security", href: "http://127.0.0.1:8787/infrastructure", limited: true },
         { id: "audit_logs", label: "Audit Logs", href: "http://localhost:3004/", limited: true },
         { id: "system_settings", label: "System Settings", href: "#settings" }
+      ]
+    },
+    {
+      id: "integrations",
+      label: "Integrations",
+      items: [
+        { id: "apple_console", label: "Apple Developer Console", href: "http://localhost:8870/" },
+        { id: "control_plane", label: "Control Plane", href: "http://127.0.0.1:8787/dashboard" }
       ]
     },
     {

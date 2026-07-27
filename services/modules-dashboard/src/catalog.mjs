@@ -9,6 +9,8 @@ import { analyticsDescriptor } from '../../../services/analytics-service/src/ind
 import { enrollmentDescriptor } from '../../../services/enrollment-service/src/index.mjs';
 import { invoiceDescriptor } from '../../../services/invoice-service/src/index.mjs';
 import { posCrmDescriptor } from '../../../services/pos-crm-service/src/index.mjs';
+import { appleDeveloperConsoleDescriptor } from '../../../services/apple-developer-console/src/index.mjs';
+import { descriptor as appleConnectDescriptor } from '../../../packages/apple-connect/src/index.mjs';
 import { TAX_DATA_NOTICE } from '../../../packages/tax-data/src/index.mjs';
 import { listServiceCatalog } from '../../../packages/invoice-core/src/index.mjs';
 import { listPhraseTemplates } from '../../../packages/ero-ops/src/index.mjs';
@@ -51,7 +53,8 @@ const SERVICE_PORTS = {
   'enrollment-service': 3004,
   'invoice-service': 3005,
   'pos-crm-service': 3006,
-  'modules-dashboard': 3010
+  'modules-dashboard': 3010,
+  'apple-developer-console': 8870
 };
 
 /** Service name/port pairs used for live status checks. */
@@ -147,9 +150,9 @@ export function buildModuleCatalog() {
         },
         {
           name: '@rtp/secure-tunnel',
-          summary: 'Compliant secure tunnel adapter interface (stub-safe).',
-          tags: ['compliance'],
-          detail: { status: createSecureTunnelAdapter().status }
+          summary: 'Approved secure tunnel adapter with actual endpoint allowlist and fail-safe transmit handoff.',
+          tags: ['compliance', 'tunnel', 'transmitter'],
+          detail: createSecureTunnelAdapter().describe()
         },
         {
           name: '@rtp/workflow-engine',
@@ -216,6 +219,18 @@ export function buildModuleCatalog() {
             commands: ['./rtpsc canvas create all', './rtpsc canvas list'],
             output: '.cursor/canvases/*.canvas.tsx'
           }
+        },
+        {
+          name: '@rtp/apple-connect',
+          summary: 'App Store Connect JWT (ES256) auth, gated live Apple API client, and setup checklist.',
+          tags: ['apple', 'app-store-connect', 'integrations'],
+          detail: appleConnectDescriptor()
+        },
+        {
+          name: '@rtp/ui-system',
+          summary: 'Shared enterprise theme, App Shell, components, brand assets, and status taxonomy.',
+          tags: ['design-system', 'ui'],
+          detail: { shared: ['/shared/theme.css', '/shared/shell.css', '/shared/components.css'] }
         }
       ]
     },
@@ -230,7 +245,8 @@ export function buildModuleCatalog() {
         serviceEntry(enrollmentDescriptor),
         serviceEntry(invoiceDescriptor),
         serviceEntry(posCrmDescriptor),
-        serviceEntry(modulesDashboardDescriptor)
+        serviceEntry(modulesDashboardDescriptor),
+        serviceEntry(appleDeveloperConsoleDescriptor)
       ]
     },
     {

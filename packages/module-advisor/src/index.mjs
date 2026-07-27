@@ -36,11 +36,19 @@ export function buildInsights(catalog) {
   const recommendations = [];
 
   const secureTunnel = packages.find((module) => module.name.includes('secure-tunnel'));
-  if (secureTunnel && secureTunnel.detail?.status === 'stub') {
+  const tunnelStatus = secureTunnel?.detail?.status;
+  if (secureTunnel && (tunnelStatus === 'stub' || tunnelStatus === 'blocked')) {
     recommendations.push({
       severity: 'warning',
       module: secureTunnel.name,
-      message: 'Secure tunnel adapter is a stub — implement only after compliance and security sign-off.'
+      message:
+        'Secure tunnel adapter is not ready — configure APPROVED_TUNNEL_ENDPOINT and tunnel client credentials after compliance sign-off.'
+    });
+  } else if (secureTunnel && tunnelStatus === 'configured') {
+    recommendations.push({
+      severity: 'info',
+      module: secureTunnel.name,
+      message: 'Secure tunnel is configured; production transmission gates still hold live IRS handoff.'
     });
   }
 

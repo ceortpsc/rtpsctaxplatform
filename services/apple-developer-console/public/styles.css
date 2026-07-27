@@ -1,0 +1,45 @@
+/* Apple Developer Console — page-specific layout on shared RTPSC theme */
+.checklist {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: var(--sp-3);
+}
+.checklist li {
+  padding: var(--sp-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--r-md);
+  background: var(--color-surface-2);
+  list-style: decimal;
+}
+.checklist a { font-weight: 650; }
+.cap-grid, .portal-grid {
+  display: grid;
+  gap: var(--sp-3);
+}
+.cap-item, .portal-item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  align-items: flex-start;
+  padding: var(--sp-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--r-md);
+}
+.cap-item p, .portal-item p {
+  margin: 4px 0 0;
+  color: var(--color-muted);
+  font-size: var(--fs-sm);
+}
+.output {
+  margin-top: var(--sp-4);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow: auto;
+  max-height: 280px;
+}
