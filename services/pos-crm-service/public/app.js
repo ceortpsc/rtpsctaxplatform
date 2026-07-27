@@ -98,7 +98,8 @@ function renderContacts(list) {
     const el = document.createElement("div");
     el.className = "item" + (c.id === selectedContactId ? " selected" : "");
     el.innerHTML = `<strong>${escapeHtml(c.name)}</strong> <span class="status ${c.status}">${c.status}</span>
-      <div class="meta">${escapeHtml(c.taxpayerRef || "no TP ref")} · ${escapeHtml(c.locality || "")} ${escapeHtml(c.state || "")}</div>`;
+      <div class="meta">${escapeHtml(c.clientNumber || "no CL#")} · ${escapeHtml(c.customerNumber || "no CU#")} · ${escapeHtml(c.taxpayerRef || "no TP ref")}</div>
+      <div class="meta">${escapeHtml(c.locality || "")} ${escapeHtml(c.state || "")}</div>`;
     el.onclick = () => showContact(c.id);
     wrap.appendChild(el);
   });
@@ -106,12 +107,14 @@ function renderContacts(list) {
 }
 
 function fillContactSelects() {
-  const opts = contacts.map((c) => `<option value="${c.id}">${escapeHtml(c.name)} (${escapeHtml(c.state || "?")})</option>`).join("");
+  const opts = contacts.map((c) => `<option value="${c.id}">${escapeHtml(c.name)} (${escapeHtml(c.clientNumber || c.state || "?")})</option>`).join("");
   $("pContact").innerHTML = opts || `<option value="">No contacts</option>`;
   $("tContact").innerHTML = opts || `<option value="">No contacts</option>`;
+  if ($("idContact")) $("idContact").innerHTML = opts || `<option value="">No contacts</option>`;
   if (selectedContactId) {
     $("pContact").value = selectedContactId;
     $("tContact").value = selectedContactId;
+    if ($("idContact")) $("idContact").value = selectedContactId;
   }
 }
 
@@ -121,7 +124,9 @@ async function showContact(id) {
   const c = data.contact;
   $("contactDetail").hidden = false;
   $("contactDetail").textContent =
-    `${c.name}\n${c.email || "—"} · ${c.phone || "—"}\nTaxpayer: ${c.taxpayerRef || "—"}\n` +
+    `${c.name}\n${c.email || "—"} · ${c.phone || "—"}\n` +
+    `Client ID #: ${c.clientNumber || "—"}\nCustomer ID #: ${c.customerNumber || "—"}\n` +
+    `Taxpayer: ${c.taxpayerRef || "—"}\n` +
     `Jurisdiction: ${c.locality || ""} ${c.state || ""}\n` +
     `Sales: ${data.sales.length} · Traces: ${data.traces.length} · Interactions: ${data.interactions.length}\n` +
     (data.interactions[0] ? `Latest: ${data.interactions[0].subject}` : "");
@@ -264,13 +269,49 @@ async function createContact() {
       taxpayerRef: $("cTaxRef").value,
       state: $("cState").value,
       locality: $("cLocality").value,
-      tags: ["ops"]
+      tags: ["ops"],
+      issueIds: $("cIssueIds")?.checked !== false
     })
   });
-  toast("Contact saved");
+  const ids = [
+    data.contact.clientNumber && `CL ${data.contact.clientNumber}`,
+    data.contact.customerNumber && `CU ${data.contact.customerNumber}`
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  toast(ids ? `Contact saved · ${ids}` : "Contact saved");
   selectedContactId = data.contact.id;
   await refreshContacts();
   await showContact(data.contact.id);
+  await refreshIdStatus();
+}
+
+async function refreshIdStatus() {
+  if (!$("idStatus")) return;
+  const data = await api("/api/ids");
+  $("idStatus").textContent =
+    `Next Client ID #: ${data.next.client}\nNext Customer ID #: ${data.next.customer}\n` +
+    `Issued: ${data.counts.client} client · ${data.counts.customer} customer\n` +
+    `Distinct from API/TDS machine credentials (./rtpsc clients).`;
+}
+
+async function issueForSelected(kind) {
+  const contactId = $("idContact").value;
+  if (!contactId) throw new Error("Select a contact.");
+  let data;
+  if (kind === "pair") {
+    data = await api("/api/ids/pair", { method: "POST", body: JSON.stringify({ contactId }) });
+    toast(data.notice || "Pair issued");
+  } else {
+    data = await api(`/api/ids/${kind}`, {
+      method: "POST",
+      body: JSON.stringify({ contactId, name: contacts.find((c) => c.id === contactId)?.name })
+    });
+    toast(data.notice || `${kind} id issued`);
+  }
+  await refreshContacts();
+  await refreshIdStatus();
+  if (contactId) await showContact(contactId);
 }
 
 function renderCart() {
@@ -481,12 +522,16 @@ async function boot() {
   $("mfRefBtn").onclick = () => masterLookupByRef().catch((e) => toast(e.message));
   $("mfSyncBtn").onclick = () => syncMasterFromCrm().catch((e) => toast(e.message));
   $("mxSearch").oninput = () => refreshMatrix().catch((e) => toast(e.message));
+  $("issueClientBtn").onclick = () => issueForSelected("client").catch((e) => toast(e.message));
+  $("issueCustomerBtn").onclick = () => issueForSelected("customer").catch((e) => toast(e.message));
+  $("issuePairBtn").onclick = () => issueForSelected("pair").catch((e) => toast(e.message));
   $("openSession").onclick = () => openSession().catch((e) => toast(e.message));
   $("addItem").onclick = () => addItem().catch((e) => toast(e.message));
   $("checkout").onclick = () => checkout().catch((e) => toast(e.message));
   $("trackBtn").onclick = () => trackReport().catch((e) => toast(e.message));
   $("intelBtn").onclick = () => runIntel().catch((e) => toast(e.message));
   $("phraseBtn").onclick = () => genPhrase().catch((e) => toast(e.message));
+  await refreshIdStatus().catch(() => {});
   renderCart();
 }
 

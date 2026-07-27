@@ -35,11 +35,20 @@
             <div class="field"><label>Name</label><input id="cName" placeholder="Client name" /></div>
             <div class="field"><label>Email</label><input id="cEmail" type="email" /></div>
             <div class="field"><label>Taxpayer ref</label><input id="cTaxRef" placeholder="TP-…" /></div>
+            <label class="check"><input type="checkbox" id="cIssueIds" checked /> Auto-issue Client ID # + Customer ID #</label>
             <div class="row2">
               <div class="field"><label>State</label><select id="cState"></select></div>
               <div class="field"><label id="cLocLabel">Parish / County</label><select id="cLocality"></select></div>
             </div>
             <button type="button" id="createContact" class="primary-btn">Save to CRM</button>
+            <h2>Issue ID numbers</h2>
+            <div class="field"><label>Existing contact</label><select id="idContact"></select></div>
+            <div class="row2">
+              <button type="button" id="issueClientBtn" class="secondary-btn">Issue Client ID #</button>
+              <button type="button" id="issueCustomerBtn" class="secondary-btn">Issue Customer ID #</button>
+            </div>
+            <button type="button" id="issuePairBtn" class="ghost-btn">Issue pair (CL + CU)</button>
+            <div id="idStatus" class="tax-preview">Loading ID issuer…</div>
           </div>
           <div class="col">
             <h2>Directory <span class="hint">(A–Z by last name)</span></h2>

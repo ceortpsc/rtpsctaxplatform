@@ -83,6 +83,11 @@ export const COMMANDS = {
     desc: 'Issue/list full API and TDS client ids (secrets gitignored)',
     plan: (rest) => node('scripts/clients.mjs', rest.length ? rest : ['status'])
   },
+  ids: {
+    usage: 'ids [status|issue client|customer|pair|lookup|list]',
+    desc: 'Issue Client ID # (CL-) and Customer ID # (CU-) for tax parties',
+    plan: (rest) => node('scripts/ids.mjs', rest.length ? rest : ['status'])
+  },
   env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') }
 };
 

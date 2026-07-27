@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-27T02:30:54.048Z",
-  "count": 56,
+  "createdAt": "2026-07-27T02:36:53.085Z",
+  "count": 57,
   "ok": true,
   "footprints": [
     {
@@ -305,6 +305,16 @@
       "footprint": "d4ad844e737e46cf",
       "fingerprint": "d4ad844e737e46cf",
       "integrity": "sha256-d4ad844e737e46cfb2597fc4348db25aec0bebc1cc5b8ae1a3ee4cb0986564e4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/party-identity",
+      "version": "0.1.0",
+      "location": "packages/party-identity",
+      "sector": "packages",
+      "footprint": "df4217d9145e1600",
+      "fingerprint": "df4217d9145e1600",
+      "integrity": "sha256-df4217d9145e16001616a1447092f5db528ff8fa1d9c5808f28c8aa6e6b222ae",
       "status": "sealed"
     },
     {

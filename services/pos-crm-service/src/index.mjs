@@ -24,6 +24,10 @@ import {
   createMasterfileStore,
   describeClientMasterfile
 } from '../../../packages/client-masterfile/src/index.mjs';
+import {
+  createPartyIdentityIssuer,
+  describePartyIdentity
+} from '../../../packages/party-identity/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3006;
@@ -35,7 +39,8 @@ export const posCrmDescriptor = createServiceDescriptor({
     'Operate the CRM for tax-prep clients (contacts, accounts, interactions).',
     'Run the Point of Sale register fully linked to CRM and the invoicing machine.',
     'Track SBTPG report traces, automate ERO phrasing, and surface refund intelligence.',
-    'Manage the alphabetical client master file and Full ERO Client Status matrix.'
+    'Manage the alphabetical client master file and Full ERO Client Status matrix.',
+    'Issue Client ID # (CL-######) and Customer ID # (CU-######) for tax-party records.'
   ],
   dependencies: [
     '@rtp/crm-core',
@@ -45,7 +50,8 @@ export const posCrmDescriptor = createServiceDescriptor({
     '@rtp/tax-data',
     '@rtp/bank-products',
     '@rtp/client-masterfile',
-    '@rtp/refund-core'
+    '@rtp/refund-core',
+    '@rtp/party-identity'
   ]
 });
 
@@ -119,6 +125,61 @@ export function createPosCrmServer() {
   const traces = createSbtpgTraceStore();
   const refunds = createRefundStore();
   const masterfile = createMasterfileStore();
+  const partyIds = createPartyIdentityIssuer({ persist: true });
+  // Load persisted Client/Customer ID # sequences asynchronously on first request.
+  let partyReady = false;
+  async function ensurePartyIds() {
+    if (partyReady) return;
+    await partyIds.loadPersisted();
+    partyReady = true;
+  }
+
+  async function issueIdsForContact(contact, { issueClient = true, issueCustomer = true, source = 'crm' } = {}) {
+    await ensurePartyIds();
+    const issued = {};
+    if (issueClient && !contact.clientNumber) {
+      const result = await partyIds.issueClientIdNumber({
+        name: contact.name,
+        taxpayerRef: contact.taxpayerRef,
+        contactId: contact.id,
+        source
+      });
+      issued.client = result.record;
+      contact = crm.updateContact(contact.id, { clientNumber: result.record.number });
+    }
+    if (issueCustomer && !contact.customerNumber) {
+      const result = await partyIds.issueCustomerIdNumber({
+        name: contact.name,
+        taxpayerRef: contact.taxpayerRef,
+        contactId: contact.id,
+        source,
+        pairedWith: contact.clientNumber ?? issued.client?.number ?? null
+      });
+      issued.customer = result.record;
+      contact = crm.updateContact(contact.id, { customerNumber: result.record.number });
+      if (issued.client) {
+        await partyIds.attach(issued.client.number, { pairedWith: result.record.number });
+      }
+    }
+    masterfile.upsert({
+      name: contact.name,
+      email: contact.email,
+      phone: contact.phone,
+      taxpayerRef: contact.taxpayerRef,
+      contactId: contact.id,
+      accountId: contact.accountId,
+      clientNumber: contact.clientNumber,
+      customerNumber: contact.customerNumber,
+      state: contact.state,
+      locality: contact.locality,
+      address: contact.address,
+      tags: contact.tags,
+      crmStatus: contact.status,
+      notes: contact.notes,
+      source: contact.source || 'crm'
+    });
+    return { contact, issued };
+  }
 
   const demoClients = [
     {
@@ -213,6 +274,17 @@ export function createPosCrmServer() {
     }
   }
   masterfile.syncFromCrm(crm);
+  // Issue Client ID # / Customer ID # for seeded contacts (non-blocking).
+  void (async () => {
+    try {
+      await ensurePartyIds();
+      for (const c of crm.searchContacts('', { limit: 5000, sort: 'alpha' })) {
+        await issueIdsForContact(c, { source: 'seed' });
+      }
+    } catch {
+      // seed id issuance is best-effort
+    }
+  })();
 
   const server = http.createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host ?? 'localhost'}`);
@@ -235,8 +307,10 @@ export function createPosCrmServer() {
             traces: traces.listTraces({ limit: 1 }).length,
             masterfile: masterfile.snapshot(),
             refundCases: refunds.listCases({ limit: 1000 }).length,
+            partyIdentity: partyIds.status(),
             seedContactId: seed.id,
-            clientMasterfile: describeClientMasterfile()
+            clientMasterfile: describeClientMasterfile(),
+            partyIdentityPackage: describePartyIdentity()
           }
         });
       }
@@ -283,23 +357,37 @@ export function createPosCrmServer() {
       if (request.method === 'POST' && pathname === '/api/contacts') {
         const body = await readBody(request);
         try {
-          const contact = crm.createContact(body);
-          masterfile.upsert({
-            name: contact.name,
-            email: contact.email,
-            phone: contact.phone,
-            taxpayerRef: contact.taxpayerRef,
-            contactId: contact.id,
-            accountId: contact.accountId,
-            state: contact.state,
-            locality: contact.locality,
-            address: contact.address,
-            tags: contact.tags,
-            crmStatus: contact.status,
-            notes: contact.notes,
-            source: 'crm'
-          });
-          return sendJson(response, 201, { contact });
+          let contact = crm.createContact(body);
+          const autoIssue = body.issueIds !== false;
+          let issued = {};
+          if (autoIssue) {
+            const result = await issueIdsForContact(contact, {
+              issueClient: !contact.clientNumber,
+              issueCustomer: !contact.customerNumber,
+              source: 'crm'
+            });
+            contact = result.contact;
+            issued = result.issued;
+          } else {
+            masterfile.upsert({
+              name: contact.name,
+              email: contact.email,
+              phone: contact.phone,
+              taxpayerRef: contact.taxpayerRef,
+              contactId: contact.id,
+              accountId: contact.accountId,
+              clientNumber: contact.clientNumber,
+              customerNumber: contact.customerNumber,
+              state: contact.state,
+              locality: contact.locality,
+              address: contact.address,
+              tags: contact.tags,
+              crmStatus: contact.status,
+              notes: contact.notes,
+              source: 'crm'
+            });
+          }
+          return sendJson(response, 201, { contact, issued });
         } catch (error) {
           return sendJson(response, 400, { error: 'invalid_contact', message: error.message });
         }
@@ -608,6 +696,86 @@ export function createPosCrmServer() {
         return sendJson(response, 200, matrix);
       }
 
+      // ── Client ID # / Customer ID # issuance ─────────────
+      if (request.method === 'GET' && pathname === '/api/ids') {
+        await ensurePartyIds();
+        const kind = url.searchParams.get('kind') ?? undefined;
+        return sendJson(response, 200, {
+          ...describePartyIdentity(),
+          ...partyIds.status(),
+          records: partyIds.list({ kind: kind || null, limit: Number(url.searchParams.get('limit') ?? 100) })
+        });
+      }
+
+      if (request.method === 'POST' && pathname === '/api/ids/client') {
+        await ensurePartyIds();
+        const body = await readBody(request);
+        try {
+          const result = await partyIds.issueClientIdNumber(body);
+          if (body.contactId && crm.findContact(body.contactId)) {
+            crm.updateContact(body.contactId, { clientNumber: result.record.number });
+            await partyIds.attach(result.record.number, { contactId: body.contactId });
+          }
+          return sendJson(response, 201, result);
+        } catch (error) {
+          return sendJson(response, 400, { error: 'issue_failed', message: error.message });
+        }
+      }
+
+      if (request.method === 'POST' && pathname === '/api/ids/customer') {
+        await ensurePartyIds();
+        const body = await readBody(request);
+        try {
+          const result = await partyIds.issueCustomerIdNumber(body);
+          if (body.contactId && crm.findContact(body.contactId)) {
+            crm.updateContact(body.contactId, { customerNumber: result.record.number });
+            await partyIds.attach(result.record.number, { contactId: body.contactId });
+          }
+          return sendJson(response, 201, result);
+        } catch (error) {
+          return sendJson(response, 400, { error: 'issue_failed', message: error.message });
+        }
+      }
+
+      if (request.method === 'POST' && pathname === '/api/ids/pair') {
+        await ensurePartyIds();
+        const body = await readBody(request);
+        try {
+          if (body.contactId && crm.findContact(body.contactId)) {
+            const contact = crm.findContact(body.contactId);
+            const result = await issueIdsForContact(contact, {
+              issueClient: !contact.clientNumber,
+              issueCustomer: !contact.customerNumber,
+              source: body.source ?? 'api'
+            });
+            return sendJson(response, 201, {
+              contact: result.contact,
+              clientIdNumber: result.contact.clientNumber,
+              customerIdNumber: result.contact.customerNumber,
+              issued: result.issued,
+              notice: `Client ID # ${result.contact.clientNumber} · Customer ID # ${result.contact.customerNumber}`
+            });
+          }
+          const pair = await partyIds.issuePair(body);
+          return sendJson(response, 201, pair);
+        } catch (error) {
+          return sendJson(response, 400, { error: 'issue_failed', message: error.message });
+        }
+      }
+
+      if (request.method === 'GET' && pathname === '/api/ids/lookup') {
+        await ensurePartyIds();
+        const number = url.searchParams.get('number') ?? '';
+        const record = partyIds.get(number);
+        if (!record) return sendJson(response, 404, { error: 'not_found', number });
+        const contact =
+          (record.contactId && crm.findContact(record.contactId)) ||
+          (record.kind === 'client' && crm.findByClientNumber?.(record.number)) ||
+          (record.kind === 'customer' && crm.findByCustomerNumber?.(record.number)) ||
+          null;
+        return sendJson(response, 200, { record, contact });
+      }
+
       if (request.method === 'GET') return serveStatic(response, pathname);
       sendJson(response, 405, { error: 'method_not_allowed', method: request.method, path: pathname });
     } catch (error) {
@@ -615,7 +783,7 @@ export function createPosCrmServer() {
     }
   });
 
-  return { server, config, crm, pos, traces, refunds, masterfile, seed };
+  return { server, config, crm, pos, traces, refunds, masterfile, partyIds, seed };
 }
 
 export function start() {

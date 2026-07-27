@@ -100,6 +100,12 @@ export function createMasterfileStore({
       taxpayerRef,
       contactId: input.contactId ?? prev?.contactId ?? null,
       accountId: input.accountId ?? prev?.accountId ?? null,
+      clientNumber: String(input.clientNumber ?? input.clientIdNumber ?? prev?.clientNumber ?? '')
+        .trim()
+        .toUpperCase() || null,
+      customerNumber: String(input.customerNumber ?? input.customerIdNumber ?? prev?.customerNumber ?? '')
+        .trim()
+        .toUpperCase() || null,
       state: String(input.state ?? prev?.state ?? '').trim().toUpperCase() || null,
       locality: String(input.locality ?? input.parish ?? input.county ?? prev?.locality ?? '')
         .trim()
@@ -162,7 +168,17 @@ export function createMasterfileStore({
 
     if (query) {
       pool = pool.filter((r) => {
-        const hay = [r.name, r.email, r.phone, r.taxpayerRef, r.state, r.locality, ...(r.tags ?? [])]
+        const hay = [
+          r.name,
+          r.email,
+          r.phone,
+          r.taxpayerRef,
+          r.clientNumber,
+          r.customerNumber,
+          r.state,
+          r.locality,
+          ...(r.tags ?? [])
+        ]
           .filter(Boolean)
           .join(' ')
           .toLowerCase();

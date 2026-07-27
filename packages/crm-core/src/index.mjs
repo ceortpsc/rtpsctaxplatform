@@ -89,6 +89,8 @@ export function createCrmStore({ idFactory, now = () => new Date().toISOString()
       email: String(input.email ?? '').trim().toLowerCase(),
       phone: normalizePhone(input.phone),
       taxpayerRef: String(input.taxpayerRef ?? '').trim() || null,
+      clientNumber: String(input.clientNumber ?? input.clientIdNumber ?? '').trim().toUpperCase() || null,
+      customerNumber: String(input.customerNumber ?? input.customerIdNumber ?? '').trim().toUpperCase() || null,
       accountId,
       state: String(input.state ?? '').trim().toUpperCase() || null,
       locality: String(input.locality ?? input.parish ?? input.county ?? '').trim().toUpperCase() || null,
@@ -126,6 +128,12 @@ export function createCrmStore({ idFactory, now = () => new Date().toISOString()
     if (patch.email != null) next.email = String(patch.email).trim().toLowerCase();
     if (patch.phone != null) next.phone = normalizePhone(patch.phone);
     if (patch.taxpayerRef != null) next.taxpayerRef = String(patch.taxpayerRef).trim() || null;
+    if (patch.clientNumber != null || patch.clientIdNumber != null) {
+      next.clientNumber = String(patch.clientNumber ?? patch.clientIdNumber).trim().toUpperCase() || null;
+    }
+    if (patch.customerNumber != null || patch.customerIdNumber != null) {
+      next.customerNumber = String(patch.customerNumber ?? patch.customerIdNumber).trim().toUpperCase() || null;
+    }
     if (patch.state != null) next.state = String(patch.state).trim().toUpperCase() || null;
     if (patch.locality != null || patch.parish != null || patch.county != null) {
       next.locality = String(patch.locality ?? patch.parish ?? patch.county).trim().toUpperCase() || null;
@@ -146,7 +154,17 @@ export function createCrmStore({ idFactory, now = () => new Date().toISOString()
     const q = String(query).trim().toLowerCase();
     let pool = q
       ? contacts.filter((c) => {
-          const hay = [c.name, c.email, c.phone, c.taxpayerRef, c.state, c.locality, ...(c.tags ?? [])]
+          const hay = [
+            c.name,
+            c.email,
+            c.phone,
+            c.taxpayerRef,
+            c.clientNumber,
+            c.customerNumber,
+            c.state,
+            c.locality,
+            ...(c.tags ?? [])
+          ]
             .filter(Boolean)
             .join(' ')
             .toLowerCase();
@@ -179,6 +197,18 @@ export function createCrmStore({ idFactory, now = () => new Date().toISOString()
     if (!taxpayerRef) return null;
     const ref = String(taxpayerRef).trim();
     return contacts.find((c) => c.taxpayerRef === ref) ?? null;
+  }
+
+  function findByClientNumber(clientNumber) {
+    if (!clientNumber) return null;
+    const n = String(clientNumber).trim().toUpperCase();
+    return contacts.find((c) => c.clientNumber === n) ?? null;
+  }
+
+  function findByCustomerNumber(customerNumber) {
+    if (!customerNumber) return null;
+    const n = String(customerNumber).trim().toUpperCase();
+    return contacts.find((c) => c.customerNumber === n) ?? null;
   }
 
   function listContactsAlphabetical({ letter = '', limit = 200, offset = 0 } = {}) {
@@ -242,6 +272,8 @@ export function createCrmStore({ idFactory, now = () => new Date().toISOString()
     searchContacts,
     lookupByName,
     findByTaxpayerRef,
+    findByClientNumber,
+    findByCustomerNumber,
     listContactsAlphabetical,
     createAccount,
     findAccount,

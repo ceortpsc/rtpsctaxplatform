@@ -218,6 +218,16 @@ export function buildModuleCatalog() {
           }
         },
         {
+          name: '@rtp/party-identity',
+          summary: 'Issuance of Client ID # (CL-######) and Customer ID # (CU-######) for tax-party records.',
+          tags: ['identity', 'client-id', 'customer-id'],
+          detail: {
+            prefixes: { client: 'CL', customer: 'CU' },
+            commands: ['./rtpsc ids issue pair', './rtpsc ids status'],
+            distinctFrom: '@rtp/client-identity'
+          }
+        },
+        {
           name: '@rtp/canvas-core',
           summary: 'Cursor Canvas creation — generate .canvas.tsx artifacts from live platform state.',
           tags: ['canvas', 'cursor', 'devtools'],

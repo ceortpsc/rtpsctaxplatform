@@ -81,13 +81,17 @@ const requiredPaths = [
   'docs/cursor-canvas.md',
   'docs/cursor-environment.md',
   'docs/client-masterfile-ero-matrix.md',
+  'docs/client-customer-id-issuance.md',
   'packages/canvas-core/package.json',
   'packages/canvas-core/src/index.mjs',
   'packages/client-masterfile/package.json',
   'packages/client-masterfile/src/index.mjs',
+  'packages/party-identity/package.json',
+  'packages/party-identity/src/index.mjs',
   '.cursor/skills/rtpsc-canvas/SKILL.md',
   'docs/CURSOR_TERMINAL_AGENT.md',
-  'scripts/cloud-doctor.mjs'
+  'scripts/cloud-doctor.mjs',
+  'scripts/ids.mjs'
 ];
 
 const packageFiles = [
@@ -109,6 +113,7 @@ const packageFiles = [
   'packages/pos-core/package.json',
   'packages/ero-ops/package.json',
   'packages/client-masterfile/package.json',
+  'packages/party-identity/package.json',
   'packages/production-compliance/package.json',
   'packages/ai-assist/package.json',
   'packages/ero-governance/package.json',

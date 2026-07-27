@@ -19,6 +19,7 @@ const modules = [
   '../packages/pos-core/src/index.mjs',
   '../packages/ero-ops/src/index.mjs',
   '../packages/client-masterfile/src/index.mjs',
+  '../packages/party-identity/src/index.mjs',
   '../packages/agent-core/src/index.mjs',
   '../packages/agent-core/src/roster.mjs',
   '../packages/agent-core/src/assignments.mjs',
