@@ -33,7 +33,8 @@ tools/ross-infinite/.ross/
 seo/generated/
 release-evidence/seo/*
 !release-evidence/seo/.gitkeep
-tools/ross-infinite/release-evidence/**/*
+tools/ross-infinite/release-evidence/**
+!tools/ross-infinite/release-evidence/**/
 !tools/ross-infinite/release-evidence/**/.gitkeep
 tools/ross-infinite/seo/generated/
 *.ross-partial
