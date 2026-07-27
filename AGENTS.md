@@ -86,8 +86,10 @@ Two equivalent runners exist:
   it in a background terminal/tmux session. Verify with `curl http://localhost:3000/health` and
   `curl http://localhost:3000/metadata`.
 - Other services on fixed ports: refund-status `3001` (**full refund center** + client auth),
-  transcript `3002`, analytics `3003`, enrollment `3004`, invoice `3005`, pos-crm `3006`
-  (`./rtpsc start refund-status|transcript|analytics|enrollment|invoice|pos-crm`).
+  transcript `3002`, analytics `3003`, enrollment `3004`, invoice `3005`, pos-crm `3006`,
+  **pro-desk `3007`** (Pro Superiority desk vs TaxSlayer Pro–class)
+  (`./rtpsc start refund-status|transcript|analytics|enrollment|invoice|pos-crm|pro-desk`).
+- **Pro Superiority:** `./rtpsc pro scorecard|diagnose` — `docs/pro-superiority-taxslayer.md`.
 - **API/TDS clients:** `./rtpsc clients issue api|tds` writes one-time secrets to
   `logs/issued-client-secrets.json` (gitignored). Gateway and refund-status auto-ensure local
   clients on boot if none exist (secrets printed once to the service console). Auth headers:
@@ -100,7 +102,7 @@ Two equivalent runners exist:
   `GET /api/insights`, `GET /api/graph`, `POST /api/assistant` (`{query}`).
 - The "AI Assistant"/insights come from `packages/module-advisor` — a local, dependency-free
   heuristic engine (intent detection + keyword scoring). There is **no external LLM or API key**.
-- `./rtpsc deploy` (or `pnpm run deploy:all`) starts every HTTP service (ports `3000`–`3006` + `3010`)
+- `./rtpsc deploy` (or `pnpm run deploy:all`) starts every HTTP service (ports `3000`–`3007` + `3010`)
   plus the background `workflow-runner` as child processes, health-checks them, and stays live
   (Ctrl+C stops all). `./rtpsc deploy --smoke` verifies health once and exits. Free those ports
   first — stop any single-service dev processes so deploy doesn't hit EADDRINUSE.

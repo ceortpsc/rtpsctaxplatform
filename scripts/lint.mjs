@@ -80,11 +80,21 @@ const requiredPaths = [
   'Dockerfile',
   'docs/cursor-canvas.md',
   'docs/cursor-environment.md',
+  'docs/pro-superiority-taxslayer.md',
   'packages/canvas-core/package.json',
   'packages/canvas-core/src/index.mjs',
+  'packages/tax-prep/package.json',
+  'packages/tax-prep/src/index.mjs',
+  'packages/pro-superiority/package.json',
+  'packages/pro-superiority/src/index.mjs',
+  'services/pro-desk-service/package.json',
+  'services/pro-desk-service/src/index.mjs',
+  'services/pro-desk-service/public/index.html',
+  'forms/templates/README.md',
   '.cursor/skills/rtpsc-canvas/SKILL.md',
   'docs/CURSOR_TERMINAL_AGENT.md',
-  'scripts/cloud-doctor.mjs'
+  'scripts/cloud-doctor.mjs',
+  'scripts/pro.mjs'
 ];
 
 const packageFiles = [
@@ -111,7 +121,10 @@ const packageFiles = [
   'services/enrollment-service/package.json',
   'services/invoice-service/package.json',
   'services/pos-crm-service/package.json',
+  'services/pro-desk-service/package.json',
   'services/api-gateway/package.json',
+  'packages/tax-prep/package.json',
+  'packages/pro-superiority/package.json',
   'services/irs-gateway/package.json',
   'services/ai-workforce-hub/package.json',
   'services/refund-status-service/package.json',

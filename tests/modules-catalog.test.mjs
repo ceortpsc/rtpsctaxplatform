@@ -44,6 +44,7 @@ test('SERVICE_ENDPOINTS lists every HTTP service with a distinct port', () => {
   assert.ok(SERVICE_ENDPOINTS.find((e) => e.name === 'api-gateway').port === 3000);
   assert.equal(SERVICE_ENDPOINTS.find((e) => e.name === 'invoice-service').port, 3005);
   assert.equal(SERVICE_ENDPOINTS.find((e) => e.name === 'pos-crm-service').port, 3006);
+  assert.equal(SERVICE_ENDPOINTS.find((e) => e.name === 'pro-desk-service').port, 3007);
 });
 
 test('every catalog entry has name, summary and tags', () => {
@@ -62,4 +63,12 @@ test('catalog includes canvas-core for Cursor Canvas creation', () => {
   assert.ok(canvas, 'expected @rtp/canvas-core in packages category');
   assert.ok(canvas.tags.includes('canvas'));
   assert.deepEqual(canvas.detail.kinds, ['platform', 'compliance', 'agents', 'modules']);
+});
+
+test('catalog includes tax-prep and pro-superiority for Pro Desk', () => {
+  const packages = buildModuleCatalog().find((group) => group.category === 'packages');
+  assert.ok(packages.modules.find((m) => m.name === '@rtp/tax-prep'));
+  assert.ok(packages.modules.find((m) => m.name === '@rtp/pro-superiority'));
+  const services = buildModuleCatalog().find((group) => group.category === 'services');
+  assert.ok(services.modules.find((m) => m.name === 'pro-desk-service'));
 });

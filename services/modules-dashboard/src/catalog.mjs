@@ -9,9 +9,12 @@ import { analyticsDescriptor } from '../../../services/analytics-service/src/ind
 import { enrollmentDescriptor } from '../../../services/enrollment-service/src/index.mjs';
 import { invoiceDescriptor } from '../../../services/invoice-service/src/index.mjs';
 import { posCrmDescriptor } from '../../../services/pos-crm-service/src/index.mjs';
+import { proDeskDescriptor } from '../../../services/pro-desk-service/src/index.mjs';
 import { TAX_DATA_NOTICE } from '../../../packages/tax-data/src/index.mjs';
 import { listServiceCatalog } from '../../../packages/invoice-core/src/index.mjs';
 import { listPhraseTemplates } from '../../../packages/ero-ops/src/index.mjs';
+import { describeProSuperiority } from '../../../packages/pro-superiority/src/index.mjs';
+import { describeTaxPrep } from '../../../packages/tax-prep/src/index.mjs';
 import { tdsWorkerDescriptor } from '../../../workers/tds-worker/src/index.mjs';
 import { transcriptPullWorkerDescriptor } from '../../../workers/transcript-pull-worker/src/index.mjs';
 import { liveSourceFetcherDescriptor } from '../../../workers/live-source-fetcher/src/index.mjs';
@@ -51,6 +54,7 @@ const SERVICE_PORTS = {
   'enrollment-service': 3004,
   'invoice-service': 3005,
   'pos-crm-service': 3006,
+  'pro-desk-service': 3007,
   'modules-dashboard': 3010
 };
 
@@ -208,6 +212,12 @@ export function buildModuleCatalog() {
           detail: { phrases: listPhraseTemplates().map((t) => t.code) }
         },
         {
+          name: '@rtp/ero-governance',
+          summary: 'IRM-style AI persona register and hard prohibitions (no sign/transmit/HOLD clear).',
+          tags: ['governance', 'ai', 'rtp-ai-001'],
+          detail: { policy: 'RTP-AI-001', hardProhibitions: true }
+        },
+        {
           name: '@rtp/canvas-core',
           summary: 'Cursor Canvas creation — generate .canvas.tsx artifacts from live platform state.',
           tags: ['canvas', 'cursor', 'devtools'],
@@ -216,6 +226,18 @@ export function buildModuleCatalog() {
             commands: ['./rtpsc canvas create all', './rtpsc canvas list'],
             output: '.cursor/canvases/*.canvas.tsx'
           }
+        },
+        {
+          name: '@rtp/tax-prep',
+          summary: 'Professional tax-prep interview, form catalog, and return diagnostics with ROI linkage.',
+          tags: ['tax-prep', 'interview', 'diagnostics', 'pro'],
+          detail: describeTaxPrep()
+        },
+        {
+          name: '@rtp/pro-superiority',
+          summary: 'Competitive superiority scorecard vs TaxSlayer Pro–class desktop tax software.',
+          tags: ['pro', 'competitive', 'scorecard'],
+          detail: describeProSuperiority()
         }
       ]
     },
@@ -230,6 +252,7 @@ export function buildModuleCatalog() {
         serviceEntry(enrollmentDescriptor),
         serviceEntry(invoiceDescriptor),
         serviceEntry(posCrmDescriptor),
+        serviceEntry(proDeskDescriptor),
         serviceEntry(modulesDashboardDescriptor)
       ]
     },

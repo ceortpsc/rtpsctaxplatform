@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-26T08:55:04.723Z",
-  "count": 55,
+  "createdAt": "2026-07-27T02:47:36.761Z",
+  "count": 58,
   "ok": true,
   "footprints": [
     {
@@ -338,6 +338,26 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/pro-desk-service",
+      "version": "0.1.0",
+      "location": "services/pro-desk-service",
+      "sector": "services",
+      "footprint": "5fe0699a4bbf99ae",
+      "fingerprint": "5fe0699a4bbf99ae",
+      "integrity": "sha256-5fe0699a4bbf99aeaa0b848cf2f05b7ff04bfb3828be115a0d64715a349a5ad8",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/pro-superiority",
+      "version": "0.1.0",
+      "location": "packages/pro-superiority",
+      "sector": "packages",
+      "footprint": "f6018f348e88c6d6",
+      "fingerprint": "f6018f348e88c6d6",
+      "integrity": "sha256-f6018f348e88c6d649c3e7869fbfeabc2d99bd83ed14752daf1cbd4a58dbc9df",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/production-compliance",
       "version": "0.1.0",
       "location": "packages/production-compliance",
@@ -455,6 +475,16 @@
       "footprint": "81fc8dc587d40a7b",
       "fingerprint": "81fc8dc587d40a7b",
       "integrity": "sha256-81fc8dc587d40a7b8ec6fe005835d5985d5c1aa2df4f83d0ceaaddf57c484e88",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/tax-prep",
+      "version": "0.1.0",
+      "location": "packages/tax-prep",
+      "sector": "packages",
+      "footprint": "9d3bb1bf5ff794b8",
+      "fingerprint": "9d3bb1bf5ff794b8",
+      "integrity": "sha256-9d3bb1bf5ff794b899d18deb9b342f2b0e415f359419d6414d2a5614064145c7",
       "status": "sealed"
     },
     {

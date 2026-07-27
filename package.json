@@ -33,6 +33,7 @@
     "start:enrollment": "pnpm --filter @rtp/enrollment-service start",
     "start:invoice": "pnpm --filter @rtp/invoice-service start",
     "start:pos-crm": "pnpm --filter @rtp/pos-crm-service start",
+    "start:pro-desk": "pnpm --filter @rtp/pro-desk-service start",
     "start:dashboard": "pnpm --filter @rtp/modules-dashboard start",
     "start:workflows": "pnpm --filter @rtp/workflow-runner start",
     "start:all": "./scripts/start-all.sh",
