@@ -126,7 +126,7 @@ export async function runCli(argv) {
         );
       }
       case 'seo': {
-        const ownershipActions = new Set(['plan', 'generate', 'prevalidate', 'google', 'indexnow']);
+        const ownershipActions = new Set(['plan', 'generate', 'prevalidate', 'google', 'indexnow', 'deploy']);
         if (ownershipActions.has(rest[0])) {
           const { runSeoOwnership } = await import('./seo.mjs');
           return runSeoOwnership(rest);

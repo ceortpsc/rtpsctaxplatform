@@ -2,14 +2,21 @@
 
 | Area | Result |
 |------|--------|
-| Full monorepo `node --test` | 155 passed / 0 failed |
-| ROSS.CO Infinite unit/integration | 9 passed |
-| Platform wiring tests | 3 passed |
-| Agent roster (8 roles) | Passed |
-| SEO ownership assignment | Passed |
-| Smoke (`scripts/smoke-test.sh`) | PASS |
-| Scaffold lint | PASS |
-| Scaffold build | PASS |
+| Scaffold lint/build | PASS |
+| Automated tests | PASS (includes DNS/token deploy unit test) |
+| SEO generate + prevalidate | PASS → `PREVALIDATED` |
+| DNS/token artifact deploy | PASS → `DEPLOYED` (file/DNS package staged) |
 | Owner assertion | Condre Dvon Ross / ROSS.CO |
-| Provider Google/Bing verification | Pending live token/DNS deployment |
+| Live NS | `ns1.namefind.com`, `ns2.namefind.com` |
+| Live TXT | `v=spf1 -all` only (no Google verification TXT yet) |
+| Registrar API apply | Not executed — no GoDaddy/AWS DNS credentials here |
+| Provider Google/Bing verified | Pending token issuance + registrar publish |
 
+## Deploy command
+
+```bash
+./scripts/seo-deploy-dns-tokens.sh
+./scripts/ross-infinite seo deploy config/seo/ross.co.ownership.json --apply-dns
+```
+
+Artifacts: `deploy/seo/dns/`, `deploy/seo/public/`, `presence/rossco/`.

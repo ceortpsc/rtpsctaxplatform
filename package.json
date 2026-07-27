@@ -65,6 +65,7 @@
     "ross-infinite:test": "node --test tools/ross-infinite/tests/*.test.mjs",
     "ross-infinite:smoke": "bash ./tools/ross-infinite/scripts/smoke-test.sh",
     "ross-infinite:verify": "bash ./tools/ross-infinite/scripts/run-v1.sh",
+    "seo:deploy": "bash ./scripts/seo-deploy-dns-tokens.sh",
     "ross": "python3 ./ross.py",
     "ross:init": "python3 ./ross.py init",
     "ross:doctor": "python3 ./ross.py doctor",

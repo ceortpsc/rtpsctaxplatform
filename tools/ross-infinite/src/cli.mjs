@@ -14,6 +14,7 @@ import { generateSeoAssets } from './seo/generate.mjs';
 import { prevalidateOwnership } from './seo/prevalidate.mjs';
 import { googleSearchConsole } from './seo/google.mjs';
 import { indexNowSubmit } from './seo/indexnow.mjs';
+import { deployDnsTokenArtifacts } from './seo/deploy.mjs';
 import { createRegistry } from './server/registry.mjs';
 
 const ExitCode = { OK: 0, FAIL: 1, USAGE: 2 };
@@ -234,7 +235,7 @@ async function runSeo(args, { json, execute, live }) {
   // Allow: seo plan [config] OR seo generate [config]
   const positional = args.filter((a) => !a.startsWith('-'));
   const configPath = positional[1] || (positional[0]?.endsWith('.json') ? positional[0] : configArg);
-  const action = ['plan', 'generate', 'prevalidate', 'google', 'indexnow'].includes(positional[0])
+  const action = ['plan', 'generate', 'prevalidate', 'google', 'indexnow', 'deploy'].includes(positional[0])
     ? positional[0]
     : sub;
 
@@ -329,6 +330,22 @@ async function runSeo(args, { json, execute, live }) {
     }
   }
 
+  if (action === 'deploy') {
+    const applyDns = hasFlag(args, '--apply-dns');
+    const report = await deployDnsTokenArtifacts(root, config, { applyDns, observeLive: true });
+    return print(json, report, () =>
+      panel('SEO DNS/Token Deploy', [
+        `state     ${report.state}`,
+        `indexnow  ${report.tokens.indexNowKey}`,
+        `presence  ${report.artifacts.presenceWritten.length} files`,
+        `dns       ${report.artifacts.dnsDir}`,
+        `live NS   ${(report.live?.ns || []).join(', ') || 'n/a'}`,
+        `dnsApply  ${report.dnsApply.reason || report.dnsApply.ok}`,
+        `receipt   ${report.receipt.outPath}`
+      ])
+    );
+  }
+
   console.error(`Unknown seo action: ${action}`);
   return ExitCode.USAGE;
 }
@@ -384,12 +401,13 @@ Commands
   doctor [root]              Environment / package diagnostics
   store-put <file>           Put bytes into content-addressed store
   registry [--port N]        Local registry HTTP service
-  seo plan|generate|prevalidate|google|indexnow [config]
+  seo plan|generate|prevalidate|google|indexnow|deploy [config]
   version | help
 
 SEO flags
   --live                     Live DNS prevalidation
   --execute                  Perform provider mutations (Google/IndexNow)
+  --apply-dns                Attempt live DNS provider apply (requires credentials)
 
 General flags
   --json / -j                Machine-readable output

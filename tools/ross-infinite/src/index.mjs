@@ -20,6 +20,7 @@ export { generateSeoAssets } from './seo/generate.mjs';
 export { prevalidateOwnership } from './seo/prevalidate.mjs';
 export { googleSearchConsole } from './seo/google.mjs';
 export { indexNowSubmit } from './seo/indexnow.mjs';
+export { deployDnsTokenArtifacts } from './seo/deploy.mjs';
 export { EVIDENCE_STATES } from './seo/states.mjs';
 export { runCli } from './cli.mjs';
 

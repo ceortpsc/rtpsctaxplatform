@@ -39,3 +39,4 @@ tools/ross-infinite/release-evidence/**
 tools/ross-infinite/seo/generated/
 *.ross-partial
 *.ross-state.json
+config/seo/tokens.local.env

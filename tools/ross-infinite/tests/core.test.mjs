@@ -142,3 +142,34 @@ test('doctor and policy-check pass for package', async () => {
   const policy = await policyCheck(PKG_ROOT, 'package.json', 'config/production-policy.json');
   assert.equal(policy.ok, true, JSON.stringify(policy.findings, null, 2));
 });
+
+test('dns/token deploy stages presence artifacts and DNS package', async () => {
+  const { deployDnsTokenArtifacts } = await import('../src/seo/deploy.mjs');
+  const { config } = await loadOwnershipConfig(PKG_ROOT);
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'ross-deploy-'));
+  try {
+    // Use package ownership shape with local output dirs under temp
+    const localConfig = {
+      ...config,
+      output: { publicDir: 'seo/generated/public', evidenceDir: 'release-evidence/seo' },
+      presenceDeployDir: 'presence/rossco'
+    };
+    await mkdir(path.join(dir, 'presence/rossco'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'presence/rossco/index.html'),
+      '<!doctype html><html><head><title>t</title></head><body>x</body></html>\n'
+    );
+    const report = await deployDnsTokenArtifacts(dir, localConfig, { observeLive: false, applyDns: false });
+    assert.equal(report.ok, true);
+    assert.equal(report.state, 'DEPLOYED');
+    assert.ok(report.tokens.indexNowKey.length >= 32);
+    const keyFile = path.join(dir, 'presence/rossco', `${report.tokens.indexNowKey}.txt`);
+    const zone = await readFile(path.join(dir, 'deploy/seo/dns/ross.co.zone'), 'utf8');
+    assert.match(zone, /TXT/);
+    assert.equal((await readFile(keyFile, 'utf8')).trim(), report.tokens.indexNowKey);
+    const html = await readFile(path.join(dir, 'presence/rossco/index.html'), 'utf8');
+    assert.match(html, /ROSS\.CO Infinite SEO ownership head injection/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});

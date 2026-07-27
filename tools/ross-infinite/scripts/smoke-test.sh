@@ -27,6 +27,7 @@ echo "== seo =="
 "${CLI[@]}" seo plan config/seo/ross.co.ownership.json --json >/dev/null
 "${CLI[@]}" seo generate config/seo/ross.co.ownership.json --json >/dev/null
 "${CLI[@]}" seo prevalidate config/seo/ross.co.ownership.json --json >/dev/null
+"${CLI[@]}" seo deploy config/seo/ross.co.ownership.json --json >/dev/null
 
 echo "== mcp initialize =="
 printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"smoke","version":"0.0.0"}}}' \

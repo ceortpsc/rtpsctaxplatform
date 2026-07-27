@@ -1,0 +1,16 @@
+; ROSS.CO SEO ownership DNS artifact
+; Generated for registrar apply (current NS observed: ns2.namefind.com, ns1.namefind.com)
+$ORIGIN ross.co.
+$TTL 300
+
+@       IN      TXT     "v=spf1 -all"
+@       IN      TXT     "google-site-verification=PENDING_REPLACE_WITH_PROVIDER_ISSUED_TOKEN"
+
+; After hosting cutover, point apex/www to production endpoints.
+; Subdomain inventory:
+; - ross.co (domain, corporate)
+; - www.ross.co (url-prefix, www-alias)
+; - developers.ross.co (url-prefix, developer-portal)
+; - docs.ross.co (url-prefix, documentation)
+; - registry.ross.co (url-prefix, registry-api)
+; - status.ross.co (url-prefix, status)

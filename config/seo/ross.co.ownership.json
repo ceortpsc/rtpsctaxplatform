@@ -75,6 +75,7 @@
     "publicDir": "seo/generated/public",
     "evidenceDir": "release-evidence/seo"
   },
+  "presenceDeployDir": "presence/rossco",
   "evidenceStates": [
     "ASSERTED",
     "PREVALIDATED",

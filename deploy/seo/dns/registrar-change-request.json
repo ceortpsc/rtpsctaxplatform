@@ -1,0 +1,34 @@
+{
+  "providerHint": "GoDaddy/Namefind DNS panel",
+  "observedNameservers": [
+    "ns2.namefind.com",
+    "ns1.namefind.com"
+  ],
+  "observedTxt": [
+    "v=spf1 -all"
+  ],
+  "recordsToApply": [
+    {
+      "type": "TXT",
+      "host": "@",
+      "name": "ross.co",
+      "value": "google-site-verification=PENDING_REPLACE_WITH_PROVIDER_ISSUED_TOKEN",
+      "ttl": 300,
+      "purpose": "Google Search Console domain property verification"
+    },
+    {
+      "type": "TXT",
+      "host": "@",
+      "name": "ross.co",
+      "value": "v=spf1 -all",
+      "ttl": 300,
+      "purpose": "Preserve existing SPF"
+    }
+  ],
+  "fileVerificationFallbacks": [
+    "https://ross.co/seo-head.html",
+    "https://ross.co/ef76e5a3d8eea7b561115a17ef8d31fe44a6bea9b144d0d2fb432921955e6f3d.txt",
+    "https://ross.co/BingSiteAuth.xml"
+  ],
+  "pendingProviderToken": true
+}
