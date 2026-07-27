@@ -7,6 +7,10 @@ const tasksEl = document.getElementById('tasks');
 const eventsEl = document.getElementById('events');
 const govEl = document.getElementById('gov');
 
+if (globalThis.RTPSCShell) {
+  RTPSCShell.mount({ activeId: 'ai_workforce', serviceName: 'ai-workforce-hub', env: 'local' });
+}
+
 async function getJson(url, options) {
   const response = await fetch(url, options);
   const data = await response.json();
@@ -78,6 +82,7 @@ hireForm.addEventListener('submit', async (event) => {
       })
     });
     show(hireOut, data);
+    if (globalThis.RTPSCShell?.toast) RTPSCShell.toast('Hire / pay / run completed', 'success');
     refreshBoard();
   } catch (error) {
     show(hireOut, error.data || { error: error.message });

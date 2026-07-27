@@ -47,7 +47,7 @@ export function createPosStore(crmStore, { idFactory, now = () => new Date().toI
     const session = {
       id: nextId('pos'),
       status: 'open',
-      register: String(input.register ?? 'REG-1').trim() || 'REG-1',
+      register: String(input.register ?? process.env.POS_REGISTER_ID ?? 'REG-RTPSC-1').trim() || 'REG-RTPSC-1',
       operator: String(input.operator ?? 'cashier').trim() || 'cashier',
       contactId: contact?.id ?? null,
       clientName: contact?.name ?? (String(input.clientName ?? 'Walk-in').trim() || 'Walk-in'),
