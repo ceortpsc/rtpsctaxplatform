@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-27T16:46:57.628Z",
-  "count": 57,
+  "createdAt": "2026-07-27T17:15:31.437Z",
+  "count": 59,
   "ok": true,
   "footprints": [
     {
@@ -335,6 +335,26 @@
       "footprint": "5b94157a5176edce",
       "fingerprint": "5b94157a5176edce",
       "integrity": "sha256-5b94157a5176edce23ff622319d2ad8f76c7e0584fe088121b05dc0c159d8734",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/production-activation",
+      "version": "0.1.0",
+      "location": "packages/production-activation",
+      "sector": "packages",
+      "footprint": "94f2e117b0a117a9",
+      "fingerprint": "94f2e117b0a117a9",
+      "integrity": "sha256-94f2e117b0a117a980b720f957c2f891580fa5bfd88c9eea6947d42fa95fb434",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/production-activation-workflow",
+      "version": "0.1.0",
+      "location": "workflows/production-activation-workflow",
+      "sector": "workflows",
+      "footprint": "f92d68ada7f8f87a",
+      "fingerprint": "f92d68ada7f8f87a",
+      "integrity": "sha256-f92d68ada7f8f87a8dbde5bd0dae72201baa4f2dfd82f975efc8da3d6d3b0fd8",
       "status": "sealed"
     },
     {

@@ -52,9 +52,13 @@ test('agents subcommands pass through to scripts/agents.mjs', () => {
 
 test('usage lists the commands', () => {
   const usage = buildUsage();
-  for (const name of ['lint', 'test', 'build', 'deploy', 'deploy-full', 'agents', 'canvas', 'cloud', 'workflow', 'clients']) {
+  for (const name of ['lint', 'test', 'build', 'deploy', 'deploy-full', 'activate', 'agents', 'canvas', 'cloud', 'workflow', 'clients']) {
     assert.ok(usage.includes(name), `usage should mention ${name}`);
   }
+});
+
+test('activate command resolves to production-activation CLI', () => {
+  assert.match(planCommand(['activate', '--skip-gates']).args.join(' '), /production-activation\/bin\/activate\.mjs/);
 });
 
 test('clients command resolves to scripts/clients.mjs', () => {

@@ -167,14 +167,19 @@ test('agent.task.requested event trigger runs subscribed assignments', async () 
 });
 
 test('platform registry includes agent-assignment workflows and sample inputs', async () => {
-  assert.ok(platformWorkflows.length >= 6);
+  assert.ok(platformWorkflows.length >= 9);
   const { registry, triggers } = createPlatformRegistry();
   assert.ok(registry.has('agent-assignment-dispatch'));
   assert.ok(registry.has('agent-task-requested'));
   assert.ok(registry.has('agent-assignment-cycle'));
+  assert.ok(registry.has('production-activation-dispatch'));
+  assert.ok(registry.has('production-activation-requested'));
   assert.ok(triggers.eventNames().includes('agent.task.requested'));
+  assert.ok(triggers.eventNames().includes('production.activation.requested'));
   assert.ok(triggers.scheduledWorkflows().includes('agent-assignment-cycle'));
+  assert.ok(triggers.scheduledWorkflows().includes('production-activation-cycle'));
   assert.equal(sampleInputs['agent-assignment-dispatch'].assignmentId, 'validate-platform');
+  assert.equal(sampleInputs['production-activation-requested'].mode, 'automated');
 
   const runs = await triggers.emit('agent.task.requested', sampleInputs['agent-task-requested']);
   assert.equal(runs.length, 1);

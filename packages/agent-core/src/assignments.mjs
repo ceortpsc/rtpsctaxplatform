@@ -138,6 +138,15 @@ export const REQUIRED_ASSIGNMENTS = Object.freeze([
     tags: ['seo', 'ownership', 'search-console', 'required']
   }),
   defineAssignment({
+    id: 'activate-production',
+    title: 'Automated production activation',
+    description: 'Dispatch fully automated production activation gates, receipts, and trigger events.',
+    agent: 'staging-agent',
+    trigger: { type: 'event', on: 'production.activation.requested' },
+    priority: 1,
+    tags: ['production', 'activation', 'automated', 'required']
+  }),
+  defineAssignment({
     id: 'generate-docs',
     title: 'Generate agent documentation',
     description: 'Render analysis reports into docs/agents markdown.',

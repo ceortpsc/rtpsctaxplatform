@@ -1,0 +1,8 @@
+{
+  "name": "@rtp/production-activation-workflow",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs",
+  "description": "Automated production activation workflows (manual, event, schedule) for RTPSC + ROSS.CO Infinite"
+}

@@ -65,6 +65,11 @@ export const COMMANDS = {
     desc: 'Full deploy: gates, SEO/DNS artifacts, ROSS.CO Infinite, all services, workers, smoke',
     plan: (rest) => node('scripts/deploy-platform.mjs', rest)
   },
+  activate: {
+    usage: 'activate [--smoke|--skip-gates|--status|--heartbeat|--json] [--evidence-<flag>]',
+    desc: 'Fully automated production activation (gates, receipts, workflow triggers)',
+    plan: (rest) => node('packages/production-activation/bin/activate.mjs', rest)
+  },
   workflows: { usage: 'workflows', desc: 'List background workflows', plan: () => node('workers/workflow-runner/src/cli.mjs', ['list']) },
   workflow: {
     usage: "workflow run <name> '<json>'  |  workflow emit <event> '<json>'",

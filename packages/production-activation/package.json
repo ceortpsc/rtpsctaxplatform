@@ -1,0 +1,18 @@
+{
+  "name": "@rtp/production-activation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Fully automated production activation engine, state machine, and evidence receipts for RTPSC + ROSS.CO Infinite",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "rtpsc-activate": "./bin/activate.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
