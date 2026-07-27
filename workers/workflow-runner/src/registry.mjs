@@ -11,6 +11,7 @@ import {
   agentTaskRequestedWorkflow,
   agentAssignmentCycleWorkflow
 } from '../../../workflows/agent-assignment-workflow/src/index.mjs';
+import { automationWebhookWorkflow } from '../../../workflows/automation-webhook-workflow/src/index.mjs';
 
 // Central composition point for the background workflow runner: registers every
 // modular workflow and wires a runner + trigger manager. Workflows execute here
@@ -21,7 +22,8 @@ export const platformWorkflows = [
   transmissionWorkflow,
   agentAssignmentDispatchWorkflow,
   agentTaskRequestedWorkflow,
-  agentAssignmentCycleWorkflow
+  agentAssignmentCycleWorkflow,
+  automationWebhookWorkflow
 ];
 
 // Representative inputs used to drive workflows during background cycles.
@@ -33,7 +35,13 @@ export const sampleInputs = Object.freeze({
   'transmission-cycle': { batchId: 'scheduled-batch', documents: ['doc-1', 'doc-2'] },
   'agent-assignment-dispatch': { assignmentId: 'validate-platform' },
   'agent-task-requested': { assignmentId: 'validate-platform' },
-  'agent-assignment-cycle': {}
+  'agent-assignment-cycle': {},
+  'automation-webhook': {
+    event_type: 'sync',
+    event_id: 'EVT-AUTOMATION-SAMPLE',
+    resource_id: 'RES-SAMPLE',
+    __now: '2026-07-27T12:00:00.000Z'
+  }
 });
 
 export function createPlatformRegistry() {

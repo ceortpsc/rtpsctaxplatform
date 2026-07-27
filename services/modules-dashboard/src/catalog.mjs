@@ -29,6 +29,8 @@ import {
   agentTaskRequestedWorkflow,
   agentAssignmentCycleWorkflow
 } from '../../../workflows/agent-assignment-workflow/src/index.mjs';
+import { automationWebhookWorkflow } from '../../../workflows/automation-webhook-workflow/src/index.mjs';
+import { automationAgentDescriptor } from '../../../packages/automation-agent/src/index.mjs';
 
 // Descriptor for the modules-dashboard itself, defined here to avoid a circular
 // import between the catalog and the HTTP service entrypoint.
@@ -167,6 +169,15 @@ export function buildModuleCatalog() {
           }
         },
         {
+          name: '@rtp/automation-agent',
+          summary: 'Deterministic webhook parse/validate/normalize/route with audit-grade logs (no sensitive retention).',
+          tags: ['automation', 'webhook', 'compliance'],
+          detail: {
+            handlers: automationAgentDescriptor.handlers,
+            primitives: ['processWebhook', 'parsePayload', 'normalizeIdentifier', 'normalizeTimestamp', 'normalizeStatusCode']
+          }
+        },
+        {
           name: '@rtp/bank-products',
           summary: 'SBTPG products, login clearance/audit logging, disclosures, and the fail-safe payment gate.',
           tags: ['bank-products', 'sbtpg', 'auth', 'audit'],
@@ -251,7 +262,8 @@ export function buildModuleCatalog() {
               'transmission-cycle',
               'agent-assignment-dispatch',
               'agent-task-requested',
-              'agent-assignment-cycle'
+              'agent-assignment-cycle',
+              'automation-webhook'
             ]
           }
         }
@@ -276,7 +288,8 @@ export function buildModuleCatalog() {
         workflowEntry(transmissionWorkflow),
         workflowEntry(agentAssignmentDispatchWorkflow),
         workflowEntry(agentTaskRequestedWorkflow),
-        workflowEntry(agentAssignmentCycleWorkflow)
+        workflowEntry(agentAssignmentCycleWorkflow),
+        workflowEntry(automationWebhookWorkflow)
       ]
     }
   ];

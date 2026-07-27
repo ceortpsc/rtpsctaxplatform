@@ -1,0 +1,11 @@
+{
+  "name": "@rtp/automation-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs",
+  "description": "Deterministic webhook payload processor for Ross Tax Platform automations.",
+  "scripts": {
+    "test": "node --test"
+  }
+}
