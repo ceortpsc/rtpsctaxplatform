@@ -116,6 +116,7 @@ Two equivalent runners exist:
 - The "AI Assistant"/insights come from `packages/module-advisor` — a local, dependency-free
   heuristic engine (intent detection + keyword scoring). There is **no external LLM or API key**.
 - `./rtpsc deploy` (or `pnpm run deploy:all`) starts every HTTP service (ports `3000`–`3006` + `3010`)
+- `./rtpsc deploy-full --smoke` (or `pnpm run deploy:full:smoke`) provisions SEO/DNS artifacts, ROSS.CO Infinite evidence, all services including IRS `:8820` / AI workforce `:8860` / registry `:4873` / presence `:3080`, workers, and writes `build/platform-deploy-manifest.json` (docs: `docs/platform-full-deploy.md`).
   plus the background `workflow-runner` as child processes, health-checks them, and stays live
   (Ctrl+C stops all). `./rtpsc deploy --smoke` verifies health once and exits. Free those ports
   first — stop any single-service dev processes so deploy doesn't hit EADDRINUSE.

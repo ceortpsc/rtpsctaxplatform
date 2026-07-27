@@ -70,6 +70,8 @@ const requiredPaths = [
   'docs/ROSS_CO_SEO_Ownership_Runbook.md',
   'config/seo/tokens.env.example',
   'scripts/seo-deploy-dns-tokens.sh',
+  'scripts/deploy-platform.mjs',
+  'docs/platform-full-deploy.md',
   'agents/seo-ownership-agent/package.json',
   'agents/seo-ownership-agent/src/index.mjs',
   'aol.config.json',
