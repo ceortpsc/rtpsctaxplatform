@@ -1,8 +1,14 @@
-/* global fetch, document, localStorage */
+/* global fetch, document, localStorage, RTPSCShell */
 const $ = (id) => document.getElementById(id);
 
-function toast(msg) {
+function toast(msg, tone) {
+  if (globalThis.RTPSCShell?.toast) {
+    RTPSCShell.toast(msg, tone || "success");
+    return;
+  }
   const el = $("toast");
+  if (!el) return;
+  el.hidden = false;
   el.textContent = msg;
   el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 2400);
@@ -24,6 +30,11 @@ async function api(path, opts = {}) {
   return data;
 }
 
+function statusHtml(code) {
+  if (globalThis.RTPSCShell?.statusBadge) return RTPSCShell.statusBadge(code);
+  return `<span class="badge badge--neutral">${code}</span>`;
+}
+
 async function loadClients() {
   const data = await api("/api/clients");
   $("clientBadge").textContent = `API ${data.counts.api} · TDS ${data.counts.tds}`;
@@ -38,14 +49,13 @@ async function refreshCases() {
   const data = await api("/api/cases");
   const wrap = $("cases");
   if (!data.cases.length) {
-    wrap.textContent = "No cases yet.";
+    wrap.innerHTML = `<tr><td colspan="3" class="table-empty">No cases yet.</td></tr>`;
     return;
   }
   wrap.innerHTML = "";
   data.cases.forEach((c) => {
-    const el = document.createElement("div");
-    el.className = "item";
-    el.innerHTML = `<strong>${c.id}</strong> · ${c.status}<div class="meta">${c.taxpayerRef} · risk ${c.riskScore} · ${c.priority}</div>`;
+    const el = document.createElement("tr");
+    el.innerHTML = `<td><strong>${c.id}</strong></td><td>${statusHtml(c.status)}</td><td>${c.taxpayerRef} · risk ${c.riskScore} · ${c.priority}</td>`;
     el.onclick = () => showCase(c.id);
     wrap.appendChild(el);
   });
@@ -97,6 +107,12 @@ async function fullRefund() {
   await showCase(data.case.id);
 }
 
-$("ingestBtn").onclick = () => ingest().catch((e) => toast(e.message));
-$("fullBtn").onclick = () => fullRefund().catch((e) => toast(e.message));
-loadClients().then(refreshCases).catch((e) => toast(e.message));
+if (globalThis.RTPSCShell) {
+  RTPSCShell.mount({ activeId: "refunds", serviceName: "refund-status-service", env: "local" });
+}
+
+$("ingestBtn").onclick = () => ingest().catch((e) => toast(e.message, "danger"));
+$("fullBtn").onclick = () => fullRefund().catch((e) => toast(e.message, "danger"));
+$("ingestBtnMobile")?.addEventListener("click", () => $("ingestBtn").click());
+$("fullBtnMobile")?.addEventListener("click", () => $("fullBtn").click());
+loadClients().then(refreshCases).catch((e) => toast(e.message, "danger"));

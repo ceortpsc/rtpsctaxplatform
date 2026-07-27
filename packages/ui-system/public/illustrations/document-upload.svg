@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="Upload a document">
+  <rect width="320" height="200" rx="16" fill="#eef1f6"/>
+  <rect x="40" y="36" width="240" height="128" rx="12" fill="#fff" stroke="#c9d1de"/>
+  <path d="M160 120V70M145 85l15-15 15 15" fill="none" stroke="#122044" stroke-width="3" stroke-linecap="round"/><path d="M120 130h80" stroke="#c9d1de" stroke-width="3"/>
+  <text x="160" y="178" text-anchor="middle" font-family="Avenir Next, Segoe UI, sans-serif" font-size="12" fill="#6b778d">Upload a document</text>
+</svg>

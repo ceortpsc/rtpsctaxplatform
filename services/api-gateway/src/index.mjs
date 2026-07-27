@@ -10,9 +10,10 @@ import {
 } from '../../../packages/platform-core/src/index.mjs';
 import { createSecureTunnelAdapter } from '../../../packages/secure-tunnel/src/index.mjs';
 import { createClientRegistry, extractClientCredentials } from '../../../packages/client-identity/src/index.mjs';
+import { buildOperationalSeed, loadFirmIdentity, resolveServiceWiring, serviceBaseUrl } from '../../../packages/operational-seed/src/index.mjs';
 
 const DEFAULT_PORT = 3000;
-const REFUND_UPSTREAM = process.env.REFUND_STATUS_URL ?? 'http://localhost:3001';
+const REFUND_UPSTREAM = () => serviceBaseUrl('refund-status-service') ?? process.env.REFUND_STATUS_URL ?? 'http://127.0.0.1:3001';
 
 export const gatewayDescriptor = createServiceDescriptor({
   name: 'api-gateway',
@@ -59,6 +60,9 @@ function readBody(request) {
 export function createGatewayServer({ registry } = {}) {
   const config = loadRuntimeConfig({ servicePort: DEFAULT_PORT });
   const clients = registry ?? createClientRegistry();
+  const firm = loadFirmIdentity();
+  const operational = buildOperationalSeed();
+  const wiring = resolveServiceWiring();
   let ready = false;
 
   async function ensure() {
@@ -90,9 +94,28 @@ export function createGatewayServer({ registry } = {}) {
           clients: clients.status(),
           metadata: {
             transmissionFlows: ['prepare', 'validate', 'queue', 'transmit', 'acknowledge'],
-            refundUpstream: REFUND_UPSTREAM,
-            routes: ['/api/clients', '/api/auth/token', '/api/refund/*']
+            refundUpstream: REFUND_UPSTREAM(),
+            routes: ['/api/clients', '/api/auth/token', '/api/refund/*'],
+            firm: {
+              company: firm.company,
+              operator: firm.operator?.name ?? null,
+              completeness: firm.completeness
+            },
+            wiring: wiring.services,
+            catalogs: operational.catalogs.counts,
+            unfundedInquiries: operational.unfundedRefundInquiries.length
           }
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/api/operational') {
+        return sendJson(response, 200, {
+          firm,
+          wiring: wiring.services,
+          edges: wiring.edges,
+          catalogs: operational.catalogs.counts,
+          unfundedRefundInquiries: operational.unfundedRefundInquiries,
+          posture: operational.posture
         });
       }
 
@@ -138,7 +161,7 @@ export function createGatewayServer({ registry } = {}) {
         if (!auth.ok) return sendJson(response, 401, { error: auth.code, message: auth.message });
 
         const targetPath = pathname.replace(/^\/api\/refund/, '/api') || '/api/cases';
-        const target = new URL(targetPath + url.search, REFUND_UPSTREAM);
+        const target = new URL(targetPath + url.search, REFUND_UPSTREAM());
         const upstream = await fetch(target, {
           method: request.method,
           headers: {

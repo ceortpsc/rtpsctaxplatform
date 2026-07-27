@@ -6,8 +6,14 @@ let contacts = [];
 let session = null;
 let selectedContactId = null;
 
-function toast(msg) {
+function toast(msg, tone) {
+  if (globalThis.RTPSCShell?.toast) {
+    RTPSCShell.toast(msg, tone || "success");
+    return;
+  }
   const el = $("toast");
+  if (!el) return;
+  el.hidden = false;
   el.textContent = msg;
   el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 2600);
@@ -36,10 +42,17 @@ function escapeHtml(s) {
 }
 
 function switchTab(name) {
-  document.querySelectorAll(".tabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll("[data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
   ["crm", "pos", "ero"].forEach((t) => {
     $(`tab-${t}`).hidden = t !== name;
   });
+  const activeNav = name === "pos" ? "pos" : name === "ero" ? "refunds" : "clients";
+  document.querySelectorAll(".app-shell__nav-item").forEach((a) => {
+    a.classList.toggle("is-active", a.getAttribute("data-nav-id") === activeNav);
+  });
+  if (location.hash !== `#${name}`) {
+    history.replaceState(null, "", `#${name}`);
+  }
 }
 
 function fillStates(selId, locId, labelId, preferred = "LA") {
@@ -62,15 +75,17 @@ function renderContacts(list) {
   contacts = list;
   const wrap = $("contactList");
   if (!list.length) {
-    wrap.textContent = "No contacts.";
+    wrap.innerHTML = `<tr><td colspan="3" class="table-empty">No contacts.</td></tr>`;
+    fillContactSelects();
     return;
   }
   wrap.innerHTML = "";
   list.forEach((c) => {
-    const el = document.createElement("div");
-    el.className = "item" + (c.id === selectedContactId ? " selected" : "");
-    el.innerHTML = `<strong>${escapeHtml(c.name)}</strong> <span class="status ${c.status}">${c.status}</span>
-      <div class="meta">${escapeHtml(c.taxpayerRef || "no TP ref")} · ${escapeHtml(c.locality || "")} ${escapeHtml(c.state || "")}</div>`;
+    const el = document.createElement("tr");
+    if (c.id === selectedContactId) el.classList.add("is-selected");
+    el.innerHTML = `<td><strong>${escapeHtml(c.name)}</strong></td>
+      <td>${escapeHtml(c.taxpayerRef || "—")}</td>
+      <td>${escapeHtml(c.locality || "")} ${escapeHtml(c.state || "")}</td>`;
     el.onclick = () => showContact(c.id);
     wrap.appendChild(el);
   });
@@ -284,21 +299,21 @@ async function genPhrase() {
       code: $("phraseCode").value,
       context: {
         clientName: contact?.name || $("iName").value,
-        taxpayerRef: contact?.taxpayerRef || "TP-77",
+        taxpayerRef: contact?.taxpayerRef || "",
         statusPhrase: $("iStatus").value,
         productName: $("tProduct").value,
-        enrollmentId: "enr-demo",
-        saleNumber: "POS-DEMO",
-        total: "250.00",
+        enrollmentId: contact?.lastEnrollmentId || "",
+        saleNumber: contact?.lastSaleId || "",
+        total: "",
         paymentMethod: "card",
-        traceId: "sbt-demo",
+        traceId: "",
         productCode: $("tProduct").value,
         stage: $("tStage").value,
         detail: $("tDetail").value,
-        score: 72,
-        band: "watch",
-        drivers: "demo",
-        recommendation: "monitor"
+        score: "",
+        band: "",
+        drivers: "",
+        recommendation: ""
       }
     })
   });
@@ -311,28 +326,46 @@ async function loadCatalog() {
 }
 
 async function boot() {
-  document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+  if (globalThis.RTPSCShell) {
+    RTPSCShell.mount({ activeId: "clients", serviceName: "pos-crm-service", env: "local" });
+  }
+  document.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+  const hashTab = (location.hash || "#crm").replace("#", "");
+  if (["crm", "pos", "ero"].includes(hashTab)) switchTab(hashTab);
+  window.addEventListener("hashchange", () => {
+    const t = location.hash.replace("#", "");
+    if (["crm", "pos", "ero"].includes(t)) switchTab(t);
+  });
   taxData = await api("/api/tax");
-  fillStates("cState", "cLocality", "cLocLabel", "LA");
-  await loadCatalog();
+  try {
+    const ops = await api("/api/operational");
+    if (ops?.firm?.pos?.registerId) $("pRegister").value = ops.firm.pos.registerId;
+    if (ops?.firm?.pos?.cashierId) $("pOperator").value = ops.firm.pos.cashierId;
+    if (ops?.firm?.operator?.name) $("iName").placeholder = ops.firm.operator.name;
+    fillStates("cState", "cLocality", "cLocLabel", ops?.firm?.state || "");
+  } catch {
+    fillStates("cState", "cLocality", "cLocLabel", "");
+  }
   await loadPhrases();
   await refreshContacts();
   await refreshSales();
   await refreshTraces();
-  if (contacts[0]) {
-    selectedContactId = contacts[0].id;
-    $("cLocality").value = contacts[0].locality || "";
-    await showContact(contacts[0].id);
+  const taxpayerContacts = contacts.filter((c) => !c.tags?.includes('operator') && !c.tags?.includes('staff'));
+  const bootContact = taxpayerContacts[0] || null;
+  if (bootContact) {
+    selectedContactId = bootContact.id;
+    $("cLocality").value = bootContact.locality || "";
+    await showContact(bootContact.id);
   }
 
-  $("createContact").onclick = () => createContact().catch((e) => toast(e.message));
-  $("cSearch").oninput = () => refreshContacts().catch((e) => toast(e.message));
-  $("openSession").onclick = () => openSession().catch((e) => toast(e.message));
-  $("addItem").onclick = () => addItem().catch((e) => toast(e.message));
-  $("checkout").onclick = () => checkout().catch((e) => toast(e.message));
-  $("trackBtn").onclick = () => trackReport().catch((e) => toast(e.message));
-  $("intelBtn").onclick = () => runIntel().catch((e) => toast(e.message));
-  $("phraseBtn").onclick = () => genPhrase().catch((e) => toast(e.message));
+  $("createContact").onclick = () => createContact().catch((e) => toast(e.message, "danger"));
+  $("cSearch").oninput = () => refreshContacts().catch((e) => toast(e.message, "danger"));
+  $("openSession").onclick = () => openSession().catch((e) => toast(e.message, "danger"));
+  $("addItem").onclick = () => addItem().catch((e) => toast(e.message, "danger"));
+  $("checkout").onclick = () => checkout().catch((e) => toast(e.message, "danger"));
+  $("trackBtn").onclick = () => trackReport().catch((e) => toast(e.message, "danger"));
+  $("intelBtn").onclick = () => runIntel().catch((e) => toast(e.message, "danger"));
+  $("phraseBtn").onclick = () => genPhrase().catch((e) => toast(e.message, "danger"));
   renderCart();
 }
 

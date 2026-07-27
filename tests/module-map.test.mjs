@@ -28,7 +28,8 @@ test('scaffold modules expose expected domain metadata', () => {
   assert.equal(analyticsDescriptor.domain, 'analytics');
   assert.deepEqual(clientIdentityPlaceholders.api, ['API_CLIENT_ID', 'API_CLIENT_SECRET']);
   assert.ok(clientIdentityPlaceholders.irs.includes('IRS_CLIENT_ID_PRIMARY'));
-  assert.equal(createSecureTunnelAdapter().status, 'stub');
+  assert.ok(['stub', 'blocked'].includes(createSecureTunnelAdapter().status));
+  assert.equal(createSecureTunnelAdapter().mode, 'actual-config');
   assert.ok(transmissionPipeline.stages.includes('handoff-approved-tunnel'));
   assert.ok(masterfilePipeline.stages.includes('normalize-masterfile'));
   assert.ok(refundStatusPipeline.outputs.includes('refund-status-alert'));

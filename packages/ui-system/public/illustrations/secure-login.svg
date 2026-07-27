@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="Secure access">
+  <rect width="320" height="200" rx="16" fill="#eef1f6"/>
+  <rect x="40" y="36" width="240" height="128" rx="12" fill="#fff" stroke="#c9d1de"/>
+  <rect x="125" y="75" width="70" height="55" rx="8" fill="#e8f1fc" stroke="#175cd3"/><circle cx="160" cy="100" r="10" fill="none" stroke="#175cd3" stroke-width="2"/>
+  <text x="160" y="178" text-anchor="middle" font-family="Avenir Next, Segoe UI, sans-serif" font-size="12" fill="#6b778d">Secure access</text>
+</svg>

@@ -6,6 +6,7 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { bootstrapEnv } from '../packages/platform-core/src/index.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -30,15 +31,31 @@ const SERVICE_ENTRIES = {
   'pos-crm': 'services/pos-crm-service/src/index.mjs',
   pos: 'services/pos-crm-service/src/index.mjs',
   crm: 'services/pos-crm-service/src/index.mjs',
-  dashboard: 'services/modules-dashboard/src/index.mjs'
+  dashboard: 'services/modules-dashboard/src/index.mjs',
+  apple: 'services/apple-developer-console/src/index.mjs',
+  'apple-developer-console': 'services/apple-developer-console/src/index.mjs',
+  'apple-console': 'services/apple-developer-console/src/index.mjs',
+  practitioner: 'services/irs-practitioner-service/src/index.mjs',
+  'irs-practitioner': 'services/irs-practitioner-service/src/index.mjs',
+  'tax-pro': 'services/irs-practitioner-service/src/index.mjs',
+  'irs-gateway': 'services/irs-gateway/src/index.mjs',
+  irs: 'services/irs-gateway/src/index.mjs'
 };
 
 export const COMMANDS = {
   lint: { usage: 'lint', desc: 'Run scaffold lint checks', plan: () => node('scripts/lint.mjs') },
-  test: { usage: 'test', desc: 'Run the automated test suite', plan: () => nodeRaw(['--test']) },
+  test: {
+    usage: 'test',
+    desc: 'Run the automated test suite',
+    plan: () => ({
+      command: process.execPath,
+      args: ['--test'],
+      env: { ...process.env, RTPSC_SKIP_ENV_FILE: '1' }
+    })
+  },
   build: { usage: 'build', desc: 'Build the platform manifest', plan: () => node('scripts/build.mjs') },
   start: {
-    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard]',
+    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard|apple|practitioner|irs]',
     desc: 'Start a service (defaults to the api-gateway)',
     plan: (rest) => {
       const target = rest[0] ?? 'gateway';
@@ -83,7 +100,28 @@ export const COMMANDS = {
     desc: 'Issue/list full API and TDS client ids (secrets gitignored)',
     plan: (rest) => node('scripts/clients.mjs', rest.length ? rest : ['status'])
   },
-  env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') }
+  env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') },
+  config: {
+    usage: 'config doctor [--json]',
+    desc: 'Doctor for tunnels, gateways, transmitters, endpoints, routes, pipelines',
+    plan: (rest) => {
+      const sub = rest[0] ?? 'doctor';
+      if (sub !== 'doctor') {
+        return { error: `Unknown config subcommand "${sub}". Use: ./rtpsc config doctor [--json]` };
+      }
+      return node('scripts/config-doctor.mjs', rest.slice(1));
+    }
+  },
+  seed: {
+    usage: 'seed [--json] [--no-persist]',
+    desc: 'Fully seed and wire firm/catalog/topology (no demo placeholders)',
+    plan: (rest) => node('scripts/seed.mjs', rest)
+  },
+  practitioner: {
+    usage: 'practitioner [lifecycle|account|integrations] [--json]',
+    desc: 'Execute ERO tax practitioner suite (TC 570/810 → release → reconcile)',
+    plan: (rest) => node('scripts/practitioner.mjs', rest.length ? rest : ['lifecycle'])
+  }
 };
 
 export function buildUsage() {
@@ -111,7 +149,13 @@ export function planCommand(argv) {
 }
 
 function main() {
-  const plan = planCommand(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  const commandName = argv[0];
+  // Keep unit tests deterministic — do not inject operator .env into the test process.
+  if (commandName && commandName !== 'test' && commandName !== 'lint' && commandName !== 'help') {
+    bootstrapEnv({ cwd: repoRoot });
+  }
+  const plan = planCommand(argv);
   if (plan.help) {
     console.log(buildUsage());
     return;
@@ -121,7 +165,11 @@ function main() {
     process.exitCode = 1;
     return;
   }
-  const child = spawn(plan.command, plan.args, { stdio: 'inherit', cwd: repoRoot });
+  const child = spawn(plan.command, plan.args, {
+    stdio: 'inherit',
+    cwd: repoRoot,
+    env: plan.env ?? process.env
+  });
   child.on('exit', (code, signal) => {
     if (signal) process.kill(process.pid, signal);
     else process.exit(code ?? 0);

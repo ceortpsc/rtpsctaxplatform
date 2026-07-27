@@ -1,0 +1,11 @@
+{
+  "name": "@rtp/operational-seed",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Operational firm/catalog/topology seed and service wiring — no demo or placeholder runtime data",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  }
+}

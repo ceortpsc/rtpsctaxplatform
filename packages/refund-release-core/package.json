@@ -1,0 +1,9 @@
+{
+  "name": "@rtp/refund-release-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Refund release request, approval, issuance, and reconciliation after TC hold rectification",
+  "main": "./src/index.mjs",
+  "exports": { ".": "./src/index.mjs" }
+}

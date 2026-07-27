@@ -59,10 +59,13 @@ test('transmission workflow holds transmission while tunnel is a stub', async ()
 });
 
 test('platform registry composes all modular workflows with a working trigger manager', async () => {
-  assert.equal(platformWorkflows.length, 6);
+  assert.equal(platformWorkflows.length, 8);
   const { registry, triggers } = createPlatformRegistry();
-  assert.equal(registry.list().length, 6);
-  assert.deepEqual(triggers.eventNames().sort(), ['agent.task.requested', 'refund.status.received']);
+  assert.equal(registry.list().length, 8);
+  assert.deepEqual(
+    triggers.eventNames().sort(),
+    ['agent.task.requested', 'masterfile.tc.rectified', 'refund.release.requested', 'refund.status.received']
+  );
   assert.deepEqual(triggers.scheduledWorkflows().sort(), ['agent-assignment-cycle', 'transmission-cycle']);
 
   const runs = await triggers.emit('refund.status.received', { caseId: 'CASE-1', filingStage: 'sent' });

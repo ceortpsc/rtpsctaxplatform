@@ -1,0 +1,9 @@
+{
+  "name": "@rtp/irs-practitioner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "IRS Tax Practitioner / ERO suite — account interface, integrations, release orchestration",
+  "main": "./src/index.mjs",
+  "exports": { ".": "./src/index.mjs" }
+}
