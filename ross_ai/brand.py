@@ -11,23 +11,27 @@ APP_FULL_NAME = "Ross Tax Pro Software Co | RunTime AI Assist"
 APP_SHORT_NAME = "RunTime"
 COMPANY = "Ross Tax Pro Software Co"
 COMPANY_LEGAL = "Ross Tax Pro Software Co"
-TAGLINE = "Command packages. Live runtime. Governed control."
+TAGLINE = "The hierarchy of enterprise-grade tax pro software."
 DESCRIPTION = (
-    "RunTime AI Assist from Ross Tax Pro Software Co — "
-    "a hardened operator control plane for command package development, "
-    "membership, deploy plans, RBAC, and transparent script execution."
+    "Ross Tax Pro Software Co — the hierarchy of enterprise-grade tax pro software. "
+    "RunTime AI Assist is the hardened operator control plane for command package "
+    "development, membership, deploy plans, RBAC, and transparent script execution."
 )
 LONG_DESCRIPTION = (
-    "Ross Tax Pro Software Co | RunTime AI Assist gives tax-software operators "
-    "a branded control plane to build .rpkg command packages, elect membership "
-    "tiers, run deploy plans, enforce MFA and RBAC, and execute personal scripts "
-    "with full audit transparency — without scraping or unapproved channels."
+    "Ross Tax Pro Software Co sits at the hierarchy of enterprise-grade tax pro software. "
+    "RunTime AI Assist gives tax-software operators a branded control plane to build "
+    ".rpkg command packages, elect membership tiers, run deploy plans, enforce MFA and "
+    "RBAC, and execute personal scripts with full audit transparency — without scraping "
+    "or unapproved channels."
 )
 KEYWORDS = [
     "RunTime AI Assist",
     "Ross Tax Pro Software Co",
     "Ross Tax Pro Software Co | RunTime AI Assist",
     "RunTime",
+    "enterprise tax software",
+    "enterprise-grade tax pro software",
+    "tax software hierarchy",
     "tax software platform",
     "command packages",
     "rpkg",

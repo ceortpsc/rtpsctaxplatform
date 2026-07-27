@@ -79,6 +79,7 @@ export const COMMANDS = {
 export function buildUsage() {
   const lines = [
     'RTPSC — Ross Tax Pro Software Co · Efile Transmission Software',
+    'The hierarchy of enterprise-grade tax pro software.',
     '',
     'Usage: ./rtpsc <command> [args]',
     '',

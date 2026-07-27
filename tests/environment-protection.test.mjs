@@ -6,6 +6,8 @@ test('platform identity is Ross Tax Pro Software Co / Efile Transmission Softwar
   assert.equal(PLATFORM_IDENTITY.company, 'Ross Tax Pro Software Co');
   assert.equal(PLATFORM_IDENTITY.application, 'Efile Transmission Software');
   assert.equal(PLATFORM_IDENTITY.abbreviation, 'RTPSC');
+  assert.equal(PLATFORM_IDENTITY.positioning, 'The hierarchy of enterprise-grade tax pro software');
+  assert.equal(PLATFORM_IDENTITY.grade, 'enterprise');
 });
 
 test('local environment is protected and blocks transmission by default', () => {

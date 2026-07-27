@@ -7,7 +7,10 @@ import { fileURLToPath } from 'node:url';
 export const PLATFORM_IDENTITY = Object.freeze({
   company: 'Ross Tax Pro Software Co',
   application: 'Efile Transmission Software',
-  abbreviation: 'RTPSC'
+  abbreviation: 'RTPSC',
+  positioning: 'The hierarchy of enterprise-grade tax pro software',
+  grade: 'enterprise',
+  market: 'tax-pro-software'
 });
 
 const defaultComplianceNotice = [
@@ -80,6 +83,8 @@ export function evaluateEnvironmentProtection(config = loadRuntimeConfig()) {
   return Object.freeze({
     company: PLATFORM_IDENTITY.company,
     application: PLATFORM_IDENTITY.application,
+    positioning: PLATFORM_IDENTITY.positioning,
+    grade: PLATFORM_IDENTITY.grade,
     appEnv,
     environment: isProduction ? 'production' : appEnv,
     protected: !transmissionAllowed,
