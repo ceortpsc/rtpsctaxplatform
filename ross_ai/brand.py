@@ -43,8 +43,8 @@ APPLICATION_CATEGORY = "FinanceApplication"
 LOCALE = "en_US"
 TWITTER_HANDLE = "@rosstaxsoftware"
 SUPPORT_EMAIL = "support@rosstaxsoftware.com"
-PRIMARY_COLOR = "#1f6f54"
-THEME_COLOR = "#0b1612"
+PRIMARY_COLOR = "#122044"
+THEME_COLOR = "#0b1220"
 
 
 def brand_dict() -> dict[str, Any]:

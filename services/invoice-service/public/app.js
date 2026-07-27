@@ -1,12 +1,18 @@
-/* global fetch, document, window */
+/* global fetch, document, window, RTPSCShell */
 const $ = (id) => document.getElementById(id);
 
 let taxData = { states: [], localitiesByState: {} };
 let currentInvoice = null;
 let lineRows = [];
 
-function toast(msg) {
+function toast(msg, tone) {
+  if (globalThis.RTPSCShell?.toast) {
+    RTPSCShell.toast(msg, tone || "success");
+    return;
+  }
   const el = $("toast");
+  if (!el) return;
+  el.hidden = false;
   el.textContent = msg;
   el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 2600);
@@ -28,6 +34,11 @@ function money(n) {
 
 function defaultLines() {
   return [{ sku: "TAX-PREP-1040", description: "Individual tax preparation (Form 1040)", quantity: 1, unitPrice: 250, taxable: true }];
+}
+
+function statusHtml(code) {
+  if (globalThis.RTPSCShell?.statusBadge) return RTPSCShell.statusBadge(code);
+  return `<span class="badge badge--neutral">${code}</span>`;
 }
 
 function renderLines() {
@@ -107,6 +118,8 @@ function setButtons() {
   $("approveBtn").disabled = status !== "pending-approval";
   $("payBtn").disabled = !(status === "approved" || status === "partially-paid");
   $("payRow").hidden = $("payBtn").disabled;
+  const empty = $("paymentsEmpty");
+  if (empty) empty.hidden = !$("payBtn").disabled;
   if (currentInvoice) {
     $("exports").hidden = false;
     $("pdfLink").href = `/api/invoices/${encodeURIComponent(currentInvoice.id)}/pdf`;
@@ -122,7 +135,7 @@ function showInvoice(invoice, note) {
   $("result").hidden = false;
   $("result").classList.remove("err");
   $("result").innerHTML = `
-    <strong>${invoice.number}</strong> · <span class="status ${invoice.status}">${invoice.status}</span><br/>
+    <strong>${invoice.number}</strong> · ${statusHtml(invoice.status)}<br/>
     Client: ${escapeAttr(invoice.client.name)} · Total <strong>$${money(invoice.total)}</strong>
     (tax $${money(invoice.tax)} @ ${invoice.taxDetail?.rate ?? 0}%)
     ${invoice.confirmation ? `<br/>Confirmation <code>${invoice.confirmation.id}</code> — ${escapeAttr(invoice.confirmation.message)}` : ""}
@@ -139,22 +152,47 @@ function showInvoice(invoice, note) {
 async function refreshList() {
   const data = await api("/api/invoices");
   const wrap = $("invoiceList");
+  const approvals = $("approvalList");
   if (!data.invoices.length) {
-    wrap.textContent = "None yet.";
-    return;
+    wrap.innerHTML = `<tr><td colspan="5" class="table-empty">None yet.</td></tr>`;
+  } else {
+    wrap.innerHTML = "";
+    data.invoices.forEach((inv) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><strong>${escapeAttr(inv.number)}</strong></td>
+        <td>${escapeAttr(inv.client.name)}</td>
+        <td>${escapeAttr(inv.client.localityName || inv.client.locality || "")} ${escapeAttr(inv.client.state || "")}</td>
+        <td>${statusHtml(inv.status)}</td>
+        <td>$${money(inv.total)}</td>`;
+      row.addEventListener("click", () => showInvoice(inv));
+      wrap.appendChild(row);
+    });
   }
-  wrap.innerHTML = "";
-  data.invoices.forEach((inv) => {
-    const row = document.createElement("div");
-    row.className = "inv-row";
-    row.innerHTML = `
-      <div><strong>${escapeAttr(inv.number)}</strong> · ${escapeAttr(inv.client.name)}
-        <div class="meta">${escapeAttr(inv.client.localityName || inv.client.locality || "")} ${escapeAttr(inv.client.state || "")}</div>
-      </div>
-      <div><span class="status ${inv.status}">${inv.status}</span><div class="meta">$${money(inv.total)}</div></div>`;
-    row.addEventListener("click", () => showInvoice(inv));
-    wrap.appendChild(row);
-  });
+
+  if (approvals) {
+    const pending = data.invoices.filter((inv) => inv.status === "pending-approval");
+    if (!pending.length) {
+      approvals.innerHTML = `<tr><td colspan="4" class="table-empty">No invoices awaiting approval.</td></tr>`;
+    } else {
+      approvals.innerHTML = pending
+        .map(
+          (inv) => `<tr data-id="${escapeAttr(inv.id)}">
+            <td><strong>${escapeAttr(inv.number)}</strong></td>
+            <td>${escapeAttr(inv.client.name)}</td>
+            <td>${statusHtml(inv.status)}</td>
+            <td>$${money(inv.total)}</td>
+          </tr>`
+        )
+        .join("");
+      approvals.querySelectorAll("tr[data-id]").forEach((tr) => {
+        tr.addEventListener("click", () => {
+          const inv = data.invoices.find((i) => i.id === tr.dataset.id);
+          if (inv) showInvoice(inv);
+        });
+      });
+    }
+  }
 }
 
 async function loadCatalog() {
@@ -262,27 +300,41 @@ async function pay() {
 }
 
 async function boot() {
+  if (globalThis.RTPSCShell) {
+    RTPSCShell.mount({
+      activeId: "invoices",
+      serviceName: "invoice-service",
+      env: "local",
+      title: "Invoices"
+    });
+  }
   taxData = await api("/api/tax");
   fillStates();
   lineRows = defaultLines();
   renderLines();
+  setButtons();
   await loadCatalog();
   await refreshList();
   $("state").addEventListener("change", fillLocalities);
   $("locality").addEventListener("change", updateTaxPreview);
-  $("assistBtn").addEventListener("click", () => runAssist().catch((e) => toast(e.message)));
+  $("assistBtn").addEventListener("click", () => runAssist().catch((e) => toast(e.message, "danger")));
   $("addLine").addEventListener("click", () => {
     lineRows.push({ sku: "CONSULT-HR", description: "Tax consultation (per hour)", quantity: 1, unitPrice: 150, taxable: true });
     renderLines();
   });
   $("createBtn").addEventListener("click", () => create());
-  $("submitBtn").addEventListener("click", () => submit().catch((e) => toast(e.message)));
-  $("approveBtn").addEventListener("click", () => approve().catch((e) => toast(e.message)));
+  $("submitBtn").addEventListener("click", () => submit().catch((e) => toast(e.message, "danger")));
+  $("approveBtn").addEventListener("click", () => approve().catch((e) => toast(e.message, "danger")));
   $("payBtn").addEventListener("click", () => pay());
   $("assistText").value = "2 hours consultation and 1040 prep for Jordan Ellis in Orleans Parish LA $400";
+  $("headerCreateCta")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    $("createBtn")?.focus();
+    document.getElementById("workspace")?.scrollIntoView({ behavior: "smooth" });
+  });
 }
 
 boot().catch((err) => {
-  $("catalog").textContent = err.message;
-  toast(err.message);
+  if ($("catalog")) $("catalog").textContent = err.message;
+  toast(err.message, "danger");
 });

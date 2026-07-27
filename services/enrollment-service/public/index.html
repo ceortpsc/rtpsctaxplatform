@@ -3,66 +3,147 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SBTPG Refund Advance · Enrollment</title>
+    <title>Enrollment · RTPSC</title>
+    <link rel="stylesheet" href="/shared/theme.css" />
+    <link rel="stylesheet" href="/shared/shell.css" />
+    <link rel="stylesheet" href="/shared/components.css" />
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="icon" href="/shared/brand/icons/favicon.svg" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">RTPSC</span>
-        <span class="brand-sub">Refund Advance Enrollment · SBTPG</span>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="app-shell" data-app-shell data-active="intake" data-service="enrollment-service" data-env="local">
+      <div class="app-shell__drawer-backdrop" data-action="close-drawer"></div>
+      <aside class="app-shell__sidebar" aria-label="Primary">
+        <a class="app-shell__brand" href="/">
+          <img class="app-shell__monogram" src="/shared/brand/marks/monogram.svg" alt="" />
+          <span class="app-shell__brand-text">
+            <span class="app-shell__brand-mark">RTPSC</span>
+            <span class="app-shell__brand-sub">Refund Advance Enrollment</span>
+          </span>
+        </a>
+        <div class="app-shell__env" data-shell-env>local · enrollment</div>
+        <nav class="app-shell__nav" id="app-nav" data-shell-nav></nav>
+        <div class="app-shell__sidebar-foot">SBTPG intake · Limited · funding gated</div>
+      </aside>
+      <div class="app-shell__main">
+        <div class="app-shell__command">
+          <button type="button" class="app-shell__menu-btn" data-action="open-drawer" aria-label="Open menu">☰</button>
+          <button type="button" class="app-shell__search" data-action="open-search">
+            <span>Search enrollment…</span>
+            <kbd>Ctrl</kbd><kbd>K</kbd>
+          </button>
+          <div class="app-shell__command-actions">
+            <span class="badge badge--info">Limited</span>
+            <span class="app-shell__session">Operator session</span>
+            <button type="button" class="app-shell__icon-btn" data-action="cycle-theme" aria-label="Cycle theme">◐</button>
+            <button type="button" class="app-shell__icon-btn" data-action="toggle-sidebar" aria-label="Collapse sidebar">⊟</button>
+          </div>
+        </div>
+        <main class="app-shell__content" id="main-content">
+          <header class="page-header">
+            <nav class="page-header__crumbs" aria-label="Breadcrumb">
+              <a href="http://localhost:3010/">Platform</a><span aria-hidden="true">/</span>
+              <span aria-current="page">Intake</span>
+            </nav>
+            <div class="page-header__category">Client Operations · Limited</div>
+            <div class="page-header__row">
+              <div class="page-header__titles">
+                <h1 class="page-header__title">SBTPG enrollment</h1>
+                <p class="page-header__desc">
+                  Operator clearance, product selection, and refund-advance enrollment. Funding stays blocked until the payment gate opens.
+                </p>
+              </div>
+              <div class="page-header__actions">
+                <a class="btn btn--secondary" href="#audit">Audit log</a>
+                <a class="btn btn--primary" href="#enroll-form">Enroll</a>
+              </div>
+            </div>
+          </header>
+
+          <div class="gate" id="gate">Checking payment gate…</div>
+          <p class="provider-line" id="provider">Santa Barbara Tax Products Group</p>
+
+          <section class="panel" id="clearance">
+            <div class="panel__head">
+              <h2 class="panel__title">SBTPG operator login clearance</h2>
+              <p class="panel__sub">Validate provisioned credentials. Attempts are audit-logged; secrets are never stored in logs.</p>
+            </div>
+            <div id="credStatus" class="tax-preview">Checking credential provisioning…</div>
+            <div class="row2" id="loginFields">
+              <div class="field">
+                <label class="field__label" for="authUser">SBTPG username</label>
+                <input class="field__control" id="authUser" autocomplete="username" placeholder="SBTPG_USERNAME" />
+              </div>
+              <div class="field">
+                <label class="field__label" for="authSecret">SBTPG secret</label>
+                <input class="field__control" id="authSecret" type="password" autocomplete="current-password" placeholder="SBTPG_SECRET" />
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" id="loginBtn" class="btn btn--primary">Validate &amp; clear login</button>
+              <button type="button" id="logoutBtn" class="btn btn--secondary" disabled>Revoke clearance</button>
+            </div>
+            <div id="clearanceBox" class="result" hidden></div>
+          </section>
+
+          <section class="panel" id="audit">
+            <div class="panel__head">
+              <h2 class="panel__title">Login audit log</h2>
+              <p class="panel__sub">Recent clearance attempts (usernames redacted).</p>
+            </div>
+            <div id="auditLog" class="audit-list">No attempts yet.</div>
+          </section>
+
+          <section class="panel" id="enroll-form">
+            <div class="panel__head">
+              <h2 class="panel__title">Enrollment</h2>
+              <p class="panel__sub">Choose a product, enter taxpayer details, accept disclosures.</p>
+            </div>
+            <div class="workspace-grid">
+              <div>
+                <h3 class="section-label">1 · Product</h3>
+                <div id="products" class="products">Loading products…</div>
+                <h3 class="section-label">2 · Details</h3>
+                <div class="field">
+                  <label class="field__label" for="applicationId">Application ID</label>
+                  <input class="field__control" id="applicationId" value="APP-1001" />
+                </div>
+                <div class="field">
+                  <label class="field__label" for="taxpayerRef">Taxpayer reference</label>
+                  <input class="field__control" id="taxpayerRef" value="TP-77" />
+                </div>
+                <div class="field">
+                  <label class="field__label" for="requestedAmount">Requested amount ($)</label>
+                  <input class="field__control" id="requestedAmount" type="number" value="2500" min="1" />
+                </div>
+              </div>
+              <div>
+                <h3 class="section-label">3 · Disclosures &amp; consent</h3>
+                <ul class="disclosures" id="disclosures"><li>Select a product to view disclosures.</li></ul>
+                <label class="check"><input type="checkbox" id="disclosuresAccepted" /> I have read and accept the disclosures above.</label>
+                <label class="check" id="creditRow" hidden><input type="checkbox" id="creditCheckAuthorized" /> I authorize a credit inquiry for underwriting.</label>
+                <button type="button" id="enroll" class="btn btn--primary">Enroll</button>
+                <div id="result" class="result" hidden></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel" id="recent">
+            <div class="panel__head">
+              <h2 class="panel__title">Recent enrollments</h2>
+            </div>
+            <div id="enrollments" class="enrollments">None yet.</div>
+          </section>
+        </main>
+        <nav class="app-shell__mobile-bar" aria-label="Mobile">
+          <a class="btn btn--secondary btn--sm" href="#clearance">Clearance</a>
+          <a class="btn btn--primary btn--sm" href="#enroll-form">Enroll</a>
+        </nav>
       </div>
-      <div class="provider" id="provider">Santa Barbara Tax Products Group</div>
-    </header>
-
-    <main class="wrap">
-      <div class="gate" id="gate">Checking payment gate…</div>
-
-      <section class="clearance-panel">
-        <h2>0 · SBTPG operator login clearance</h2>
-        <p class="hint">Validate provisioned SBTPG credentials. Every attempt is audit-logged (secrets never stored in logs).</p>
-        <div id="credStatus" class="tax-preview">Checking credential provisioning…</div>
-        <div class="row2" id="loginFields">
-          <div class="field"><label>SBTPG username</label><input id="authUser" autocomplete="username" placeholder="SBTPG_USERNAME" /></div>
-          <div class="field"><label>SBTPG secret</label><input id="authSecret" type="password" autocomplete="current-password" placeholder="SBTPG_SECRET" /></div>
-        </div>
-        <div class="actions">
-          <button type="button" id="loginBtn" class="enroll-btn">Validate &amp; clear login</button>
-          <button type="button" id="logoutBtn" class="secondary-btn" disabled>Revoke clearance</button>
-        </div>
-        <div id="clearanceBox" class="result" hidden></div>
-        <h3>Login audit log</h3>
-        <div id="auditLog" class="enrollments">No attempts yet.</div>
-      </section>
-
-      <section class="grid">
-        <div class="col">
-          <h2>1 · Choose a product</h2>
-          <div id="products" class="products">Loading products…</div>
-
-          <h2>2 · Your details</h2>
-          <div class="field"><label>Application ID</label><input id="applicationId" value="APP-1001" /></div>
-          <div class="field"><label>Taxpayer reference</label><input id="taxpayerRef" value="TP-77" /></div>
-          <div class="field"><label>Requested amount ($)</label><input id="requestedAmount" type="number" value="2500" min="1" /></div>
-        </div>
-
-        <div class="col">
-          <h2>3 · Disclosures &amp; consent</h2>
-          <ul class="disclosures" id="disclosures"><li>Select a product to view disclosures.</li></ul>
-          <label class="check"><input type="checkbox" id="disclosuresAccepted" /> I have read and accept the disclosures above.</label>
-          <label class="check" id="creditRow" hidden><input type="checkbox" id="creditCheckAuthorized" /> I authorize a credit inquiry for underwriting.</label>
-          <button id="enroll" class="enroll-btn">Enroll</button>
-          <div id="result" class="result" hidden></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Recent enrollments</h2>
-        <div id="enrollments" class="enrollments">None yet.</div>
-      </section>
-    </main>
-
-    <div class="toast" id="toast"></div>
+    </div>
+    <div class="toast" id="toast" hidden></div>
+    <script src="/shared/shell.js"></script>
     <script src="/app.js"></script>
   </body>
 </html>

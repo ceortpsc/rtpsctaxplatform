@@ -1,5 +1,4 @@
 import http from 'node:http';
-import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import {
@@ -21,6 +20,7 @@ import {
   submitForApproval,
   taxLookups
 } from '../../../packages/invoice-core/src/index.mjs';
+import { servePublicOrShared, sendNotFoundPage, sendDesignSystemPage } from '../../../packages/ui-system/src/serve.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3005;
@@ -35,16 +35,6 @@ export const invoiceDescriptor = createServiceDescriptor({
   ],
   dependencies: ['@rtp/invoice-core', '@rtp/tax-data']
 });
-
-const CONTENT_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.pdf': 'application/pdf',
-  '.txt': 'text/plain; charset=utf-8'
-};
 
 function sendJson(response, statusCode, body) {
   response.writeHead(statusCode, { 'content-type': 'application/json; charset=utf-8' });
@@ -87,16 +77,13 @@ function readBody(request) {
 }
 
 async function serveStatic(response, urlPath) {
-  const relative = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
-  const resolved = path.join(publicDir, relative);
-  if (!resolved.startsWith(publicDir)) return sendJson(response, 403, { error: 'forbidden' });
-  try {
-    const file = await readFile(resolved);
-    response.writeHead(200, { 'content-type': CONTENT_TYPES[path.extname(resolved)] ?? 'application/octet-stream' });
-    response.end(file);
-  } catch {
-    sendJson(response, 404, { error: 'not_found', path: urlPath });
+  if (urlPath === '/design-system') {
+    return sendDesignSystemPage(response, { serviceName: 'Invoices', homeHref: '/' });
   }
+  if (await servePublicOrShared(response, urlPath, publicDir)) return;
+  const looksHtml = !path.extname(urlPath) || urlPath.endsWith('.html');
+  if (looksHtml) return sendNotFoundPage(response);
+  sendJson(response, 404, { error: 'not_found', path: urlPath });
 }
 
 function findInvoice(store, id) {

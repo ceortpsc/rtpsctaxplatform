@@ -1,5 +1,4 @@
 import http from 'node:http';
-import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import {
@@ -10,19 +9,12 @@ import {
 } from '../../../packages/platform-core/src/index.mjs';
 import { answerQuery, buildDependencyGraph, buildInsights } from '../../../packages/module-advisor/src/index.mjs';
 import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor, SERVICE_ENDPOINTS } from './catalog.mjs';
+import { servePublicOrShared, sendNotFoundPage } from '../../../packages/ui-system/src/serve.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3010;
 
 export const dashboardDescriptor = modulesDashboardDescriptor;
-
-const CONTENT_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml'
-};
 
 function sendJson(response, statusCode, body) {
   response.writeHead(statusCode, { 'content-type': 'application/json; charset=utf-8' });
@@ -82,19 +74,15 @@ async function probeService({ name, port }) {
 }
 
 async function serveStatic(response, urlPath) {
-  const relative = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
-  const resolved = path.join(publicDir, relative);
-  if (!resolved.startsWith(publicDir)) {
-    sendJson(response, 403, { error: 'forbidden' });
+  if (urlPath === '/design-system') {
+    response.writeHead(302, { Location: '/#design' });
+    response.end();
     return;
   }
-  try {
-    const file = await readFile(resolved);
-    response.writeHead(200, { 'content-type': CONTENT_TYPES[path.extname(resolved)] ?? 'application/octet-stream' });
-    response.end(file);
-  } catch {
-    sendJson(response, 404, { error: 'not_found', path: urlPath });
-  }
+  if (await servePublicOrShared(response, urlPath, publicDir)) return;
+  const looksHtml = !path.extname(urlPath) || urlPath.endsWith('.html');
+  if (looksHtml) return sendNotFoundPage(response);
+  sendJson(response, 404, { error: 'not_found', path: urlPath });
 }
 
 export function createDashboardServer() {

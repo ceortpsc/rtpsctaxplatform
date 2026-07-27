@@ -3,96 +3,229 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Invoicing Machine · RTPSC</title>
+    <title>Invoices · RTPSC</title>
+    <link rel="stylesheet" href="/shared/theme.css" />
+    <link rel="stylesheet" href="/shared/shell.css" />
+    <link rel="stylesheet" href="/shared/components.css" />
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="icon" href="/shared/brand/icons/favicon.svg" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">RTPSC</span>
-        <span class="brand-sub">Invoicing Machine · Operations</span>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="app-shell" data-app-shell data-active="invoices" data-service="invoice-service" data-env="local">
+      <div class="app-shell__drawer-backdrop" data-action="close-drawer"></div>
+      <aside class="app-shell__sidebar" aria-label="Primary">
+        <a class="app-shell__brand" href="/">
+          <img class="app-shell__monogram" src="/shared/brand/marks/monogram.svg" alt="" />
+          <span class="app-shell__brand-text">
+            <span class="app-shell__brand-mark">RTPSC</span>
+            <span class="app-shell__brand-sub">Invoicing Machine</span>
+          </span>
+        </a>
+        <div class="app-shell__env" data-shell-env>local · invoice</div>
+        <nav class="app-shell__nav" id="app-nav" data-shell-nav></nav>
+        <div class="app-shell__sidebar-foot">State &amp; parish tax · AI entry · PDF / receipt paper</div>
+      </aside>
+
+      <div class="app-shell__main">
+        <div class="app-shell__command">
+          <button type="button" class="app-shell__menu-btn" data-action="open-drawer" aria-label="Open menu">☰</button>
+          <button type="button" class="app-shell__search" data-action="open-search">
+            <span>Search invoices, clients…</span>
+            <kbd>Ctrl</kbd><kbd>K</kbd>
+          </button>
+          <div class="app-shell__command-actions">
+            <span class="app-shell__session">Operator session</span>
+            <button type="button" class="app-shell__icon-btn" data-action="cycle-theme" aria-label="Cycle theme" title="Theme (T)">◐</button>
+            <button type="button" class="app-shell__icon-btn" data-action="toggle-sidebar" aria-label="Collapse sidebar">⊟</button>
+          </div>
+        </div>
+
+        <main class="app-shell__content is-workspace" id="main-content">
+          <header class="page-header">
+            <nav class="page-header__crumbs" aria-label="Breadcrumb">
+              <a href="http://localhost:3010/">Platform</a><span aria-hidden="true">/</span>
+              <a href="#workspace">Financial</a><span aria-hidden="true">/</span>
+              <span aria-current="page">Invoices</span>
+            </nav>
+            <div class="page-header__category">Financial Operations</div>
+            <div class="page-header__row">
+              <div class="page-header__titles">
+                <h1 class="page-header__title">Invoices</h1>
+                <p class="page-header__desc">
+                  Create, approve, and settle tax-prep invoices with jurisdiction tax math, payment confirmation, and PDF / receipt export.
+                </p>
+              </div>
+              <div class="page-header__actions">
+                <a class="btn btn--secondary" href="#list">Recent invoices</a>
+                <a class="btn btn--primary" href="#workspace" id="headerCreateCta">Create invoice</a>
+              </div>
+            </div>
+          </header>
+
+          <nav class="page-anchors" aria-label="Invoice sections">
+            <a href="#workspace">Workspace</a>
+            <a href="#list">List</a>
+            <a href="#payments">Payments</a>
+            <a href="#catalog">Catalog</a>
+            <a href="#approvals">Approvals</a>
+          </nav>
+
+          <section class="panel workspace-panel" id="workspace">
+            <div class="panel__head">
+              <h2 class="panel__title">Create &amp; edit</h2>
+              <p class="panel__sub">AI-assisted data entry, client jurisdiction, and line items.</p>
+            </div>
+            <div class="workspace-grid">
+              <div class="workspace-col">
+                <h3 class="section-label">1 · AI-assisted data entry</h3>
+                <div class="field">
+                  <label class="field__label" for="assistText">Describe the job</label>
+                  <textarea class="field__control" id="assistText" rows="3" placeholder="e.g. 2 hours consultation and 1040 prep for Jordan Ellis in Orleans Parish LA $400"></textarea>
+                </div>
+                <button type="button" id="assistBtn" class="btn btn--secondary">Run AI assist</button>
+                <div id="assistOut" class="assist-out" hidden></div>
+
+                <h3 class="section-label">2 · Client &amp; jurisdiction</h3>
+                <div class="field">
+                  <label class="field__label" for="clientName">Client name</label>
+                  <input class="field__control" id="clientName" value="" placeholder="Jordan Ellis" />
+                </div>
+                <div class="field">
+                  <label class="field__label" for="email">Email</label>
+                  <input class="field__control" id="email" type="email" value="" placeholder="client@example.com" />
+                </div>
+                <div class="row2">
+                  <div class="field">
+                    <label class="field__label" for="state">State</label>
+                    <select class="field__control" id="state"></select>
+                  </div>
+                  <div class="field">
+                    <label class="field__label" for="locality" id="localityLabel">County / Parish</label>
+                    <select class="field__control" id="locality"></select>
+                  </div>
+                </div>
+                <div id="taxPreview" class="tax-preview">Select a jurisdiction to preview tax rate.</div>
+
+                <h3 class="section-label">3 · Line items</h3>
+                <div id="lines" class="lines"></div>
+                <button type="button" id="addLine" class="btn btn--tertiary">Add line</button>
+              </div>
+
+              <div class="workspace-col">
+                <h3 class="section-label">4 · Operate</h3>
+                <div class="field">
+                  <label class="field__label" for="notes">Notes</label>
+                  <textarea class="field__control" id="notes" rows="2" placeholder="Optional operations notes"></textarea>
+                </div>
+                <pre class="totals" id="totals">Totals appear after create / assist.</pre>
+                <div class="actions">
+                  <button type="button" id="createBtn" class="btn btn--primary">Create invoice</button>
+                  <button type="button" id="submitBtn" class="btn btn--secondary" disabled>Submit for approval</button>
+                  <button type="button" id="approveBtn" class="btn btn--secondary" disabled>Approve</button>
+                  <button type="button" id="payBtn" class="btn btn--primary" disabled>Record payment</button>
+                </div>
+                <div id="result" class="result" hidden></div>
+                <div class="exports" id="exports" hidden>
+                  <a class="btn btn--link" id="pdfLink" href="#" target="_blank">Download invoice PDF</a>
+                  <a class="btn btn--link" id="receiptPdfLink" href="#" target="_blank">Download receipt PDF</a>
+                  <a class="btn btn--link" id="receiptTxtLink" href="#" target="_blank">Download receipt paper (.txt)</a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel" id="payments">
+            <div class="panel__head">
+              <h2 class="panel__title">Payments</h2>
+              <p class="panel__sub">Record tender against an approved invoice.</p>
+            </div>
+            <div class="pay-row" id="payRow" hidden>
+              <div class="field">
+                <label class="field__label" for="payMethod">Payment method</label>
+                <select class="field__control" id="payMethod">
+                  <option value="card">Card</option>
+                  <option value="cash">Cash</option>
+                  <option value="check">Check</option>
+                  <option value="ach">ACH</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="payRef">Reference</label>
+                <input class="field__control" id="payRef" placeholder="Auth / check #" />
+              </div>
+            </div>
+            <div id="paymentsEmpty" class="empty-state" hidden>
+              <img src="/shared/illustrations/empty-payments.svg" alt="" />
+              <p>No payment panel open. Approve an invoice in the workspace first.</p>
+            </div>
+          </section>
+
+          <section class="panel" id="list">
+            <div class="panel__head">
+              <h2 class="panel__title">Recent invoices</h2>
+              <p class="panel__sub">In-memory session list — select a row to load it into the workspace.</p>
+            </div>
+            <div class="table-wrap">
+              <table class="table" id="invoiceTable">
+                <thead>
+                  <tr>
+                    <th>Number</th>
+                    <th>Client</th>
+                    <th>Jurisdiction</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody id="invoiceList">
+                  <tr><td colspan="5" class="table-empty">None yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head">
+              <h2 class="panel__title">Service catalog</h2>
+              <p class="panel__sub">Reference SKUs for tax-prep line items.</p>
+            </div>
+            <div id="catalog" class="catalog-grid">Loading…</div>
+          </section>
+
+          <section class="panel" id="approvals">
+            <div class="panel__head">
+              <h2 class="panel__title">Approval queue</h2>
+              <p class="panel__sub">Invoices pending approval in this session.</p>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Number</th>
+                    <th>Client</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody id="approvalList">
+                  <tr><td colspan="4" class="table-empty">No invoices awaiting approval.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+
+        <nav class="app-shell__mobile-bar" aria-label="Mobile">
+          <a class="btn btn--secondary btn--sm" href="#workspace">Workspace</a>
+          <a class="btn btn--secondary btn--sm" href="#list">List</a>
+          <a class="btn btn--primary btn--sm" href="#workspace">Create</a>
+        </nav>
       </div>
-      <div class="provider">State &amp; county/parish tax · AI data entry · PDF / receipt paper</div>
-    </header>
+    </div>
 
-    <main class="wrap">
-      <section class="banner">
-        Full-fledged invoicing for tax-prep operations: AI-assisted entry, jurisdiction tax math,
-        payment approval &amp; confirmation, export to PDF and thermal receipt paper.
-      </section>
-
-      <section class="grid">
-        <div class="col">
-          <h2>1 · AI-assisted data entry</h2>
-          <div class="field">
-            <label>Describe the job (natural language)</label>
-            <textarea id="assistText" rows="3" placeholder="e.g. 2 hours consultation and 1040 prep for Jordan Ellis in Orleans Parish LA $400"></textarea>
-          </div>
-          <button type="button" id="assistBtn" class="secondary-btn">Run AI assist</button>
-          <div id="assistOut" class="assist-out" hidden></div>
-
-          <h2>2 · Client &amp; jurisdiction</h2>
-          <div class="field"><label>Client name</label><input id="clientName" value="" placeholder="Jordan Ellis" /></div>
-          <div class="field"><label>Email</label><input id="email" type="email" value="" placeholder="client@example.com" /></div>
-          <div class="row2">
-            <div class="field">
-              <label>State</label>
-              <select id="state"></select>
-            </div>
-            <div class="field">
-              <label id="localityLabel">County / Parish</label>
-              <select id="locality"></select>
-            </div>
-          </div>
-          <div id="taxPreview" class="tax-preview">Select a jurisdiction to preview tax rate.</div>
-
-          <h2>3 · Line items</h2>
-          <div id="lines" class="lines"></div>
-          <button type="button" id="addLine" class="ghost-btn">+ Add line</button>
-        </div>
-
-        <div class="col">
-          <h2>4 · Create &amp; operate</h2>
-          <div class="field"><label>Notes</label><textarea id="notes" rows="2" placeholder="Optional operations notes"></textarea></div>
-          <div class="totals" id="totals">Totals appear after create / assist.</div>
-          <div class="actions">
-            <button type="button" id="createBtn" class="primary-btn">Create invoice</button>
-            <button type="button" id="submitBtn" class="secondary-btn" disabled>Submit for approval</button>
-            <button type="button" id="approveBtn" class="secondary-btn" disabled>Approve</button>
-            <button type="button" id="payBtn" class="primary-btn" disabled>Record payment</button>
-          </div>
-          <div class="pay-row" id="payRow" hidden>
-            <div class="field">
-              <label>Payment method</label>
-              <select id="payMethod">
-                <option value="card">Card</option>
-                <option value="cash">Cash</option>
-                <option value="check">Check</option>
-                <option value="ach">ACH</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div class="field"><label>Reference</label><input id="payRef" placeholder="Auth / check #" /></div>
-          </div>
-          <div id="result" class="result" hidden></div>
-          <div class="exports" id="exports" hidden>
-            <a id="pdfLink" href="#" target="_blank">Download invoice PDF</a>
-            <a id="receiptPdfLink" href="#" target="_blank">Download receipt PDF</a>
-            <a id="receiptTxtLink" href="#" target="_blank">Download receipt paper (.txt)</a>
-          </div>
-
-          <h2>Service catalog</h2>
-          <div id="catalog" class="catalog">Loading…</div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Recent invoices</h2>
-        <div id="invoiceList" class="invoice-list">None yet.</div>
-      </section>
-    </main>
-
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" hidden></div>
+    <script src="/shared/shell.js"></script>
     <script src="/app.js"></script>
   </body>
 </html>
