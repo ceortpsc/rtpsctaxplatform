@@ -1,0 +1,43 @@
+{
+  "name": "@rtp/ross-infinite",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ROSS.CO Infinite production-candidate package manager, task graph, registry, transfer engine, MCP, and SEO ownership platform",
+  "bin": {
+    "ross-infinite": "./bin/ross.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "verify": "node src/cli.mjs doctor .",
+    "plan": "node src/cli.mjs plan default",
+    "registry": "node src/server/registry.mjs",
+    "mcp": "node src/server/mcp-lite.mjs",
+    "smoke": "bash scripts/smoke-test.sh"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "UNLICENSED",
+  "author": "Ross Tax Pro Software Co. <ceo@rosstaxsoftware.com>",
+  "copyright": "Copyright (c) 2026 Ross Tax Pro Software Co. / RTPSC / Ross Tax Software.",
+  "keywords": [
+    "ross.co",
+    "ross-infinite",
+    "package-manager",
+    "mcp",
+    "registry",
+    "seo",
+    "supply-chain"
+  ],
+  "ross": {
+    "product": "ROSS.CO Infinite",
+    "releaseStatus": "production-candidate",
+    "deploymentStatus": "not-deployed",
+    "verificationScope": "local reproducible verification"
+  }
+}

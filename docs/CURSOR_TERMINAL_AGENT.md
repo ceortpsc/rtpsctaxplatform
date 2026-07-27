@@ -41,6 +41,7 @@ Every development-team agent is pre-assigned at least one required task:
 | `map-dependencies` | mapping-agent | manual |
 | `stage-rollout` | staging-agent | manual |
 | `assess-environment` | assessment-agent | event:`agent.task.requested` |
+| `seo-ownership-prevalidate` | seo-ownership-agent | manual |
 | `generate-docs` | markdown-agent | manual |
 | `agent-cycle-health` | testing-agent | schedule:120s |
 

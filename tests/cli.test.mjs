@@ -27,6 +27,12 @@ test('core commands resolve to node spawn plans (no pnpm)', () => {
   }
 });
 
+test('deploy plans support classic smoke and full-platform mode', () => {
+  assert.match(planCommand(['deploy', '--smoke']).args.join(' '), /deploy-all\.mjs --smoke$/);
+  assert.match(planCommand(['deploy', '--full', '--smoke']).args.join(' '), /deploy-platform\.mjs --smoke$/);
+  assert.match(planCommand(['deploy-full', '--smoke']).args.join(' '), /deploy-platform\.mjs --smoke$/);
+});
+
 test('start resolves services and rejects unknown ones', () => {
   assert.match(planCommand(['start', 'dashboard']).args.join(' '), /modules-dashboard\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'invoice']).args.join(' '), /invoice-service\/src\/index\.mjs$/);
@@ -46,9 +52,13 @@ test('agents subcommands pass through to scripts/agents.mjs', () => {
 
 test('usage lists the commands', () => {
   const usage = buildUsage();
-  for (const name of ['lint', 'test', 'build', 'deploy', 'agents', 'canvas', 'cloud', 'workflow', 'clients']) {
+  for (const name of ['lint', 'test', 'build', 'deploy', 'deploy-full', 'activate', 'agents', 'canvas', 'cloud', 'workflow', 'clients']) {
     assert.ok(usage.includes(name), `usage should mention ${name}`);
   }
+});
+
+test('activate command resolves to production-activation CLI', () => {
+  assert.match(planCommand(['activate', '--skip-gates']).args.join(' '), /production-activation\/bin\/activate\.mjs/);
 });
 
 test('clients command resolves to scripts/clients.mjs', () => {

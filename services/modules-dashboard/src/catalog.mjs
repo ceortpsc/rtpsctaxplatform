@@ -29,6 +29,11 @@ import {
   agentTaskRequestedWorkflow,
   agentAssignmentCycleWorkflow
 } from '../../../workflows/agent-assignment-workflow/src/index.mjs';
+import {
+  productionActivationDispatchWorkflow,
+  productionActivationRequestedWorkflow,
+  productionActivationCycleWorkflow
+} from '../../../workflows/production-activation-workflow/src/index.mjs';
 
 // Descriptor for the modules-dashboard itself, defined here to avoid a circular
 // import between the catalog and the HTTP service entrypoint.
@@ -216,6 +221,27 @@ export function buildModuleCatalog() {
             commands: ['./rtpsc canvas create all', './rtpsc canvas list'],
             output: '.cursor/canvases/*.canvas.tsx'
           }
+        },
+        {
+          name: '@rtp/production-activation',
+          summary: 'Fully automated production activation gates, receipts, and honest state machine.',
+          tags: ['production', 'activation', 'automated'],
+          detail: {
+            states: [
+              'PROPOSED',
+              'GENERATED',
+              'AUTOMATICALLY_TESTED',
+              'STAGING_VERIFIED',
+              'PRODUCTION_VERIFIED',
+              'BLOCKED'
+            ],
+            commands: ['./rtpsc activate', './rtpsc activate --skip-gates', './rtpsc activate --status'],
+            workflows: [
+              'production-activation-dispatch',
+              'production-activation-requested',
+              'production-activation-cycle'
+            ]
+          }
         }
       ]
     },
@@ -251,7 +277,10 @@ export function buildModuleCatalog() {
               'transmission-cycle',
               'agent-assignment-dispatch',
               'agent-task-requested',
-              'agent-assignment-cycle'
+              'agent-assignment-cycle',
+              'production-activation-dispatch',
+              'production-activation-requested',
+              'production-activation-cycle'
             ]
           }
         }
@@ -276,7 +305,10 @@ export function buildModuleCatalog() {
         workflowEntry(transmissionWorkflow),
         workflowEntry(agentAssignmentDispatchWorkflow),
         workflowEntry(agentTaskRequestedWorkflow),
-        workflowEntry(agentAssignmentCycleWorkflow)
+        workflowEntry(agentAssignmentCycleWorkflow),
+        workflowEntry(productionActivationDispatchWorkflow),
+        workflowEntry(productionActivationRequestedWorkflow),
+        workflowEntry(productionActivationCycleWorkflow)
       ]
     }
   ];

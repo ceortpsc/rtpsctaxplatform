@@ -49,6 +49,8 @@ const modules = [
   '../workflows/transcript-intake-workflow/src/index.mjs',
   '../workflows/transmission-workflow/src/index.mjs',
   '../workflows/agent-assignment-workflow/src/index.mjs',
+  '../workflows/production-activation-workflow/src/index.mjs',
+  '../packages/production-activation/src/index.mjs',
   '../workers/tds-worker/src/index.mjs',
   '../workers/transcript-pull-worker/src/index.mjs',
   '../workers/live-source-fetcher/src/index.mjs',

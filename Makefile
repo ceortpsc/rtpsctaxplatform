@@ -1,8 +1,9 @@
 SHELL := /bin/bash
 AOL := node ./tools/aol/bin/aol.mjs
 ROSSCO := node ./tools/rossco/bin/rossco.mjs
+ROSS_INFINITE := node ./tools/ross-infinite/bin/ross.mjs
 
-.PHONY: setup lint test build start start-all start-check gateway workers bench aol team team-inventory rossco itr ross ross-dev ross-doctor compliance compliance-checklist compliance-log
+.PHONY: setup lint test build start start-all start-check gateway workers bench aol team team-inventory rossco itr ross-infinite deploy-full deploy-full-smoke ross ross-dev ross-doctor compliance compliance-checklist compliance-log
 
 setup:
 	./scripts/setup.sh
@@ -24,6 +25,12 @@ start-all:
 
 start-check:
 	node ./scripts/start-all.mjs --check-only
+
+deploy-full:
+	node ./scripts/deploy-platform.mjs $(ARGS)
+
+deploy-full-smoke:
+	node ./scripts/deploy-platform.mjs --smoke $(ARGS)
 
 gateway:
 	$(AOL) run start:gateway
@@ -57,6 +64,9 @@ rossco:
 
 itr:
 	$(ROSSCO) $(ARGS)
+
+ross-infinite:
+	$(ROSS_INFINITE) $(ARGS)
 
 ross:
 	python3 ./ross.py $(ARGS)
