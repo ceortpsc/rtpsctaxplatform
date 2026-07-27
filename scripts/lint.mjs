@@ -110,6 +110,7 @@ const packageFiles = [
   'packages/ero-governance/package.json',
   'packages/apple-connect/package.json',
   'packages/ui-system/package.json',
+  'packages/operational-seed/package.json',
   'services/enrollment-service/package.json',
   'services/invoice-service/package.json',
   'services/pos-crm-service/package.json',

@@ -299,21 +299,21 @@ async function genPhrase() {
       code: $("phraseCode").value,
       context: {
         clientName: contact?.name || $("iName").value,
-        taxpayerRef: contact?.taxpayerRef || "TP-77",
+        taxpayerRef: contact?.taxpayerRef || "",
         statusPhrase: $("iStatus").value,
         productName: $("tProduct").value,
-        enrollmentId: "enr-demo",
-        saleNumber: "POS-DEMO",
-        total: "250.00",
+        enrollmentId: contact?.lastEnrollmentId || "",
+        saleNumber: contact?.lastSaleId || "",
+        total: "",
         paymentMethod: "card",
-        traceId: "sbt-demo",
+        traceId: "",
         productCode: $("tProduct").value,
         stage: $("tStage").value,
         detail: $("tDetail").value,
-        score: 72,
-        band: "watch",
-        drivers: "demo",
-        recommendation: "monitor"
+        score: "",
+        band: "",
+        drivers: "",
+        recommendation: ""
       }
     })
   });
@@ -337,16 +337,25 @@ async function boot() {
     if (["crm", "pos", "ero"].includes(t)) switchTab(t);
   });
   taxData = await api("/api/tax");
-  fillStates("cState", "cLocality", "cLocLabel", "LA");
-  await loadCatalog();
+  try {
+    const ops = await api("/api/operational");
+    if (ops?.firm?.pos?.registerId) $("pRegister").value = ops.firm.pos.registerId;
+    if (ops?.firm?.pos?.cashierId) $("pOperator").value = ops.firm.pos.cashierId;
+    if (ops?.firm?.operator?.name) $("iName").placeholder = ops.firm.operator.name;
+    fillStates("cState", "cLocality", "cLocLabel", ops?.firm?.state || "");
+  } catch {
+    fillStates("cState", "cLocality", "cLocLabel", "");
+  }
   await loadPhrases();
   await refreshContacts();
   await refreshSales();
   await refreshTraces();
-  if (contacts[0]) {
-    selectedContactId = contacts[0].id;
-    $("cLocality").value = contacts[0].locality || "";
-    await showContact(contacts[0].id);
+  const taxpayerContacts = contacts.filter((c) => !c.tags?.includes('operator') && !c.tags?.includes('staff'));
+  const bootContact = taxpayerContacts[0] || null;
+  if (bootContact) {
+    selectedContactId = bootContact.id;
+    $("cLocality").value = bootContact.locality || "";
+    await showContact(bootContact.id);
   }
 
   $("createContact").onclick = () => createContact().catch((e) => toast(e.message, "danger"));

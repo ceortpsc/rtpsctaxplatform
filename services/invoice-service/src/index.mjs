@@ -21,6 +21,7 @@ import {
   taxLookups
 } from '../../../packages/invoice-core/src/index.mjs';
 import { servePublicOrShared, sendNotFoundPage, sendDesignSystemPage } from '../../../packages/ui-system/src/serve.mjs';
+import { buildOperationalSeed, loadFirmIdentity, resolveServiceWiring } from '../../../packages/operational-seed/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3005;
@@ -100,6 +101,9 @@ function replaceInvoice(store, updated) {
 export function createInvoiceServer() {
   const config = loadRuntimeConfig({ servicePort: DEFAULT_PORT });
   const invoices = [];
+  const firm = loadFirmIdentity();
+  const operational = buildOperationalSeed();
+  const wiring = resolveServiceWiring();
 
   const server = http.createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host ?? 'localhost'}`);
@@ -116,7 +120,27 @@ export function createInvoiceServer() {
           service: invoiceDescriptor,
           runtime: redactConfig(config),
           environmentProtection: evaluateEnvironmentProtection(config),
-          metadata: { invoices: invoices.length, catalogItems: listServiceCatalog().length }
+          metadata: {
+            invoices: invoices.length,
+            catalogItems: listServiceCatalog().length,
+            firm: {
+              company: firm.company,
+              operator: firm.operator?.name ?? null,
+              completeness: firm.completeness
+            },
+            wiring: {
+              posCrm: wiring.byId['pos-crm-service']?.baseUrl,
+              enrollment: wiring.byId['enrollment-service']?.baseUrl
+            }
+          }
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/api/operational') {
+        return sendJson(response, 200, {
+          firm,
+          catalogs: operational.catalogs,
+          wiring: wiring.services
         });
       }
 

@@ -36,6 +36,7 @@ const modules = [
   '../packages/ero-governance/src/index.mjs',
   '../packages/apple-connect/src/index.mjs',
   '../packages/ui-system/src/index.mjs',
+  '../packages/operational-seed/src/index.mjs',
   '../services/api-gateway/src/index.mjs',
   '../services/irs-gateway/src/index.mjs',
   '../services/ai-workforce-hub/src/index.mjs',

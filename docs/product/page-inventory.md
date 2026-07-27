@@ -37,7 +37,7 @@ Design System. Read-only catalog — does not trigger workflows.
 | 3001 | Refund center | Cases/events stubs + client auth |
 | 3004 | Enrollment | SBTPG intent + payment gate; no live funding |
 | 3005 | Invoice machine | Draft→pay + hand-rolled PDF |
-| 3006 | POS + CRM + ERO | Local demo contact; no live SBTPG/IRS |
+| 3006 | POS + CRM + ERO | Firm/operator operational seed; no live SBTPG/IRS |
 | 8860 | AI workforce | Hire/pay/run personas under governance holds |
 
 ## No HTML UI

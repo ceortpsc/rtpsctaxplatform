@@ -793,7 +793,7 @@ function renderDesign(view) {
     dsPanel("Forms", "Shared .field controls — minimum 16px text", [
       el("div", { class: "field", style: "max-width:360px" }, [
         el("label", { class: "field__label", for: "ds-field", text: "Client name" }),
-        el("input", { class: "field__control", id: "ds-field", placeholder: "Jordan Ellis" }),
+        el("input", { class: "field__control", id: "ds-field", placeholder: "Client legal name" }),
         el("div", { class: "field__hint", text: "Hint text uses --color-muted." })
       ]),
       el("div", { class: "field", style: "max-width:360px" }, [

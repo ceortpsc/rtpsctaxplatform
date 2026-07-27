@@ -326,7 +326,7 @@ async function boot() {
   $("submitBtn").addEventListener("click", () => submit().catch((e) => toast(e.message, "danger")));
   $("approveBtn").addEventListener("click", () => approve().catch((e) => toast(e.message, "danger")));
   $("payBtn").addEventListener("click", () => pay());
-  $("assistText").value = "2 hours consultation and 1040 prep for Jordan Ellis in Orleans Parish LA $400";
+  $("assistText").value = "";
   $("headerCreateCta")?.addEventListener("click", (e) => {
     e.preventDefault();
     $("createBtn")?.focus();

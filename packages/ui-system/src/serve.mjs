@@ -127,7 +127,7 @@ export function sendDesignSystemPage(response, { serviceName = 'RTPSC', homeHref
       <h2 style="font-family:var(--font-display);margin:0 0 var(--sp-4)">Form field</h2>
       <div class="field" style="max-width:320px">
         <label class="field__label" for="ds-demo">Client name</label>
-        <input class="field__control" id="ds-demo" placeholder="Jordan Ellis" />
+        <input class="field__control" id="ds-demo" placeholder="Client legal name" />
         <div class="field__hint">Uses shared <code>.field</code> tokens.</div>
       </div>
     </section>

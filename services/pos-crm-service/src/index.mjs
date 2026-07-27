@@ -18,6 +18,15 @@ import {
 } from '../../../packages/ero-ops/src/index.mjs';
 import { taxLookups } from '../../../packages/invoice-core/src/index.mjs';
 import { servePublicOrShared, sendNotFoundPage, sendDesignSystemPage } from '../../../packages/ui-system/src/serve.mjs';
+import {
+  applyOperationalSeed,
+  buildOperationalSeed,
+  hydrateCrmFromSnapshot,
+  loadFirmIdentity,
+  readJsonFile,
+  resolveOperationalDataDir,
+  resolveServiceWiring
+} from '../../../packages/operational-seed/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3006;
@@ -88,21 +97,32 @@ export function createPosCrmServer() {
   const crm = createCrmStore();
   const pos = createPosStore(crm);
   const traces = createSbtpgTraceStore();
+  const firm = loadFirmIdentity();
+  const operational = buildOperationalSeed();
+  const wiring = resolveServiceWiring();
+  let seedApplied = null;
+  let seedReady = false;
 
-  // Seed a demo contact for operator onboarding (idempotent per process).
-  const seed = crm.createContact({
-    name: 'Jordan Ellis',
-    email: 'jordan@example.com',
-    phone: '5045550100',
-    taxpayerRef: 'TP-77',
-    state: 'LA',
-    locality: 'ORLEANS',
-    tags: ['demo', 'efile'],
-    source: 'seed',
-    notes: 'Seeded CRM contact for POS + ERO demos.'
-  });
+  async function ensureOperationalSeed() {
+    if (seedReady) return seedApplied;
+    const snapshotPath = path.join(resolveOperationalDataDir(), 'crm-snapshot.json');
+    const snapshot = await readJsonFile(snapshotPath, null);
+    if (snapshot?.kind === 'crm-snapshot') {
+      hydrateCrmFromSnapshot(crm, snapshot);
+      seedApplied = {
+        source: 'crm-snapshot',
+        firmAccountId: crm.listAccounts().find((a) => a.type === 'firm')?.id ?? null,
+        operatorContactId: crm.searchContacts('', { limit: 50 }).find((c) => c.tags?.includes('operator'))?.id ?? null
+      };
+    } else {
+      seedApplied = await applyOperationalSeed({ crm, seedRefunds: false });
+    }
+    seedReady = true;
+    return seedApplied;
+  }
 
   const server = http.createServer(async (request, response) => {
+    await ensureOperationalSeed();
     const url = new URL(request.url, `http://${request.headers.host ?? 'localhost'}`);
     const { pathname } = url;
 
@@ -121,8 +141,29 @@ export function createPosCrmServer() {
             crm: crm.snapshot(),
             pos: pos.snapshot(),
             traces: traces.listTraces({ limit: 1 }).length,
-            seedContactId: seed.id
+            firm: {
+              company: firm.company,
+              operator: firm.operator?.name ?? null,
+              registerId: firm.pos.registerId,
+              completeness: firm.completeness
+            },
+            operationalSeed: seedApplied,
+            wiring: {
+              invoice: wiring.byId['invoice-service']?.baseUrl,
+              enrollment: wiring.byId['enrollment-service']?.baseUrl,
+              refund: wiring.byId['refund-status-service']?.baseUrl
+            },
+            catalogSkus: operational.catalogs.counts.serviceCatalog
           }
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/api/operational') {
+        return sendJson(response, 200, {
+          firm,
+          seed: seedApplied,
+          wiring: wiring.services,
+          catalogs: operational.catalogs.counts
         });
       }
 
@@ -386,12 +427,13 @@ export function createPosCrmServer() {
     }
   });
 
-  return { server, config, crm, pos, traces, seed };
+  return { server, config, crm, pos, traces, firm, ensureOperationalSeed, getSeed: () => seedApplied };
 }
 
 export function start() {
   const context = createPosCrmServer();
-  context.server.listen(context.config.servicePort, () => {
+  context.server.listen(context.config.servicePort, async () => {
+    await context.ensureOperationalSeed();
     console.log(`pos-crm-service listening on http://localhost:${context.config.servicePort} (${context.config.appEnv})`);
   });
   return context;

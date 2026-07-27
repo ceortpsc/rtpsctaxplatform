@@ -106,6 +106,11 @@ export const COMMANDS = {
       }
       return node('scripts/config-doctor.mjs', rest.slice(1));
     }
+  },
+  seed: {
+    usage: 'seed [--json] [--no-persist]',
+    desc: 'Fully seed and wire firm/catalog/topology (no demo placeholders)',
+    plan: (rest) => node('scripts/seed.mjs', rest)
   }
 };
 

@@ -95,8 +95,8 @@
               <div>
                 <h2 class="panel__title">Register</h2>
                 <div class="row2">
-                  <div class="field"><label class="field__label" for="pRegister">Register</label><input class="field__control" id="pRegister" value="REG-1" /></div>
-                  <div class="field"><label class="field__label" for="pOperator">Operator</label><input class="field__control" id="pOperator" value="cashier" /></div>
+                  <div class="field"><label class="field__label" for="pRegister">Register</label><input class="field__control" id="pRegister" value="" placeholder="REG-…" /></div>
+                  <div class="field"><label class="field__label" for="pOperator">Operator</label><input class="field__control" id="pOperator" value="" placeholder="ERO / cashier id" /></div>
                 </div>
                 <div class="field"><label class="field__label" for="pContact">CRM contact</label><select class="field__control" id="pContact"></select></div>
                 <button type="button" id="openSession" class="btn btn--primary">Open POS session</button>
@@ -122,7 +122,7 @@
                       <option value="ach">ACH</option>
                     </select>
                   </div>
-                  <div class="field"><label class="field__label" for="pRef">Reference</label><input class="field__control" id="pRef" placeholder="Auth #" value="AUTH-POS-1" /></div>
+                  <div class="field"><label class="field__label" for="pRef">Reference</label><input class="field__control" id="pRef" placeholder="Auth #" value="" /></div>
                 </div>
                 <button type="button" id="checkout" class="btn btn--primary" disabled>Checkout (invoice + receipt)</button>
                 <div id="saleResult" class="result" hidden></div>
@@ -165,7 +165,7 @@
               </div>
               <div>
                 <h2 class="panel__title">Refund intelligence center</h2>
-                <div class="field"><label class="field__label" for="iName">Client name</label><input class="field__control" id="iName" value="Jordan Ellis" /></div>
+                <div class="field"><label class="field__label" for="iName">Client name</label><input class="field__control" id="iName" value="" placeholder="From selected CRM contact" /></div>
                 <div class="field"><label class="field__label" for="iStatus">Refund status signal</label><input class="field__control" id="iStatus" value="review" /></div>
                 <label class="check"><input type="checkbox" id="iTranscript" checked /> Transcript on file</label>
                 <label class="check"><input type="checkbox" id="iEnrolled" /> SBTPG enrolled</label>

@@ -149,6 +149,15 @@ export function buildModuleCatalog() {
           detail: { channels: ['refund.status.received', 'refund.status.updated'] }
         },
         {
+          name: '@rtp/operational-seed',
+          summary: 'Firm/ERO/catalog/topology seed and service wiring — no demo taxpayer data.',
+          tags: ['seed', 'wiring', 'operations'],
+          detail: {
+            commands: ['./rtpsc seed', './rtpsc seed --json'],
+            persists: ['logs/operational/seed-manifest.json']
+          }
+        },
+        {
           name: '@rtp/secure-tunnel',
           summary: 'Approved secure tunnel adapter with actual endpoint allowlist and fail-safe transmit handoff.',
           tags: ['compliance', 'tunnel', 'transmitter'],
