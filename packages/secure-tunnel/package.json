@@ -2,5 +2,10 @@
   "name": "@rtp/secure-tunnel",
   "version": "0.1.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./topology": "./src/topology.mjs"
+  }
 }

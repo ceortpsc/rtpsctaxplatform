@@ -1,0 +1,14 @@
+{
+  "name": "@rtp/apple-developer-console",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.mjs"
+  },
+  "dependencies": {
+    "@rtp/apple-connect": "workspace:*",
+    "@rtp/platform-core": "workspace:*",
+    "@rtp/ui-system": "workspace:*"
+  }
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-label="No documents yet">
+  <rect width="320" height="200" rx="16" fill="#eef1f6"/>
+  <rect x="40" y="36" width="240" height="128" rx="12" fill="#fff" stroke="#c9d1de"/>
+  <path d="M130 55h50l20 20v70h-70z" fill="#fff" stroke="#97a3b8"/><path d="M180 55v20h20" fill="none" stroke="#97a3b8"/>
+  <text x="160" y="178" text-anchor="middle" font-family="Avenir Next, Segoe UI, sans-serif" font-size="12" fill="#6b778d">No documents yet</text>
+</svg>

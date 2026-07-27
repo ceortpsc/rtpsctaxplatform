@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Apple Developer Console · RTPSC</title>
+    <link rel="stylesheet" href="/shared/theme.css" />
+    <link rel="stylesheet" href="/shared/shell.css" />
+    <link rel="stylesheet" href="/shared/components.css" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="icon" href="/shared/brand/icons/favicon.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div
+      class="app-shell"
+      data-app-shell
+      data-active="integrations"
+      data-service="apple-developer-console"
+      data-env="local"
+    >
+      <div class="app-shell__drawer-backdrop" data-action="close-drawer"></div>
+      <aside class="app-shell__sidebar" aria-label="Primary">
+        <a class="app-shell__brand" href="/">
+          <img class="app-shell__monogram" src="/shared/brand/marks/monogram.svg" alt="" />
+          <span class="app-shell__brand-text">
+            <span class="app-shell__brand-mark">RTPSC</span>
+            <span class="app-shell__brand-sub">Apple Developer Console</span>
+          </span>
+        </a>
+        <div class="app-shell__env" data-shell-env>local · apple-connect</div>
+        <nav class="app-shell__nav" id="app-nav" data-shell-nav></nav>
+        <div class="app-shell__sidebar-foot">App Store Connect API · secrets never committed</div>
+      </aside>
+
+      <div class="app-shell__main">
+        <div class="app-shell__command">
+          <button type="button" class="app-shell__menu-btn" data-action="open-drawer" aria-label="Open menu">☰</button>
+          <button type="button" class="app-shell__search" data-action="open-search">
+            <span>Search Apple console actions…</span>
+            <kbd>Ctrl</kbd><kbd>K</kbd>
+          </button>
+          <div class="app-shell__command-actions">
+            <span class="badge badge--info" id="gateBadge">Checking</span>
+            <span class="app-shell__session">Operator session</span>
+            <button type="button" class="app-shell__icon-btn" data-action="cycle-theme" aria-label="Cycle theme">◐</button>
+            <button type="button" class="app-shell__icon-btn" data-action="toggle-sidebar" aria-label="Collapse sidebar">⊟</button>
+          </div>
+        </div>
+
+        <main class="app-shell__content is-workspace" id="main-content">
+          <header class="page-header">
+            <nav class="page-header__crumbs" aria-label="Breadcrumb">
+              <a href="http://127.0.0.1:3010/#dashboard">Platform</a>
+              <span aria-hidden="true">/</span>
+              <a href="#status">Integrations</a>
+              <span aria-hidden="true">/</span>
+              <span aria-current="page">Apple Developer Console</span>
+            </nav>
+            <div class="page-header__category">Integrations</div>
+            <div class="page-header__row">
+              <div class="page-header__titles">
+                <h1 class="page-header__title">Apple Developer Console</h1>
+                <p class="page-header__desc">
+                  Provision App Store Connect API access, issue ES256 JWTs, and launch required Apple Developer
+                  resources. Live Apple calls stay blocked until secrets and APPLE_CONNECT_ENABLED are set.
+                </p>
+              </div>
+              <div class="page-header__actions">
+                <a class="btn btn--secondary" id="openAsc" href="https://appstoreconnect.apple.com" target="_blank" rel="noopener">
+                  Open App Store Connect
+                </a>
+                <a class="btn btn--primary" id="openDeveloper" href="https://developer.apple.com/account" target="_blank" rel="noopener">
+                  Open Apple Developer
+                </a>
+              </div>
+            </div>
+          </header>
+
+          <div class="grid-metrics" id="metrics">
+            <article class="card card--metric">
+              <div class="metric-label">API gate</div>
+              <div class="metric-value" id="metricGate">—</div>
+              <p class="field__hint" id="metricGateHint">Evaluating safeguards</p>
+            </article>
+            <article class="card card--metric">
+              <div class="metric-label">Issuer</div>
+              <div class="metric-value" id="metricIssuer" style="font-size:1.1rem">—</div>
+              <p class="field__hint">APPLE_ASC_ISSUER_ID</p>
+            </article>
+            <article class="card card--metric">
+              <div class="metric-label">Key ID</div>
+              <div class="metric-value" id="metricKey" style="font-size:1.1rem">—</div>
+              <p class="field__hint">APPLE_ASC_KEY_ID</p>
+            </article>
+            <article class="card card--metric">
+              <div class="metric-label">Team / Bundle</div>
+              <div class="metric-value" id="metricTeam" style="font-size:1rem">—</div>
+              <p class="field__hint">APPLE_TEAM_ID · APPLE_BUNDLE_ID</p>
+            </article>
+          </div>
+
+          <div class="split">
+            <section class="card stack" id="checklistCard">
+              <div class="card__header">
+                <h2 class="card__title">Required setup</h2>
+                <button type="button" class="btn btn--secondary btn--sm" id="refreshBtn">Refresh status</button>
+              </div>
+              <ol class="checklist" id="checklist"></ol>
+            </section>
+
+            <section class="stack">
+              <div class="card">
+                <div class="card__header">
+                  <h2 class="card__title">Token &amp; live calls</h2>
+                </div>
+                <p class="field__hint">
+                  Generates a short-lived App Store Connect JWT (ES256, ≤20 min). The full token is withheld unless
+                  APPLE_RETURN_FULL_TOKEN=true on the server.
+                </p>
+                <div class="page-header__actions" style="margin-top:12px">
+                  <button type="button" class="btn btn--primary" id="tokenBtn">Generate API token</button>
+                  <button type="button" class="btn btn--secondary" id="appsBtn">List apps</button>
+                </div>
+                <pre class="output" id="tokenOut" hidden></pre>
+                <pre class="output" id="appsOut" hidden></pre>
+              </div>
+
+              <div class="card">
+                <div class="card__header"><h2 class="card__title">Capabilities</h2></div>
+                <div id="capabilities" class="cap-grid"></div>
+              </div>
+
+              <div class="card">
+                <div class="card__header"><h2 class="card__title">Apple portals</h2></div>
+                <div class="portal-grid" id="portals"></div>
+              </div>
+            </section>
+          </div>
+        </main>
+
+        <div class="app-shell__mobile-bar">
+          <a class="btn btn--secondary" href="https://developer.apple.com/account" target="_blank" rel="noopener">Developer</a>
+          <button type="button" class="btn btn--primary" id="tokenBtnMobile">Generate token</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/shared/shell.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

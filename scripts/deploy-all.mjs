@@ -19,7 +19,8 @@ const services = [
   { name: 'enrollment-service', entry: 'services/enrollment-service/src/index.mjs', port: 3004 },
   { name: 'invoice-service', entry: 'services/invoice-service/src/index.mjs', port: 3005 },
   { name: 'pos-crm-service', entry: 'services/pos-crm-service/src/index.mjs', port: 3006 },
-  { name: 'modules-dashboard', entry: 'services/modules-dashboard/src/index.mjs', port: 3010 }
+  { name: 'modules-dashboard', entry: 'services/modules-dashboard/src/index.mjs', port: 3010 },
+  { name: 'apple-developer-console', entry: 'services/apple-developer-console/src/index.mjs', port: 8870 }
 ];
 
 const workers = [{ name: 'workflow-runner', entry: 'workers/workflow-runner/src/index.mjs' }];

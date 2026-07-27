@@ -37,12 +37,21 @@ export const queueTransmissionTask = defineTask({
 
 export const transmitTask = defineTask({
   name: 'transmit',
-  description: 'Hand off to the approved secure tunnel adapter (stub-safe).',
-  run: (context) => {
+  description: 'Hand off to the approved secure tunnel adapter (actual-config, fail-safe).',
+  run: async (context) => {
     const tunnel = createSecureTunnelAdapter();
-    const outcome = tunnel.status === 'stub' ? 'held-pending-approval' : 'transmitted';
-    context.log(`Secure tunnel status "${tunnel.status}" -> outcome "${outcome}".`);
-    return { tunnel: tunnel.name, transmissionOutcome: outcome };
+    const handoff = await tunnel.transmit({
+      batchId: context.state.batchId,
+      documents: context.input?.documents ?? []
+    });
+    context.log(`Secure tunnel status "${tunnel.status}" -> outcome "${handoff.outcome}".`);
+    return {
+      tunnel: tunnel.name,
+      tunnelStatus: tunnel.status,
+      transmissionOutcome: handoff.outcome,
+      transmissionHeld: handoff.held === true,
+      transmissionHandoff: handoff
+    };
   }
 });
 

@@ -4,145 +4,191 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>POS + CRM · RTPSC</title>
+    <link rel="stylesheet" href="/shared/theme.css" />
+    <link rel="stylesheet" href="/shared/shell.css" />
+    <link rel="stylesheet" href="/shared/components.css" />
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="icon" href="/shared/brand/icons/favicon.svg" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">RTPSC</span>
-        <span class="brand-sub">POS · CRM · ERO Intelligence</span>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="app-shell" data-app-shell data-active="clients" data-service="pos-crm-service" data-env="local">
+      <div class="app-shell__drawer-backdrop" data-action="close-drawer"></div>
+      <aside class="app-shell__sidebar" aria-label="Primary">
+        <a class="app-shell__brand" href="/">
+          <img class="app-shell__monogram" src="/shared/brand/marks/monogram.svg" alt="" />
+          <span class="app-shell__brand-text">
+            <span class="app-shell__brand-mark">RTPSC</span>
+            <span class="app-shell__brand-sub">POS · CRM · ERO</span>
+          </span>
+        </a>
+        <div class="app-shell__env" data-shell-env>local · pos-crm</div>
+        <nav class="app-shell__nav" id="app-nav" data-shell-nav></nav>
+        <div class="app-shell__sidebar-foot">Checkout settles through invoice-core</div>
+      </aside>
+      <div class="app-shell__main">
+        <div class="app-shell__command">
+          <button type="button" class="app-shell__menu-btn" data-action="open-drawer" aria-label="Open menu">☰</button>
+          <button type="button" class="app-shell__search" data-action="open-search">
+            <span>Search clients…</span>
+            <kbd>Ctrl</kbd><kbd>K</kbd>
+          </button>
+          <div class="app-shell__command-actions">
+            <span class="app-shell__session">Operator session</span>
+            <button type="button" class="app-shell__icon-btn" data-action="cycle-theme" aria-label="Cycle theme">◐</button>
+            <button type="button" class="app-shell__icon-btn" data-action="toggle-sidebar" aria-label="Collapse sidebar">⊟</button>
+          </div>
+        </div>
+        <main class="app-shell__content is-workspace" id="main-content">
+          <header class="page-header">
+            <nav class="page-header__crumbs" aria-label="Breadcrumb">
+              <a href="http://localhost:3010/">Platform</a><span aria-hidden="true">/</span>
+              <span aria-current="page">Clients / POS</span>
+            </nav>
+            <div class="page-header__category">Client &amp; Financial Operations</div>
+            <div class="page-header__row">
+              <div class="page-header__titles">
+                <h1 class="page-header__title">POS + CRM</h1>
+                <p class="page-header__desc">
+                  Contacts, register checkout with tax/receipts, SBTPG report tracing, and ERO refund intelligence.
+                </p>
+              </div>
+              <div class="page-header__actions">
+                <nav class="tabs" id="tabs" aria-label="Workspace sections">
+                  <button type="button" data-tab="crm" class="active">CRM</button>
+                  <button type="button" data-tab="pos">Point of Sale</button>
+                  <button type="button" data-tab="ero">Refund Intel / SBTPG</button>
+                </nav>
+              </div>
+            </div>
+          </header>
+
+          <section class="panel" id="tab-crm">
+            <div class="workspace-grid">
+              <div>
+                <h2 class="panel__title">New contact</h2>
+                <div class="field"><label class="field__label" for="cName">Name</label><input class="field__control" id="cName" placeholder="Client name" /></div>
+                <div class="field"><label class="field__label" for="cEmail">Email</label><input class="field__control" id="cEmail" type="email" /></div>
+                <div class="field"><label class="field__label" for="cTaxRef">Taxpayer ref</label><input class="field__control" id="cTaxRef" placeholder="TP-…" /></div>
+                <div class="row2">
+                  <div class="field"><label class="field__label" for="cState">State</label><select class="field__control" id="cState"></select></div>
+                  <div class="field"><label class="field__label" for="cLocality" id="cLocLabel">Parish / County</label><select class="field__control" id="cLocality"></select></div>
+                </div>
+                <button type="button" id="createContact" class="btn btn--primary">Save to CRM</button>
+              </div>
+              <div>
+                <h2 class="panel__title">Directory</h2>
+                <div class="field"><label class="field__label" for="cSearch">Search</label><input class="field__control" id="cSearch" placeholder="Name, tag, taxpayer ref…" /></div>
+                <div class="table-wrap">
+                  <table class="table">
+                    <thead><tr><th>Name</th><th>Ref</th><th>Jurisdiction</th></tr></thead>
+                    <tbody id="contactList"><tr><td colspan="3" class="table-empty">Loading…</td></tr></tbody>
+                  </table>
+                </div>
+                <div id="contactDetail" class="detail" hidden></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel" id="tab-pos" hidden>
+            <div class="workspace-grid">
+              <div>
+                <h2 class="panel__title">Register</h2>
+                <div class="row2">
+                  <div class="field"><label class="field__label" for="pRegister">Register</label><input class="field__control" id="pRegister" value="REG-1" /></div>
+                  <div class="field"><label class="field__label" for="pOperator">Operator</label><input class="field__control" id="pOperator" value="cashier" /></div>
+                </div>
+                <div class="field"><label class="field__label" for="pContact">CRM contact</label><select class="field__control" id="pContact"></select></div>
+                <button type="button" id="openSession" class="btn btn--primary">Open POS session</button>
+                <div id="sessionBox" class="detail" hidden></div>
+                <h3 class="section-label">Add item</h3>
+                <div class="field"><label class="field__label" for="pSku">Catalog SKU</label><select class="field__control" id="pSku"></select></div>
+                <div class="row2">
+                  <div class="field"><label class="field__label" for="pQty">Qty</label><input class="field__control" id="pQty" type="number" value="1" min="0.25" step="0.25" /></div>
+                  <div class="field"><label class="field__label" for="pPrice">Unit price (optional)</label><input class="field__control" id="pPrice" type="number" step="0.01" placeholder="catalog default" /></div>
+                </div>
+                <button type="button" id="addItem" class="btn btn--secondary" disabled>Add to cart</button>
+              </div>
+              <div>
+                <h2 class="panel__title">Cart &amp; checkout</h2>
+                <pre id="cart" class="totals">Open a session and attach a CRM contact.</pre>
+                <div class="row2">
+                  <div class="field">
+                    <label class="field__label" for="pMethod">Tender</label>
+                    <select class="field__control" id="pMethod">
+                      <option value="card">Card</option>
+                      <option value="cash">Cash</option>
+                      <option value="check">Check</option>
+                      <option value="ach">ACH</option>
+                    </select>
+                  </div>
+                  <div class="field"><label class="field__label" for="pRef">Reference</label><input class="field__control" id="pRef" placeholder="Auth #" value="AUTH-POS-1" /></div>
+                </div>
+                <button type="button" id="checkout" class="btn btn--primary" disabled>Checkout (invoice + receipt)</button>
+                <div id="saleResult" class="result" hidden></div>
+                <div id="saleExports" class="exports" hidden></div>
+                <h3 class="section-label">Recent sales</h3>
+                <div id="salesList" class="list">None yet.</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel" id="tab-ero" hidden>
+            <div class="workspace-grid">
+              <div>
+                <h2 class="panel__title">SBTPG report tracking</h2>
+                <div class="field"><label class="field__label" for="tContact">Contact</label><select class="field__control" id="tContact"></select></div>
+                <div class="row2">
+                  <div class="field">
+                    <label class="field__label" for="tProduct">Product</label>
+                    <select class="field__control" id="tProduct">
+                      <option value="RA-NF">RA-NF</option>
+                      <option value="RA-FC">RA-FC</option>
+                      <option value="RT">RT</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label class="field__label" for="tStage">Stage</label>
+                    <select class="field__control" id="tStage">
+                      <option value="received">received</option>
+                      <option value="underwriting">underwriting</option>
+                      <option value="approved">approved</option>
+                      <option value="funded">funded</option>
+                      <option value="rejected">rejected</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field"><label class="field__label" for="tDetail">Detail</label><input class="field__control" id="tDetail" placeholder="Trace note" value="Bank product report received" /></div>
+                <button type="button" id="trackBtn" class="btn btn--primary">Record trace</button>
+                <div id="gateBox" class="tax-preview">Loading payment gate…</div>
+                <div id="traceList" class="list">No traces yet.</div>
+              </div>
+              <div>
+                <h2 class="panel__title">Refund intelligence center</h2>
+                <div class="field"><label class="field__label" for="iName">Client name</label><input class="field__control" id="iName" value="Jordan Ellis" /></div>
+                <div class="field"><label class="field__label" for="iStatus">Refund status signal</label><input class="field__control" id="iStatus" value="review" /></div>
+                <label class="check"><input type="checkbox" id="iTranscript" checked /> Transcript on file</label>
+                <label class="check"><input type="checkbox" id="iEnrolled" /> SBTPG enrolled</label>
+                <label class="check"><input type="checkbox" id="iPosPaid" /> POS sale settled</label>
+                <button type="button" id="intelBtn" class="btn btn--secondary">Score intelligence</button>
+                <div id="intelOut" class="detail" hidden></div>
+                <h3 class="section-label">Automated ERO phrasing</h3>
+                <div class="field"><label class="field__label" for="phraseCode">Template</label><select class="field__control" id="phraseCode"></select></div>
+                <button type="button" id="phraseBtn" class="btn btn--tertiary">Generate phrase</button>
+                <pre id="phraseOut" class="totals">Select a template…</pre>
+              </div>
+            </div>
+          </section>
+        </main>
+        <nav class="app-shell__mobile-bar" aria-label="Mobile">
+          <button type="button" class="btn btn--secondary btn--sm" data-tab="crm">CRM</button>
+          <button type="button" class="btn btn--secondary btn--sm" data-tab="pos">POS</button>
+          <button type="button" class="btn btn--secondary btn--sm" data-tab="ero">ERO</button>
+        </nav>
       </div>
-      <nav class="tabs" id="tabs">
-        <button type="button" data-tab="crm" class="active">CRM</button>
-        <button type="button" data-tab="pos">Point of Sale</button>
-        <button type="button" data-tab="ero">Refund Intel / SBTPG</button>
-      </nav>
-    </header>
-
-    <main class="wrap">
-      <section class="banner">
-        Modular POS connected to CRM — checkout settles through the invoicing machine with state/parish tax,
-        receipts, SBTPG report tracing, and automated ERO phrasing for the refund intelligence center.
-      </section>
-
-      <!-- CRM -->
-      <section class="panel" id="tab-crm">
-        <div class="grid">
-          <div class="col">
-            <h2>New contact</h2>
-            <div class="field"><label>Name</label><input id="cName" placeholder="Client name" /></div>
-            <div class="field"><label>Email</label><input id="cEmail" type="email" /></div>
-            <div class="field"><label>Taxpayer ref</label><input id="cTaxRef" placeholder="TP-…" /></div>
-            <div class="row2">
-              <div class="field"><label>State</label><select id="cState"></select></div>
-              <div class="field"><label id="cLocLabel">Parish / County</label><select id="cLocality"></select></div>
-            </div>
-            <button type="button" id="createContact" class="primary-btn">Save to CRM</button>
-          </div>
-          <div class="col">
-            <h2>Directory</h2>
-            <div class="field"><label>Search</label><input id="cSearch" placeholder="Name, tag, taxpayer ref…" /></div>
-            <div id="contactList" class="list">Loading…</div>
-            <div id="contactDetail" class="detail" hidden></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- POS -->
-      <section class="panel" id="tab-pos" hidden>
-        <div class="grid">
-          <div class="col">
-            <h2>Register</h2>
-            <div class="row2">
-              <div class="field"><label>Register</label><input id="pRegister" value="REG-1" /></div>
-              <div class="field"><label>Operator</label><input id="pOperator" value="cashier" /></div>
-            </div>
-            <div class="field"><label>CRM contact</label><select id="pContact"></select></div>
-            <button type="button" id="openSession" class="primary-btn">Open POS session</button>
-            <div id="sessionBox" class="detail" hidden></div>
-            <h2>Add item</h2>
-            <div class="field"><label>Catalog SKU</label><select id="pSku"></select></div>
-            <div class="row2">
-              <div class="field"><label>Qty</label><input id="pQty" type="number" value="1" min="0.25" step="0.25" /></div>
-              <div class="field"><label>Unit price (optional override)</label><input id="pPrice" type="number" step="0.01" placeholder="catalog default" /></div>
-            </div>
-            <button type="button" id="addItem" class="secondary-btn" disabled>Add to cart</button>
-          </div>
-          <div class="col">
-            <h2>Cart &amp; checkout</h2>
-            <div id="cart" class="totals">Open a session and attach a CRM contact.</div>
-            <div class="row2">
-              <div class="field">
-                <label>Tender</label>
-                <select id="pMethod">
-                  <option value="card">Card</option>
-                  <option value="cash">Cash</option>
-                  <option value="check">Check</option>
-                  <option value="ach">ACH</option>
-                </select>
-              </div>
-              <div class="field"><label>Reference</label><input id="pRef" placeholder="Auth #" value="AUTH-POS-1" /></div>
-            </div>
-            <button type="button" id="checkout" class="primary-btn" disabled>Checkout (invoice + receipt)</button>
-            <div id="saleResult" class="result" hidden></div>
-            <div id="saleExports" class="exports" hidden></div>
-            <h2>Recent sales</h2>
-            <div id="salesList" class="list">None yet.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ERO -->
-      <section class="panel" id="tab-ero" hidden>
-        <div class="grid">
-          <div class="col">
-            <h2>SBTPG report tracking</h2>
-            <div class="field"><label>Contact</label><select id="tContact"></select></div>
-            <div class="row2">
-              <div class="field">
-                <label>Product</label>
-                <select id="tProduct">
-                  <option value="RA-NF">RA-NF</option>
-                  <option value="RA-FC">RA-FC</option>
-                  <option value="RT">RT</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Stage</label>
-                <select id="tStage">
-                  <option value="received">received</option>
-                  <option value="underwriting">underwriting</option>
-                  <option value="approved">approved</option>
-                  <option value="funded">funded</option>
-                  <option value="rejected">rejected</option>
-                </select>
-              </div>
-            </div>
-            <div class="field"><label>Detail</label><input id="tDetail" placeholder="Trace note" value="Bank product report received" /></div>
-            <button type="button" id="trackBtn" class="primary-btn">Record trace</button>
-            <div id="gateBox" class="tax-preview">Loading payment gate…</div>
-            <div id="traceList" class="list">No traces yet.</div>
-          </div>
-          <div class="col">
-            <h2>Refund intelligence center</h2>
-            <div class="field"><label>Client name</label><input id="iName" value="Jordan Ellis" /></div>
-            <div class="field"><label>Refund status signal</label><input id="iStatus" value="review" /></div>
-            <label class="check"><input type="checkbox" id="iTranscript" checked /> Transcript on file</label>
-            <label class="check"><input type="checkbox" id="iEnrolled" /> SBTPG enrolled</label>
-            <label class="check"><input type="checkbox" id="iPosPaid" /> POS sale settled</label>
-            <button type="button" id="intelBtn" class="secondary-btn">Score intelligence</button>
-            <div id="intelOut" class="detail" hidden></div>
-
-            <h2>Automated ERO phrasing</h2>
-            <div class="field"><label>Template</label><select id="phraseCode"></select></div>
-            <button type="button" id="phraseBtn" class="ghost-btn">Generate phrase</button>
-            <pre id="phraseOut" class="totals">Select a template…</pre>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <div class="toast" id="toast"></div>
+    </div>
+    <div class="toast" id="toast" hidden></div>
+    <script src="/shared/shell.js"></script>
     <script src="/app.js"></script>
   </body>
 </html>
