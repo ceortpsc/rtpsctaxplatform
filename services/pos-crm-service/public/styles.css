@@ -79,7 +79,34 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   font-size: 11px; font-weight: 700; text-transform: uppercase;
 }
 .status.open, .status.active { background: #e8f5ff; }
-.status.closed, .status.paid { background: #e8f8ec; }
+.status.closed, .status.paid, .status.clear, .status.funded, .status.accepted { background: #e8f8ec; }
+.status.action_needed, .status.rejected, .status.hold, .status.review { background: #fde8e8; }
+.status.in_progress, .status.processing, .status.underwriting, .status.queued { background: #fff4d6; }
+.status.none, .status.unknown { background: #f3f0e6; color: var(--muted); }
+.hint { color: var(--muted); font-size: 12.5px; font-weight: 500; }
+.lede { color: var(--muted); font-size: 13.5px; line-height: 1.45; margin: 0 0 12px; }
+.alpha-bar { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0 12px; }
+.alpha-bar button {
+  min-width: 28px; padding: 4px 6px; border: 1px solid var(--trim); border-radius: 6px;
+  background: #fff; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--navy);
+}
+.alpha-bar button.active, .alpha-bar button:hover { background: var(--navy); color: #fff; }
+.matrix-toolbar { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
+.field.grow { margin-bottom: 0; }
+.matrix-wrap {
+  overflow: auto; border: 1px solid var(--trim); border-radius: 10px; background: #fff;
+}
+table.matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.matrix th, table.matrix td {
+  text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top;
+}
+table.matrix th {
+  background: var(--panel-2); color: var(--navy); font-size: 11.5px; text-transform: uppercase;
+  letter-spacing: 0.04em; position: sticky; top: 0;
+}
+table.matrix tr:hover td { background: #fcf8ee; }
+table.matrix .client-name { font-weight: 700; color: var(--navy); }
+table.matrix .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
 .toast {
   position: fixed; bottom: 20px; right: 20px; background: var(--navy); color: #fff;
   padding: 10px 14px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20;

@@ -15,6 +15,21 @@ function normalizeTags(tags) {
   return [...new Set(tags.map((t) => String(t).trim().toLowerCase()).filter(Boolean))].slice(0, 24);
 }
 
+/** Last-name–first alphabetical key for directory sort. */
+export function contactSortKey(name) {
+  const parts = String(name ?? '')
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length <= 1) return parts[0] ?? '';
+  return `${parts[parts.length - 1]} ${parts.slice(0, -1).join(' ')}`;
+}
+
+function compareContactsByName(a, b) {
+  return contactSortKey(a.name).localeCompare(contactSortKey(b.name), 'en', { sensitivity: 'base' });
+}
+
 /** Create an in-memory CRM store (contacts, accounts, interactions). */
 export function createCrmStore({ idFactory, now = () => new Date().toISOString() } = {}) {
   const nextId = idFactory ?? defaultId;
@@ -74,6 +89,8 @@ export function createCrmStore({ idFactory, now = () => new Date().toISOString()
       email: String(input.email ?? '').trim().toLowerCase(),
       phone: normalizePhone(input.phone),
       taxpayerRef: String(input.taxpayerRef ?? '').trim() || null,
+      clientNumber: String(input.clientNumber ?? input.clientIdNumber ?? '').trim().toUpperCase() || null,
+      customerNumber: String(input.customerNumber ?? input.customerIdNumber ?? '').trim().toUpperCase() || null,
       accountId,
       state: String(input.state ?? '').trim().toUpperCase() || null,
       locality: String(input.locality ?? input.parish ?? input.county ?? '').trim().toUpperCase() || null,
@@ -111,6 +128,12 @@ export function createCrmStore({ idFactory, now = () => new Date().toISOString()
     if (patch.email != null) next.email = String(patch.email).trim().toLowerCase();
     if (patch.phone != null) next.phone = normalizePhone(patch.phone);
     if (patch.taxpayerRef != null) next.taxpayerRef = String(patch.taxpayerRef).trim() || null;
+    if (patch.clientNumber != null || patch.clientIdNumber != null) {
+      next.clientNumber = String(patch.clientNumber ?? patch.clientIdNumber).trim().toUpperCase() || null;
+    }
+    if (patch.customerNumber != null || patch.customerIdNumber != null) {
+      next.customerNumber = String(patch.customerNumber ?? patch.customerIdNumber).trim().toUpperCase() || null;
+    }
     if (patch.state != null) next.state = String(patch.state).trim().toUpperCase() || null;
     if (patch.locality != null || patch.parish != null || patch.county != null) {
       next.locality = String(patch.locality ?? patch.parish ?? patch.county).trim().toUpperCase() || null;
@@ -127,18 +150,85 @@ export function createCrmStore({ idFactory, now = () => new Date().toISOString()
     return next;
   }
 
-  function searchContacts(query = '', { limit = 50 } = {}) {
+  function searchContacts(query = '', { limit = 50, sort = 'alpha' } = {}) {
     const q = String(query).trim().toLowerCase();
-    const pool = q
+    let pool = q
       ? contacts.filter((c) => {
-          const hay = [c.name, c.email, c.phone, c.taxpayerRef, c.state, c.locality, ...(c.tags ?? [])]
+          const hay = [
+            c.name,
+            c.email,
+            c.phone,
+            c.taxpayerRef,
+            c.clientNumber,
+            c.customerNumber,
+            c.state,
+            c.locality,
+            ...(c.tags ?? [])
+          ]
             .filter(Boolean)
             .join(' ')
             .toLowerCase();
           return hay.includes(q);
         })
-      : contacts;
+      : contacts.slice();
+    if (sort === 'alpha' || sort === 'name') {
+      pool = pool.slice().sort(compareContactsByName);
+    }
     return pool.slice(0, limit);
+  }
+
+  /** Exact / prefix name lookup (alphabetical). */
+  function lookupByName(nameQuery, { limit = 20 } = {}) {
+    const q = String(nameQuery ?? '')
+      .trim()
+      .toLowerCase();
+    if (!q) return [];
+    return contacts
+      .filter((c) => {
+        const name = String(c.name).toLowerCase();
+        const key = contactSortKey(c.name);
+        return name.startsWith(q) || name.includes(q) || key.startsWith(q) || key.includes(q);
+      })
+      .sort(compareContactsByName)
+      .slice(0, limit);
+  }
+
+  function findByTaxpayerRef(taxpayerRef) {
+    if (!taxpayerRef) return null;
+    const ref = String(taxpayerRef).trim();
+    return contacts.find((c) => c.taxpayerRef === ref) ?? null;
+  }
+
+  function findByClientNumber(clientNumber) {
+    if (!clientNumber) return null;
+    const n = String(clientNumber).trim().toUpperCase();
+    return contacts.find((c) => c.clientNumber === n) ?? null;
+  }
+
+  function findByCustomerNumber(customerNumber) {
+    if (!customerNumber) return null;
+    const n = String(customerNumber).trim().toUpperCase();
+    return contacts.find((c) => c.customerNumber === n) ?? null;
+  }
+
+  function listContactsAlphabetical({ letter = '', limit = 200, offset = 0 } = {}) {
+    let pool = contacts.slice().sort(compareContactsByName);
+    const L = String(letter).trim().toUpperCase();
+    if (L && L !== 'ALL') {
+      pool = pool.filter((c) => {
+        const ch = contactSortKey(c.name).charAt(0).toUpperCase() || '#';
+        return L === '#' ? !/^[A-Z]$/.test(ch) : ch === L;
+      });
+    }
+    return {
+      total: pool.length,
+      contacts: pool.slice(offset, offset + limit),
+      letters: [
+        ...new Set(
+          contacts.map((c) => contactSortKey(c.name).charAt(0).toUpperCase() || '#').filter(Boolean)
+        )
+      ].sort()
+    };
   }
 
   function logInteraction(input = {}) {
@@ -180,6 +270,11 @@ export function createCrmStore({ idFactory, now = () => new Date().toISOString()
     updateContact,
     findContact,
     searchContacts,
+    lookupByName,
+    findByTaxpayerRef,
+    findByClientNumber,
+    findByCustomerNumber,
+    listContactsAlphabetical,
     createAccount,
     findAccount,
     listAccounts: () => accounts.slice(),

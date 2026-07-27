@@ -18,6 +18,16 @@ import {
   scoreRefundIntelligence
 } from '../../../packages/ero-ops/src/index.mjs';
 import { taxLookups } from '../../../packages/invoice-core/src/index.mjs';
+import { createRefundStore } from '../../../packages/refund-core/src/index.mjs';
+import {
+  buildEroClientStatusMatrix,
+  createMasterfileStore,
+  describeClientMasterfile
+} from '../../../packages/client-masterfile/src/index.mjs';
+import {
+  createPartyIdentityIssuer,
+  describePartyIdentity
+} from '../../../packages/party-identity/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3006;
@@ -28,9 +38,21 @@ export const posCrmDescriptor = createServiceDescriptor({
   responsibilities: [
     'Operate the CRM for tax-prep clients (contacts, accounts, interactions).',
     'Run the Point of Sale register fully linked to CRM and the invoicing machine.',
-    'Track SBTPG report traces, automate ERO phrasing, and surface refund intelligence.'
+    'Track SBTPG report traces, automate ERO phrasing, and surface refund intelligence.',
+    'Manage the alphabetical client master file and Full ERO Client Status matrix.',
+    'Issue Client ID # (CL-######) and Customer ID # (CU-######) for tax-party records.'
   ],
-  dependencies: ['@rtp/crm-core', '@rtp/pos-core', '@rtp/ero-ops', '@rtp/invoice-core', '@rtp/tax-data', '@rtp/bank-products']
+  dependencies: [
+    '@rtp/crm-core',
+    '@rtp/pos-core',
+    '@rtp/ero-ops',
+    '@rtp/invoice-core',
+    '@rtp/tax-data',
+    '@rtp/bank-products',
+    '@rtp/client-masterfile',
+    '@rtp/refund-core',
+    '@rtp/party-identity'
+  ]
 });
 
 const CONTENT_TYPES = {
@@ -101,19 +123,168 @@ export function createPosCrmServer() {
   const crm = createCrmStore();
   const pos = createPosStore(crm);
   const traces = createSbtpgTraceStore();
+  const refunds = createRefundStore();
+  const masterfile = createMasterfileStore();
+  const partyIds = createPartyIdentityIssuer({ persist: true });
+  // Load persisted Client/Customer ID # sequences asynchronously on first request.
+  let partyReady = false;
+  async function ensurePartyIds() {
+    if (partyReady) return;
+    await partyIds.loadPersisted();
+    partyReady = true;
+  }
 
-  // Seed a demo contact for operator onboarding (idempotent per process).
-  const seed = crm.createContact({
-    name: 'Jordan Ellis',
-    email: 'jordan@example.com',
-    phone: '5045550100',
-    taxpayerRef: 'TP-77',
-    state: 'LA',
-    locality: 'ORLEANS',
-    tags: ['demo', 'efile'],
-    source: 'seed',
-    notes: 'Seeded CRM contact for POS + ERO demos.'
-  });
+  async function issueIdsForContact(contact, { issueClient = true, issueCustomer = true, source = 'crm' } = {}) {
+    await ensurePartyIds();
+    const issued = {};
+    if (issueClient && !contact.clientNumber) {
+      const result = await partyIds.issueClientIdNumber({
+        name: contact.name,
+        taxpayerRef: contact.taxpayerRef,
+        contactId: contact.id,
+        source
+      });
+      issued.client = result.record;
+      contact = crm.updateContact(contact.id, { clientNumber: result.record.number });
+    }
+    if (issueCustomer && !contact.customerNumber) {
+      const result = await partyIds.issueCustomerIdNumber({
+        name: contact.name,
+        taxpayerRef: contact.taxpayerRef,
+        contactId: contact.id,
+        source,
+        pairedWith: contact.clientNumber ?? issued.client?.number ?? null
+      });
+      issued.customer = result.record;
+      contact = crm.updateContact(contact.id, { customerNumber: result.record.number });
+      if (issued.client) {
+        await partyIds.attach(issued.client.number, { pairedWith: result.record.number });
+      }
+    }
+    masterfile.upsert({
+      name: contact.name,
+      email: contact.email,
+      phone: contact.phone,
+      taxpayerRef: contact.taxpayerRef,
+      contactId: contact.id,
+      accountId: contact.accountId,
+      clientNumber: contact.clientNumber,
+      customerNumber: contact.customerNumber,
+      state: contact.state,
+      locality: contact.locality,
+      address: contact.address,
+      tags: contact.tags,
+      crmStatus: contact.status,
+      notes: contact.notes,
+      source: contact.source || 'crm'
+    });
+    return { contact, issued };
+  }
+
+  const demoClients = [
+    {
+      name: 'Jordan Ellis',
+      email: 'jordan@example.com',
+      phone: '5045550100',
+      taxpayerRef: 'TP-77',
+      state: 'LA',
+      locality: 'ORLEANS',
+      tags: ['demo', 'efile'],
+      notes: 'Seeded CRM contact for POS + ERO demos.',
+      filingStage: 'approved',
+      amount: 3200,
+      sbtpg: { productCode: 'RA-NF', stage: 'underwriting', detail: 'Docs in review' }
+    },
+    {
+      name: 'Alex Rivera',
+      email: 'alex@example.com',
+      phone: '5045550199',
+      taxpayerRef: 'TP-88',
+      state: 'LA',
+      locality: 'JEFFERSON',
+      tags: ['demo'],
+      filingStage: 'processing',
+      amount: 2100,
+      sbtpg: { productCode: 'RT', stage: 'received', detail: 'RT product report received' }
+    },
+    {
+      name: 'Casey Nguyen',
+      email: 'casey@example.com',
+      phone: '7135550142',
+      taxpayerRef: 'TP-101',
+      state: 'TX',
+      locality: 'HARRIS',
+      tags: ['demo', 'pos'],
+      filingStage: 'received',
+      amount: 1800
+    },
+    {
+      name: 'Blake Okonkwo',
+      email: 'blake@example.com',
+      phone: '5045550220',
+      taxpayerRef: 'TP-55',
+      state: 'LA',
+      locality: 'EAST_BATON_ROUGE',
+      tags: ['demo'],
+      filingStage: 'paid',
+      amount: 4100,
+      sbtpg: { productCode: 'RA-FC', stage: 'funded', detail: 'Funded to client' }
+    },
+    {
+      name: 'Morgan Patel',
+      email: 'morgan@example.com',
+      phone: '2145550188',
+      taxpayerRef: 'TP-42',
+      state: 'TX',
+      locality: 'DALLAS',
+      tags: ['demo', 'efile'],
+      filingStage: 'review',
+      amount: 2750
+    }
+  ];
+
+  let seed = null;
+  for (const demo of demoClients) {
+    const contact = crm.createContact({
+      name: demo.name,
+      email: demo.email,
+      phone: demo.phone,
+      taxpayerRef: demo.taxpayerRef,
+      state: demo.state,
+      locality: demo.locality,
+      tags: demo.tags,
+      source: 'seed',
+      notes: demo.notes ?? `Seeded master-file client ${demo.name}.`
+    });
+    if (!seed) seed = contact;
+    refunds.ensureCase(`CASE-${demo.taxpayerRef}`, {
+      taxpayerRef: demo.taxpayerRef,
+      filingStage: demo.filingStage,
+      amount: demo.amount,
+      source: 'seed'
+    });
+    if (demo.sbtpg) {
+      traces.trackReport({
+        contactId: contact.id,
+        taxpayerRef: demo.taxpayerRef,
+        productCode: demo.sbtpg.productCode,
+        stage: demo.sbtpg.stage,
+        detail: demo.sbtpg.detail
+      });
+    }
+  }
+  masterfile.syncFromCrm(crm);
+  // Issue Client ID # / Customer ID # for seeded contacts (non-blocking).
+  void (async () => {
+    try {
+      await ensurePartyIds();
+      for (const c of crm.searchContacts('', { limit: 5000, sort: 'alpha' })) {
+        await issueIdsForContact(c, { source: 'seed' });
+      }
+    } catch {
+      // seed id issuance is best-effort
+    }
+  })();
 
   const server = http.createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host ?? 'localhost'}`);
@@ -134,7 +305,12 @@ export function createPosCrmServer() {
             crm: crm.snapshot(),
             pos: pos.snapshot(),
             traces: traces.listTraces({ limit: 1 }).length,
-            seedContactId: seed.id
+            masterfile: masterfile.snapshot(),
+            refundCases: refunds.listCases({ limit: 1000 }).length,
+            partyIdentity: partyIds.status(),
+            seedContactId: seed.id,
+            clientMasterfile: describeClientMasterfile(),
+            partyIdentityPackage: describePartyIdentity()
           }
         });
       }
@@ -150,21 +326,75 @@ export function createPosCrmServer() {
       // ── CRM ──────────────────────────────────────────────
       if (request.method === 'GET' && pathname === '/api/contacts') {
         const q = url.searchParams.get('q') ?? '';
-        return sendJson(response, 200, { contacts: crm.searchContacts(q) });
+        const letter = url.searchParams.get('letter') ?? '';
+        const sort = url.searchParams.get('sort') ?? 'alpha';
+        if (letter) {
+          const listing = crm.listContactsAlphabetical({ letter });
+          const filtered = q
+            ? listing.contacts.filter((c) => {
+                const hay = [c.name, c.email, c.phone, c.taxpayerRef].filter(Boolean).join(' ').toLowerCase();
+                return hay.includes(q.toLowerCase());
+              })
+            : listing.contacts;
+          return sendJson(response, 200, {
+            contacts: filtered,
+            letters: listing.letters,
+            total: filtered.length,
+            sort: 'alpha'
+          });
+        }
+        return sendJson(response, 200, {
+          contacts: crm.searchContacts(q, { sort }),
+          sort
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/api/contacts/lookup') {
+        const name = url.searchParams.get('name') ?? url.searchParams.get('q') ?? '';
+        return sendJson(response, 200, { matches: crm.lookupByName(name) });
       }
 
       if (request.method === 'POST' && pathname === '/api/contacts') {
         const body = await readBody(request);
         try {
-          const contact = crm.createContact(body);
-          return sendJson(response, 201, { contact });
+          let contact = crm.createContact(body);
+          const autoIssue = body.issueIds !== false;
+          let issued = {};
+          if (autoIssue) {
+            const result = await issueIdsForContact(contact, {
+              issueClient: !contact.clientNumber,
+              issueCustomer: !contact.customerNumber,
+              source: 'crm'
+            });
+            contact = result.contact;
+            issued = result.issued;
+          } else {
+            masterfile.upsert({
+              name: contact.name,
+              email: contact.email,
+              phone: contact.phone,
+              taxpayerRef: contact.taxpayerRef,
+              contactId: contact.id,
+              accountId: contact.accountId,
+              clientNumber: contact.clientNumber,
+              customerNumber: contact.customerNumber,
+              state: contact.state,
+              locality: contact.locality,
+              address: contact.address,
+              tags: contact.tags,
+              crmStatus: contact.status,
+              notes: contact.notes,
+              source: 'crm'
+            });
+          }
+          return sendJson(response, 201, { contact, issued });
         } catch (error) {
           return sendJson(response, 400, { error: 'invalid_contact', message: error.message });
         }
       }
 
       const contactMatch = pathname.match(/^\/api\/contacts\/([^/]+)(?:\/(interactions))?$/);
-      if (contactMatch) {
+      if (contactMatch && contactMatch[1] !== 'lookup') {
         const id = decodeURIComponent(contactMatch[1]);
         const contact = crm.findContact(id);
         if (!contact) return sendJson(response, 404, { error: 'contact_not_found', id });
@@ -175,14 +405,33 @@ export function createPosCrmServer() {
             account: contact.accountId ? crm.findAccount(contact.accountId) : null,
             interactions: crm.listInteractions(id),
             sales: pos.listSales({ contactId: id }),
-            traces: traces.listTraces({ contactId: id })
+            traces: traces.listTraces({ contactId: id }),
+            masterfile: contact.taxpayerRef
+              ? masterfile.findByTaxpayerRef(contact.taxpayerRef)
+              : null
           });
         }
 
         if (request.method === 'PATCH' && !contactMatch[2]) {
           const body = await readBody(request);
           try {
-            return sendJson(response, 200, { contact: crm.updateContact(id, body) });
+            const updated = crm.updateContact(id, body);
+            masterfile.upsert({
+              name: updated.name,
+              email: updated.email,
+              phone: updated.phone,
+              taxpayerRef: updated.taxpayerRef,
+              contactId: updated.id,
+              accountId: updated.accountId,
+              state: updated.state,
+              locality: updated.locality,
+              address: updated.address,
+              tags: updated.tags,
+              crmStatus: updated.status,
+              notes: updated.notes,
+              source: 'crm'
+            });
+            return sendJson(response, 200, { contact: updated });
           } catch (error) {
             return sendJson(response, 400, { error: 'update_failed', message: error.message });
           }
@@ -392,6 +641,141 @@ export function createPosCrmServer() {
         }
       }
 
+      // ── Client master file + ERO status matrix ───────────
+      if (request.method === 'GET' && pathname === '/api/masterfile') {
+        const q = url.searchParams.get('q') ?? '';
+        const letter = url.searchParams.get('letter') ?? '';
+        const limit = Number(url.searchParams.get('limit') ?? 200);
+        return sendJson(response, 200, {
+          ...describeClientMasterfile(),
+          ...masterfile.list({ q, letter, limit, sort: 'alpha' })
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/api/masterfile/lookup') {
+        const name = url.searchParams.get('name') ?? url.searchParams.get('q') ?? '';
+        const ref = url.searchParams.get('taxpayerRef') ?? '';
+        if (ref) {
+          const row = masterfile.findByTaxpayerRef(ref);
+          return sendJson(response, 200, { matches: row ? [row] : [], by: 'taxpayerRef' });
+        }
+        return sendJson(response, 200, { matches: masterfile.lookupByName(name), by: 'name' });
+      }
+
+      if (request.method === 'POST' && pathname === '/api/masterfile') {
+        const body = await readBody(request);
+        try {
+          if (body.syncFromCrm) {
+            const result = masterfile.syncFromCrm(crm);
+            return sendJson(response, 200, { ...result, listing: masterfile.list({ sort: 'alpha' }) });
+          }
+          if (body.pipeline) {
+            const ingested = masterfile.ingestApprovedRecord(body);
+            return sendJson(response, 201, ingested);
+          }
+          const record = masterfile.upsert(body);
+          return sendJson(response, 201, { record });
+        } catch (error) {
+          return sendJson(response, 400, { error: 'masterfile_failed', message: error.message });
+        }
+      }
+
+      if (request.method === 'GET' && pathname === '/api/ero/matrix') {
+        const q = url.searchParams.get('q') ?? '';
+        const letter = url.searchParams.get('letter') ?? '';
+        const limit = Number(url.searchParams.get('limit') ?? 200);
+        const matrix = buildEroClientStatusMatrix({
+          masterfile,
+          crmStore: crm,
+          refundCases: refunds.listCases({ limit: 1000 }),
+          traces: traces.listTraces({ limit: 1000 }),
+          q,
+          letter,
+          limit
+        });
+        return sendJson(response, 200, matrix);
+      }
+
+      // ── Client ID # / Customer ID # issuance ─────────────
+      if (request.method === 'GET' && pathname === '/api/ids') {
+        await ensurePartyIds();
+        const kind = url.searchParams.get('kind') ?? undefined;
+        return sendJson(response, 200, {
+          ...describePartyIdentity(),
+          ...partyIds.status(),
+          records: partyIds.list({ kind: kind || null, limit: Number(url.searchParams.get('limit') ?? 100) })
+        });
+      }
+
+      if (request.method === 'POST' && pathname === '/api/ids/client') {
+        await ensurePartyIds();
+        const body = await readBody(request);
+        try {
+          const result = await partyIds.issueClientIdNumber(body);
+          if (body.contactId && crm.findContact(body.contactId)) {
+            crm.updateContact(body.contactId, { clientNumber: result.record.number });
+            await partyIds.attach(result.record.number, { contactId: body.contactId });
+          }
+          return sendJson(response, 201, result);
+        } catch (error) {
+          return sendJson(response, 400, { error: 'issue_failed', message: error.message });
+        }
+      }
+
+      if (request.method === 'POST' && pathname === '/api/ids/customer') {
+        await ensurePartyIds();
+        const body = await readBody(request);
+        try {
+          const result = await partyIds.issueCustomerIdNumber(body);
+          if (body.contactId && crm.findContact(body.contactId)) {
+            crm.updateContact(body.contactId, { customerNumber: result.record.number });
+            await partyIds.attach(result.record.number, { contactId: body.contactId });
+          }
+          return sendJson(response, 201, result);
+        } catch (error) {
+          return sendJson(response, 400, { error: 'issue_failed', message: error.message });
+        }
+      }
+
+      if (request.method === 'POST' && pathname === '/api/ids/pair') {
+        await ensurePartyIds();
+        const body = await readBody(request);
+        try {
+          if (body.contactId && crm.findContact(body.contactId)) {
+            const contact = crm.findContact(body.contactId);
+            const result = await issueIdsForContact(contact, {
+              issueClient: !contact.clientNumber,
+              issueCustomer: !contact.customerNumber,
+              source: body.source ?? 'api'
+            });
+            return sendJson(response, 201, {
+              contact: result.contact,
+              clientIdNumber: result.contact.clientNumber,
+              customerIdNumber: result.contact.customerNumber,
+              issued: result.issued,
+              notice: `Client ID # ${result.contact.clientNumber} · Customer ID # ${result.contact.customerNumber}`
+            });
+          }
+          const pair = await partyIds.issuePair(body);
+          return sendJson(response, 201, pair);
+        } catch (error) {
+          return sendJson(response, 400, { error: 'issue_failed', message: error.message });
+        }
+      }
+
+      if (request.method === 'GET' && pathname === '/api/ids/lookup') {
+        await ensurePartyIds();
+        const number = url.searchParams.get('number') ?? '';
+        const record = partyIds.get(number);
+        if (!record) return sendJson(response, 404, { error: 'not_found', number });
+        const contact =
+          (record.contactId && crm.findContact(record.contactId)) ||
+          (record.kind === 'client' && crm.findByClientNumber?.(record.number)) ||
+          (record.kind === 'customer' && crm.findByCustomerNumber?.(record.number)) ||
+          null;
+        return sendJson(response, 200, { record, contact });
+      }
+
       if (request.method === 'GET') return serveStatic(response, pathname);
       sendJson(response, 405, { error: 'method_not_allowed', method: request.method, path: pathname });
     } catch (error) {
@@ -399,7 +783,7 @@ export function createPosCrmServer() {
     }
   });
 
-  return { server, config, crm, pos, traces, seed };
+  return { server, config, crm, pos, traces, refunds, masterfile, partyIds, seed };
 }
 
 export function start() {

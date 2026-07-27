@@ -25,6 +25,21 @@ test('CRM creates contacts linked to household accounts', () => {
   assert.equal(crm.searchContacts('orleans').length, 1);
 });
 
+test('CRM directory is alphabetical and supports name lookup', () => {
+  const crm = createCrmStore();
+  crm.createContact({ name: 'Zoe Adams', taxpayerRef: 'TP-Z' });
+  crm.createContact({ name: 'Aaron Baker', taxpayerRef: 'TP-A' });
+  crm.createContact({ name: 'Mia Chen', taxpayerRef: 'TP-M' });
+  const listed = crm.listContactsAlphabetical();
+  assert.deepEqual(
+    listed.contacts.map((c) => c.name),
+    ['Zoe Adams', 'Aaron Baker', 'Mia Chen']
+  );
+  assert.equal(crm.lookupByName('bak')[0].taxpayerRef, 'TP-A');
+  assert.equal(crm.findByTaxpayerRef('TP-M').name, 'Mia Chen');
+  assert.equal(crm.searchContacts('', { sort: 'alpha' })[0].name, 'Zoe Adams');
+});
+
 test('POS checkout settles through invoice-core and writes CRM interaction', () => {
   const crm = createCrmStore();
   const contact = crm.createContact({
