@@ -29,6 +29,7 @@ test('required assignments cover every development-team agent at least once', ()
     'mapping-agent',
     'staging-agent',
     'assessment-agent',
+    'seo-ownership-agent',
     'markdown-agent'
   ]) {
     assert.ok(agents.has(name), `${name} should have a required assignment`);

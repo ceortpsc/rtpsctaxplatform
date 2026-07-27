@@ -126,6 +126,11 @@ export async function runCli(argv) {
         );
       }
       case 'seo': {
+        const ownershipActions = new Set(['plan', 'generate', 'prevalidate', 'google', 'indexnow']);
+        if (ownershipActions.has(rest[0])) {
+          const { runSeoOwnership } = await import('./seo.mjs');
+          return runSeoOwnership(rest);
+        }
         const report = await emitSeo(root);
         return print(json, report, () =>
           ui.panel('SEO', [`domain     ${report.domain}`, `canonical  ${report.canonical}`, ...report.checklist.map((item) => `✓ ${item}`)])

@@ -129,6 +129,15 @@ export const REQUIRED_ASSIGNMENTS = Object.freeze([
     tags: ['assessment', 'required']
   }),
   defineAssignment({
+    id: 'seo-ownership-prevalidate',
+    title: 'SEO ownership & Search Console prevalidation',
+    description: 'Assert ROSS.CO ownership, generate SEO assets, and prevalidate Search Console / IndexNow readiness.',
+    agent: 'seo-ownership-agent',
+    trigger: { type: 'manual' },
+    priority: 2,
+    tags: ['seo', 'ownership', 'search-console', 'required']
+  }),
+  defineAssignment({
     id: 'generate-docs',
     title: 'Generate agent documentation',
     description: 'Render analysis reports into docs/agents markdown.',

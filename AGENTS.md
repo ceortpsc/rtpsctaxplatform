@@ -41,6 +41,21 @@ Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
 ./scripts/rossco seo
 ```
 
+**ROSS.CO Infinite** (`tools/ross-infinite`, `@rtp/ross-infinite`) is the production-candidate
+package manager / task graph / registry / MCP / SEO ownership control plane:
+
+```bash
+./scripts/ross-infinite doctor
+./scripts/ross-infinite seo plan config/seo/ross.co.ownership.json
+./scripts/ross-infinite seo generate config/seo/ross.co.ownership.json
+./scripts/ross-infinite seo prevalidate config/seo/ross.co.ownership.json
+pnpm run ross-infinite:smoke
+```
+
+Docs: `docs/ross-infinite/README.md`, `docs/rossco-seo-ownership.md`,
+`docs/ROSS_CO_SEO_Ownership_Runbook.md`. Agent: `seo-ownership-agent`
+(`./rtpsc agents run seo-ownership-prevalidate`).
+
 Equivalent: `node ./tools/aol/bin/aol.mjs <cmd>`, `node ./tools/rossco/bin/rossco.mjs <cmd>`,
 or `make setup|lint|test|build|start|bench|compliance|rossco`.
 

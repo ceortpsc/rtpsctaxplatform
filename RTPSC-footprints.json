@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-26T08:55:04.723Z",
-  "count": 55,
+  "createdAt": "2026-07-27T16:46:57.628Z",
+  "count": 57,
   "ok": true,
   "footprints": [
     {
@@ -408,6 +408,16 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/ross-infinite",
+      "version": "1.0.0",
+      "location": "tools/ross-infinite",
+      "sector": "tools",
+      "footprint": "2165bbe423e18a40",
+      "fingerprint": "2165bbe423e18a40",
+      "integrity": "sha256-2165bbe423e18a406fd1cddcf8fe808d9c2b924c36e862c0b5d233048be4763b",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/rossco",
       "version": "0.1.0",
       "location": "tools/rossco",
@@ -435,6 +445,16 @@
       "footprint": "8e79948424fddc04",
       "fingerprint": "8e79948424fddc04",
       "integrity": "sha256-8e79948424fddc0465cbee5ddb62a3e26eab526daf1b8e7e0305efda9d78d37a",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/seo-ownership-agent",
+      "version": "0.1.0",
+      "location": "agents/seo-ownership-agent",
+      "sector": "agents",
+      "footprint": "a67cafd766808b42",
+      "fingerprint": "a67cafd766808b42",
+      "integrity": "sha256-a67cafd766808b425f02e154a5e6c7d822806b6b1d791ab33486c92123d1dd89",
       "status": "sealed"
     },
     {

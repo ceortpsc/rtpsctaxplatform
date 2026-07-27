@@ -19,6 +19,7 @@ export const DEVELOPMENT_TEAM = Object.freeze([
   { role: 'mapping-agent', title: 'Mapping & Enhancement', focus: 'dependency map & enhancement recommendations' },
   { role: 'staging-agent', title: 'Staging', focus: 'staged rollout, promotion & gates' },
   { role: 'assessment-agent', title: 'Environmental Assessment & Inspection', focus: 'environment, safeguards & findings' },
+  { role: 'seo-ownership-agent', title: 'SEO Ownership & Search Console', focus: 'ownership assertion, SEO assets, Search Console prevalidation' },
   { role: 'markdown-agent', title: 'Markdown Generation Engine', focus: 'documentation generation' }
 ]);
 

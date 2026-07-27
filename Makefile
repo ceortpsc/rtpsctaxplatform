@@ -1,8 +1,9 @@
 SHELL := /bin/bash
 AOL := node ./tools/aol/bin/aol.mjs
 ROSSCO := node ./tools/rossco/bin/rossco.mjs
+ROSS_INFINITE := node ./tools/ross-infinite/bin/ross.mjs
 
-.PHONY: setup lint test build start start-all start-check gateway workers bench aol team team-inventory rossco itr ross ross-dev ross-doctor compliance compliance-checklist compliance-log
+.PHONY: setup lint test build start start-all start-check gateway workers bench aol team team-inventory rossco itr ross-infinite ross ross-dev ross-doctor compliance compliance-checklist compliance-log
 
 setup:
 	./scripts/setup.sh
@@ -57,6 +58,9 @@ rossco:
 
 itr:
 	$(ROSSCO) $(ARGS)
+
+ross-infinite:
+	$(ROSS_INFINITE) $(ARGS)
 
 ross:
 	python3 ./ross.py $(ARGS)

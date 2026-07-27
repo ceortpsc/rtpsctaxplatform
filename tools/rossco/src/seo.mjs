@@ -1,6 +1,8 @@
 import { ensurePresenceSite, presenceStatus } from './presence.mjs';
 import { loadConfig } from './config.mjs';
+import { runCli as runInfiniteCli } from '../../ross-infinite/src/cli.mjs';
 
+/** Legacy presence SEO emit used by `rossco seo` with no subcommand. */
 export async function emitSeo(root) {
   const presence = await ensurePresenceSite(root);
   const status = await presenceStatus(root);
@@ -23,4 +25,12 @@ export async function emitSeo(root) {
     ],
     status
   };
+}
+
+/**
+ * Ownership control-plane subcommands delegate to ROSS.CO Infinite.
+ * Usage: rossco seo plan|generate|prevalidate|google|indexnow ...
+ */
+export async function runSeoOwnership(argv) {
+  return runInfiniteCli(['seo', ...argv]);
 }

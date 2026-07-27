@@ -1,0 +1,11 @@
+{
+  "name": "ross-infinite-production-policy",
+  "version": "1.0.0",
+  "rules": [
+    { "id": "pkg-name", "type": "requiredField", "path": "name" },
+    { "id": "pkg-version", "type": "requiredField", "path": "version" },
+    { "id": "release-status", "type": "equals", "path": "ross.releaseStatus", "value": "production-candidate" },
+    { "id": "not-deployed", "type": "equals", "path": "ross.deploymentStatus", "value": "not-deployed" },
+    { "id": "no-private-key-marker", "type": "forbiddenSubstring", "value": "BEGIN PRIVATE KEY" }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "../../tools/rossco/src/seo/ownership.schema.json",
+  "version": "1.0.0",
+  "product": "ROSS.CO Infinite",
+  "owner": {
+    "legalName": "ROSS.CO",
+    "ownerAssertion": true,
+    "ownerName": "Condre Dvon Ross",
+    "assertedAt": "2026-07-26T00:00:00-05:00",
+    "contactEmail": "ceo@rosstaxsoftware.com",
+    "organization": "Ross Tax Pro Software Co"
+  },
+  "brand": {
+    "name": "ROSS.CO",
+    "title": "ROSS.CO — Infinite Transfer Rate Package Manager",
+    "description": "ROSS.CO Infinite is a secure package manager, registry, transfer engine, and developer platform with deterministic resolution and verified supply-chain controls.",
+    "tagline": "Transfer without ceiling.",
+    "canonical": "https://ross.co/",
+    "locale": "en_US"
+  },
+  "properties": [
+    {
+      "host": "ross.co",
+      "url": "https://ross.co/",
+      "propertyType": "domain",
+      "role": "corporate",
+      "primary": true
+    },
+    {
+      "host": "www.ross.co",
+      "url": "https://www.ross.co/",
+      "propertyType": "url-prefix",
+      "role": "www-alias"
+    },
+    {
+      "host": "developers.ross.co",
+      "url": "https://developers.ross.co/",
+      "propertyType": "url-prefix",
+      "role": "developer-portal"
+    },
+    {
+      "host": "docs.ross.co",
+      "url": "https://docs.ross.co/",
+      "propertyType": "url-prefix",
+      "role": "documentation"
+    },
+    {
+      "host": "registry.ross.co",
+      "url": "https://registry.ross.co/",
+      "propertyType": "url-prefix",
+      "role": "registry-api"
+    },
+    {
+      "host": "status.ross.co",
+      "url": "https://status.ross.co/",
+      "propertyType": "url-prefix",
+      "role": "status"
+    }
+  ],
+  "verification": {
+    "google": {
+      "metaEnv": "GOOGLE_SITE_VERIFICATION_TOKEN",
+      "dnsEnv": "GOOGLE_DNS_TXT_TOKEN",
+      "accessTokenEnv": "GOOGLE_ACCESS_TOKEN"
+    },
+    "bing": {
+      "metaEnv": "BING_SITE_AUTH_TOKEN"
+    },
+    "indexNow": {
+      "keyEnv": "INDEXNOW_KEY",
+      "endpoint": "https://api.indexnow.org/indexnow"
+    }
+  },
+  "output": {
+    "publicDir": "seo/generated/public",
+    "evidenceDir": "release-evidence/seo"
+  },
+  "evidenceStates": [
+    "ASSERTED",
+    "PREVALIDATED",
+    "DEPLOYED",
+    "PROVIDER_VERIFIED",
+    "INDEXING_ENABLED",
+    "INDEXED"
+  ],
+  "notes": [
+    "Owner assertion is internal and prevalidated locally.",
+    "Provider verification remains pending until DNS/meta tokens are deployed and confirmed by Google or Bing.",
+    "Sitemap submission does not guarantee indexing or ranking."
+  ]
+}
