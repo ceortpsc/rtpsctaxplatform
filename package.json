@@ -34,6 +34,8 @@
     "start:invoice": "pnpm --filter @rtp/invoice-service start",
     "start:pos-crm": "pnpm --filter @rtp/pos-crm-service start",
     "start:dashboard": "pnpm --filter @rtp/modules-dashboard start",
+    "start:web-portal": "pnpm --filter @rtp/web-portal start",
+    "start:portal": "pnpm --filter @rtp/web-portal start",
     "start:workflows": "pnpm --filter @rtp/workflow-runner start",
     "start:all": "./scripts/start-all.sh",
     "start:all:fg": "node ./scripts/start-all.mjs",

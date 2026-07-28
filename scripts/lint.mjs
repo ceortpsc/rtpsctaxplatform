@@ -107,12 +107,20 @@ const requiredPaths = [
   'packages/canvas-core/src/index.mjs',
   '.cursor/skills/rtpsc-canvas/SKILL.md',
   'docs/CURSOR_TERMINAL_AGENT.md',
-  'scripts/cloud-doctor.mjs'
+  'scripts/cloud-doctor.mjs',
+  'docs/web-portal.md',
+  'packages/rtp-datastore/src/index.mjs',
+  'packages/sri-efin/src/index.mjs',
+  'services/web-portal/src/index.mjs',
+  'services/web-portal/public/styles.css',
+  'services/web-portal/public/app.js'
 ];
 
 const packageFiles = [
   'package.json',
   'packages/platform-core/package.json',
+  'packages/rtp-datastore/package.json',
+  'packages/sri-efin/package.json',
   'packages/client-config/package.json',
   'packages/client-identity/package.json',
   'packages/refund-core/package.json',
@@ -141,6 +149,7 @@ const packageFiles = [
   'services/transcript-service/package.json',
   'services/analytics-service/package.json',
   'services/modules-dashboard/package.json',
+  'services/web-portal/package.json',
   'workers/tds-worker/package.json',
   'workers/transcript-pull-worker/package.json',
   'workers/live-source-fetcher/package.json',

@@ -3,6 +3,8 @@ import path from 'node:path';
 
 const modules = [
   '../packages/platform-core/src/index.mjs',
+  '../packages/rtp-datastore/src/index.mjs',
+  '../packages/sri-efin/src/index.mjs',
   '../packages/client-config/src/index.mjs',
   '../packages/client-identity/src/index.mjs',
   '../packages/refund-core/src/index.mjs',
@@ -45,6 +47,13 @@ const modules = [
   '../services/pos-crm-service/src/index.mjs',
   '../services/modules-dashboard/src/index.mjs',
   '../services/modules-dashboard/src/catalog.mjs',
+  '../services/web-portal/src/index.mjs',
+  '../services/web-portal/src/router.mjs',
+  '../services/web-portal/src/layout.mjs',
+  '../services/web-portal/src/accounts.mjs',
+  '../services/web-portal/src/content.mjs',
+  '../services/web-portal/src/status.mjs',
+  '../services/web-portal/src/xml.mjs',
   '../workflows/refund-status-workflow/src/index.mjs',
   '../workflows/transcript-intake-workflow/src/index.mjs',
   '../workflows/transmission-workflow/src/index.mjs',
