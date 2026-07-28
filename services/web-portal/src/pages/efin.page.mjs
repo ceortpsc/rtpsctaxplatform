@@ -32,27 +32,33 @@ export default {
 
     const rows = data.providers.length
       ? data.providers
-          .map(
-            (provider) => `<tr>
+          .map((provider) => {
+            const verified = provider.applicationSummary?.verified;
+            const badge = provider.applicationSummary
+              ? `<span class="pill ${verified ? 'pill-active' : 'pill-suspended'}">${verified ? '✓ verified' : 'unverified'}</span>`
+              : '<span class="muted">—</span>';
+            return `<tr>
             <td><code>${esc(provider.efinMasked)}</code></td>
             <td>${esc(provider.firmName)}</td>
             <td>${esc(provider.providerTypes.join(', '))}</td>
             <td><span class="pill pill-${esc(provider.status)}">${esc(provider.status)}</span></td>
-          </tr>`
-          )
+            <td>${badge}</td>
+          </tr>`;
+          })
           .join('\n          ')
-      : `<tr><td colspan="4" class="muted">No EFIN providers registered yet.</td></tr>`;
+      : `<tr><td colspan="5" class="muted">No EFIN providers registered yet.</td></tr>`;
 
     return `      <section class="page-head">
         <h1>EFIN onboarding</h1>
         <p class="lede">Secure Registration &amp; Identity (SRI) for IRS Authorized e-file
-        Providers. This scaffold validates and records provider identity; it does not contact
+        Providers. Upload your completed <strong>e-file Application Summary PDF</strong> — it is
+        parsed, validated, and verified against the EFIN you enter. This scaffold does not contact
         the IRS. EFINs are stored masked.</p>
       </section>
       <div class="grid-2">
         <section class="form-card">
           <h2>Register a provider</h2>
-          <form class="stack-form" method="post" action="/api/efin" data-api="/api/efin" data-redirect="/efin" data-array="providerTypes">
+          <form class="stack-form" method="post" action="/api/efin" enctype="multipart/form-data" data-api="/api/efin" data-redirect="/efin" data-array="providerTypes">
             <label>EFIN (6 digits)
               <input type="text" name="efin" required="required" inputmode="numeric" pattern="\\d{6}" placeholder="123456" />
             </label>
@@ -72,14 +78,17 @@ export default {
             <label>Responsible official email
               <input type="email" name="responsibleEmail" placeholder="official@example.com" />
             </label>
-            <button class="cta-btn block" type="submit">Register EFIN</button>
+            <label>Completed e-file Application Summary (PDF, required)
+              <input type="file" name="applicationSummary" accept="application/pdf,.pdf" required="required" />
+            </label>
+            <button class="cta-btn block" type="submit">Upload &amp; verify EFIN</button>
           </form>
           ${data.authed ? '' : '<p class="form-alt">Tip: <a href="/signin">sign in</a> to attach this EFIN to your account.</p>'}
         </section>
         <section class="panel">
           <h2>Registered providers</h2>
           <table class="data-table">
-            <thead><tr><th>EFIN</th><th>Firm</th><th>Roles</th><th>Status</th></tr></thead>
+            <thead><tr><th>EFIN</th><th>Firm</th><th>Roles</th><th>Status</th><th>Summary</th></tr></thead>
             <tbody>
             ${rows}
             </tbody>

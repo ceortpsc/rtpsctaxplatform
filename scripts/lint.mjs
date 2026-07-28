@@ -88,6 +88,8 @@ const requiredPaths = [
   'docs/web-portal.md',
   'packages/rtp-datastore/src/index.mjs',
   'packages/sri-efin/src/index.mjs',
+  'packages/sri-efin/src/pdf.mjs',
+  'packages/sri-efin/src/application-summary.mjs',
   'services/web-portal/src/index.mjs',
   'services/web-portal/public/styles.css',
   'services/web-portal/public/app.js'

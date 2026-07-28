@@ -5,6 +5,8 @@ const modules = [
   '../packages/platform-core/src/index.mjs',
   '../packages/rtp-datastore/src/index.mjs',
   '../packages/sri-efin/src/index.mjs',
+  '../packages/sri-efin/src/pdf.mjs',
+  '../packages/sri-efin/src/application-summary.mjs',
   '../packages/client-config/src/index.mjs',
   '../packages/client-identity/src/index.mjs',
   '../packages/refund-core/src/index.mjs',

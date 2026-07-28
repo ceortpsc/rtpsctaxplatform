@@ -37,12 +37,17 @@
     var button = form.querySelector('button[type="submit"]');
     if (button) button.disabled = true;
 
+    var hasFile = !!form.querySelector('input[type="file"]');
+
     try {
-      var response = await fetch(api, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-requested-with': 'fetch' },
-        body: JSON.stringify(formToPayload(form))
-      });
+      var options = hasFile
+        ? { method: 'POST', headers: { 'x-requested-with': 'fetch' }, body: new FormData(form) }
+        : {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-requested-with': 'fetch' },
+            body: JSON.stringify(formToPayload(form))
+          };
+      var response = await fetch(api, options);
       var data = await response.json();
       if (response.ok && data.ok !== false) {
         toast('Success.');

@@ -26,16 +26,21 @@ export default {
     const account = data.account;
     const providerRows = data.providers.length
       ? data.providers
-          .map(
-            (provider) => `<tr>
+          .map((provider) => {
+            const verified = provider.applicationSummary?.verified;
+            const badge = provider.applicationSummary
+              ? `<span class="pill ${verified ? 'pill-active' : 'pill-suspended'}">${verified ? '✓ verified' : 'unverified'}</span>`
+              : '<span class="muted">—</span>';
+            return `<tr>
             <td><code>${esc(provider.efinMasked)}</code></td>
             <td>${esc(provider.firmName)}</td>
             <td>${esc(provider.providerTypes.join(', '))}</td>
             <td><span class="pill pill-${esc(provider.status)}">${esc(provider.status)}</span></td>
-          </tr>`
-          )
+            <td>${badge}</td>
+          </tr>`;
+          })
           .join('\n          ')
-      : `<tr><td colspan="4" class="muted">No EFIN providers registered yet.</td></tr>`;
+      : `<tr><td colspan="5" class="muted">No EFIN providers registered yet.</td></tr>`;
 
     return `      <section class="page-head">
         <h1>Welcome, ${esc(account.name)}</h1>
@@ -48,7 +53,7 @@ export default {
       <section class="panel">
         <h2>Your EFIN providers</h2>
         <table class="data-table">
-          <thead><tr><th>EFIN</th><th>Firm</th><th>Roles</th><th>Status</th></tr></thead>
+          <thead><tr><th>EFIN</th><th>Firm</th><th>Roles</th><th>Status</th><th>Summary</th></tr></thead>
           <tbody>
           ${providerRows}
           </tbody>

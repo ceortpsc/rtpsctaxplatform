@@ -1,4 +1,5 @@
 import http from 'node:http';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -11,7 +12,11 @@ import {
   packageDir
 } from '../../../packages/platform-core/src/index.mjs';
 import { createDatabase } from '../../../packages/rtp-datastore/src/index.mjs';
-import { createEfinRegistry, PROVIDER_TYPES } from '../../../packages/sri-efin/src/index.mjs';
+import {
+  createEfinRegistry,
+  PROVIDER_TYPES,
+  verifyApplicationSummary
+} from '../../../packages/sri-efin/src/index.mjs';
 import { createAccountsService } from './accounts.mjs';
 import { createRouter } from './router.mjs';
 import { probeServices } from './status.mjs';
@@ -74,14 +79,62 @@ function clearCookie() {
   return `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`;
 }
 
-/** Read + parse a request body supporting JSON and form-urlencoded. */
+function addField(fields, name, value) {
+  if (fields[name] === undefined) fields[name] = value;
+  else if (Array.isArray(fields[name])) fields[name].push(value);
+  else fields[name] = [fields[name], value];
+}
+
+/** Parse a multipart/form-data body into { fields, files }. */
+function parseMultipart(buffer, boundary) {
+  const fields = {};
+  const files = {};
+  const delim = Buffer.from(`--${boundary}`);
+  let start = buffer.indexOf(delim);
+  if (start === -1) return { fields, files };
+  start += delim.length;
+
+  while (start < buffer.length) {
+    if (buffer[start] === 0x2d && buffer[start + 1] === 0x2d) break; // closing "--"
+    if (buffer[start] === 0x0d && buffer[start + 1] === 0x0a) start += 2;
+    const next = buffer.indexOf(delim, start);
+    if (next === -1) break;
+    let end = next;
+    if (buffer[end - 2] === 0x0d && buffer[end - 1] === 0x0a) end -= 2;
+    const part = buffer.slice(start, end);
+    start = next + delim.length;
+
+    const headerEnd = part.indexOf(Buffer.from('\r\n\r\n'));
+    if (headerEnd === -1) continue;
+    const header = part.slice(0, headerEnd).toString('latin1');
+    const body = part.slice(headerEnd + 4);
+    const nameMatch = /name="([^"]*)"/i.exec(header);
+    if (!nameMatch) continue;
+    const name = nameMatch[1];
+    const fileMatch = /filename="([^"]*)"/i.exec(header);
+    if (fileMatch) {
+      if (fileMatch[1] === '') continue;
+      const ctMatch = /content-type:\s*([^\r\n]+)/i.exec(header);
+      files[name] = {
+        filename: fileMatch[1],
+        contentType: ctMatch ? ctMatch[1].trim() : 'application/octet-stream',
+        data: body
+      };
+    } else {
+      addField(fields, name, body.toString('utf8'));
+    }
+  }
+  return { fields, files };
+}
+
+/** Read + parse a request body supporting JSON, form-urlencoded, and multipart. */
 function readBody(request) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
     request.on('data', (chunk) => {
       size += chunk.length;
-      if (size > 400_000) {
+      if (size > 15_000_000) {
         reject(new Error('Request body too large.'));
         request.destroy();
         return;
@@ -89,24 +142,31 @@ function readBody(request) {
       chunks.push(chunk);
     });
     request.on('end', () => {
-      const raw = Buffer.concat(chunks).toString('utf8').trim();
+      const buffer = Buffer.concat(chunks);
       const contentType = String(request.headers['content-type'] ?? '');
-      if (raw === '') return resolve({ fields: {}, isJson: contentType.includes('application/json') });
+      if (contentType.includes('multipart/form-data')) {
+        const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
+        if (!boundaryMatch) return reject(new Error('Missing multipart boundary.'));
+        const boundary = (boundaryMatch[1] || boundaryMatch[2]).trim();
+        const { fields, files } = parseMultipart(buffer, boundary);
+        return resolve({ fields, files, isJson: false, isMultipart: true });
+      }
+      const raw = buffer.toString('utf8').trim();
+      if (raw === '') return resolve({ fields: {}, files: {}, isJson: contentType.includes('application/json') });
       if (contentType.includes('application/json')) {
         try {
-          return resolve({ fields: JSON.parse(raw), isJson: true });
+          return resolve({ fields: JSON.parse(raw), files: {}, isJson: true });
         } catch {
           return reject(new Error('Request body must be valid JSON.'));
         }
       }
-      // form-urlencoded — collect repeated keys into arrays
       const params = new URLSearchParams(raw);
       const fields = {};
       for (const key of new Set(params.keys())) {
         const values = params.getAll(key);
         fields[key] = values.length > 1 ? values : values[0];
       }
-      resolve({ fields, isJson: false });
+      resolve({ fields, files: {}, isJson: false });
     });
     request.on('error', reject);
   });
@@ -265,6 +325,36 @@ export async function createPortalServer({ dbDir, persist = true } = {}) {
           : fields.providerTypes
             ? [fields.providerTypes]
             : undefined;
+
+        // Require the completed e-file Application Summary PDF upload.
+        const file = body.files?.applicationSummary;
+        if (!file || !file.data || file.data.length === 0) {
+          const missing = {
+            ok: false,
+            code: 'summary_required',
+            message: 'A completed e-file Application Summary PDF upload is required.'
+          };
+          if (wantsJson(request, body)) return sendJson(response, 400, missing);
+          return redirect(response, '/efin');
+        }
+
+        // Parse ("phrase"), validate, and verify the PDF against the entered EFIN.
+        const verification = verifyApplicationSummary(file.data, {
+          expectedEfin: fields.efin,
+          expectedFirmName: fields.firmName
+        });
+        if (!verification.verified) {
+          const failed = verification.checks.filter((c) => c.required && !c.ok).map((c) => c.label);
+          const rejected = {
+            ok: false,
+            code: 'summary_unverified',
+            message: `Application Summary could not be verified: ${failed.join('; ')}.`,
+            checks: verification.checks
+          };
+          if (wantsJson(request, body)) return sendJson(response, 400, rejected);
+          return redirect(response, '/efin');
+        }
+
         const result = efin.register({
           efin: fields.efin,
           etin: fields.etin,
@@ -275,12 +365,33 @@ export async function createPortalServer({ dbDir, persist = true } = {}) {
             title: fields.responsibleTitle,
             email: fields.responsibleEmail
           },
-          accountId: session.ok ? session.account.id : null
+          accountId: session.ok ? session.account.id : null,
+          applicationSummary: {
+            filename: file.filename,
+            uploadedAt: new Date().toISOString(),
+            verified: true,
+            checks: verification.checks,
+            fields: verification.fields
+          }
         });
         if (!result.ok) {
           if (wantsJson(request, body)) return sendJson(response, 400, result);
           return redirect(response, '/efin');
         }
+
+        // Persist the uploaded PDF alongside the record (skipped for in-memory/test mode).
+        if (persist) {
+          try {
+            const dir = path.resolve(process.cwd(), 'logs', 'efin-uploads');
+            fs.mkdirSync(dir, { recursive: true });
+            const stored = path.join(dir, `${result.provider.id}.pdf`);
+            fs.writeFileSync(stored, file.data);
+            efin.setUploadPath(result.provider.id, stored);
+          } catch {
+            // best-effort storage — verification already passed
+          }
+        }
+
         if (wantsJson(request, body)) return sendJson(response, 201, result);
         return redirect(response, '/efin');
       }

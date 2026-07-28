@@ -12,6 +12,14 @@
 
 import crypto from 'node:crypto';
 
+export {
+  parseApplicationSummary,
+  validateApplicationSummary,
+  verifyApplicationSummary,
+  analyzeApplicationSummary
+} from './application-summary.mjs';
+export { extractPdfText } from './pdf.mjs';
+
 /** IRS Authorized e-file Provider roles (a provider may hold several). */
 export const PROVIDER_TYPES = Object.freeze([
   'ero', // Electronic Return Originator
@@ -124,6 +132,7 @@ export function createEfinRecord(input = {}, { now = nowIso, idFactory } = {}) {
       email: String(responsible.email ?? '').trim().toLowerCase()
     },
     accountId: input.accountId ?? null,
+    applicationSummary: input.applicationSummary ?? null,
     status: 'draft',
     history: [{ status: 'draft', at: createdAt, note: 'Record created.' }],
     createdAt,
@@ -156,6 +165,26 @@ export function transitionEfinStatus(record, to, { now = nowIso, note } = {}) {
   };
 }
 
+/** Safe projection of the uploaded Application Summary (EFIN masked, no raw path). */
+function publicApplicationSummary(summary) {
+  if (!summary) return null;
+  const fields = summary.fields ?? {};
+  return {
+    filename: summary.filename ?? null,
+    uploadedAt: summary.uploadedAt ?? null,
+    verified: Boolean(summary.verified),
+    checks: summary.checks ?? [],
+    fields: {
+      efinMasked: fields.efinMasked ?? maskEfin(fields.efin),
+      etin: fields.etin ?? null,
+      firmName: fields.firmName ?? null,
+      status: fields.status ?? null,
+      providerOptions: fields.providerOptions ?? [],
+      isApplicationSummary: Boolean(fields.isApplicationSummary)
+    }
+  };
+}
+
 /** Public (masked) projection safe for API/UI responses. */
 export function publicEfinRecord(record) {
   if (!record) return null;
@@ -167,6 +196,7 @@ export function publicEfinRecord(record) {
     providerTypes: record.providerTypes,
     responsibleOfficial: record.responsibleOfficial,
     accountId: record.accountId,
+    applicationSummary: publicApplicationSummary(record.applicationSummary),
     status: record.status,
     history: record.history,
     createdAt: record.createdAt,
@@ -224,6 +254,16 @@ export function createEfinRegistry({ db, now = nowIso, idFactory } = {}) {
         return { ok: false, code: error.code ?? 'invalid_transition', message: error.message };
       }
       const saved = providers.update(id, { status: next.status, history: next.history });
+      return { ok: true, provider: publicEfinRecord(saved) };
+    },
+
+    /** Record where the uploaded Application Summary PDF was stored (server-side only). */
+    setUploadPath(id, storedPath) {
+      const current = providers.getById(id);
+      if (!current || !current.applicationSummary) return { ok: false, code: 'not_found' };
+      const saved = providers.update(id, {
+        applicationSummary: { ...current.applicationSummary, storedPath }
+      });
       return { ok: true, provider: publicEfinRecord(saved) };
     },
 
