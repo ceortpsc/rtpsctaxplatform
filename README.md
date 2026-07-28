@@ -285,7 +285,10 @@ CTAs, and APIs to real registration and EFIN onboarding.
 - **SRI-EFIN scaffolding** (`packages/sri-efin`): `/efin` registers IRS Authorized
   e-file Provider identities — validates EFIN (6 digits) / ETIN (5 digits), models
   provider roles + a fail-safe suitability lifecycle, stores EFINs **masked**.
-  Scaffold only — no real IRS e-Services calls.
+  Onboarding **requires uploading the completed e-file Application Summary PDF**,
+  which is parsed (dependency-free, `node:zlib`), validated, and **verified** so the
+  summary's EFIN must match the entered EFIN before registration. Scaffold only —
+  no real IRS e-Services calls.
 
 Details: [`docs/web-portal.md`](docs/web-portal.md).
 

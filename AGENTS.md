@@ -151,7 +151,11 @@ Two equivalent runners exist:
  **opt-in**; other services still use in-memory stores. Pass `persist:false` for in-memory (tests).
 - `packages/sri-efin` scaffolds IRS **EFIN** provider identity (EFIN/ETIN validation, provider
  roles, fail-safe suitability lifecycle). EFINs are stored but only returned **masked**; it makes
- **no** real IRS e-Services calls (scaffold, pending approved integration).
+ **no** real IRS e-Services calls (scaffold, pending approved integration). EFIN onboarding
+ **requires uploading the completed e-file Application Summary PDF**: it is parsed with a
+ dependency-free extractor (`sri-efin/src/pdf.mjs` via `node:zlib`, no npm PDF libs), validated, and
+ **verified** (the summary's EFIN must match the entered EFIN) before the provider is saved. Uploads
+ land in `logs/efin-uploads/` (gitignored). The web-portal `/api/efin` POST is `multipart/form-data`.
 - `agents/*` (+ `packages/agent-core`) are a **deployment-assist & development team** — dev/deploy
   tooling, NOT a runtime product subsystem. Run with `./rtpsc agents`; regenerate the reports in
   `docs/agents/` with `./rtpsc agents docs`. Required tasks are pre-assigned on the assignment board

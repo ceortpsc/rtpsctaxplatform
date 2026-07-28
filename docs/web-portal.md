@@ -83,7 +83,7 @@ JSON-LD (`SoftwareApplication`) embedded per page.
 | POST | `/api/signin` | Authenticate → session cookie |
 | POST | `/api/signout` | Revoke session |
 | GET | `/api/session` | Current session/account |
-| POST | `/api/efin` | Register an EFIN provider |
+| POST | `/api/efin` | Register an EFIN provider (**requires** an Application Summary PDF upload, `multipart/form-data`) |
 | GET | `/api/efin` | List providers (by session account) |
 | POST | `/api/efin/:id/transition` | Advance suitability status |
 | GET | `/api/status` | Probe all service `/health` |
@@ -100,6 +100,27 @@ redirect. Sessions use an `HttpOnly`, `SameSite=Lax` cookie (`rtp_portal`).
 lifecycle (`draft → submitted → suitability-pending → active`), and persists via
 `@rtp/rtp-datastore`. Raw EFINs are stored but only returned **masked**
 (`12••56`). This is a scaffold — no real IRS e-Services calls are made.
+
+### Application Summary PDF upload (parse · validate · verify)
+
+EFIN onboarding **requires** uploading the completed IRS **e-file Application
+Summary PDF**. The server:
+
+1. **Parses ("phrases")** the PDF text with a dependency-free extractor
+   (`packages/sri-efin/src/pdf.mjs`, using Node's built-in `zlib` to inflate
+   FlateDecode content streams — no npm PDF libraries), pulling EFIN, ETIN, firm,
+   status, and provider options (`parseApplicationSummary`).
+2. **Validates** the document looks like an Application Summary and contains a
+   readable EFIN (`validateApplicationSummary`).
+3. **Verifies** it against the operator's input (`verifyApplicationSummary`) —
+   hard checks: is-summary, EFIN present, and **summary EFIN matches the entered
+   EFIN**; soft checks: EFIN status Active/Complete and firm-name resemblance.
+
+Registration is rejected unless verification passes (`summary_required` /
+`summary_unverified`). On success the PDF is stored under `logs/efin-uploads/` and
+the verification result (with the extracted EFIN masked) is attached to the record
+and shown as a **✓ verified** badge in the UI. Custom CID-font PDFs may not extract
+cleanly (best-effort scaffold).
 
 ## 4. Run / verify
 
