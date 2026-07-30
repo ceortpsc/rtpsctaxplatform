@@ -2,6 +2,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { serveDesignSystemAsset } from '../../ui-design-system/src/static.mjs';
 
 // Product identity for Ross Tax Pro Software Co (RTPSC).
 export const PLATFORM_IDENTITY = Object.freeze({
@@ -220,6 +221,8 @@ export function startHttpService({
         await handler({ request, response, url, config, payload, readJsonBody, sendJson });
         return;
       }
+
+      if (serveDesignSystemAsset(response, url.pathname)) return;
 
       if (staticDir && request.method === 'GET') {
         if (serveStaticFile(response, staticDir, url.pathname)) return;

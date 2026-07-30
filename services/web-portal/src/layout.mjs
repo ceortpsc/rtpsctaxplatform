@@ -72,7 +72,10 @@ export function renderDocument(page, config = {}) {
     <meta property="og:title" content="${esc(title)}" />
     <meta property="og:description" content="${esc(page.description)}" />
     <meta property="og:type" content="website" />
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/rtp-design/assets/emblem.svg" />
+    <link rel="stylesheet" href="/rtp-design/theme.css" />
+    <link rel="stylesheet" href="/rtp-design/components.css" />
+    <link rel="stylesheet" href="/rtp-design/shell.css" />
     <link rel="stylesheet" href="/static/styles.css" />
     <link rel="alternate" type="application/atom+xml" title="RTPSC updates" href="/feed.xml" />
     ${jsonLd(canonical)}
@@ -103,6 +106,7 @@ ${page.body}
       </div>
     </footer>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/rtp-design/shell.js" defer="defer"></script>
     <script src="/static/app.js" defer="defer"></script>
   </body>
 </html>

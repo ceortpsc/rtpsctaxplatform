@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Design System · RTPSC</title>
+    <link rel="icon" href="/rtp-design/assets/emblem.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/rtp-design/theme.css" />
+    <link rel="stylesheet" href="/rtp-design/components.css" />
+    <link rel="stylesheet" href="/rtp-design/shell.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="rtp-workspace view" style="max-width:960px;margin:0 auto;padding:var(--sp-8)">
+      <header class="rtp-page-header">
+        <div class="rtp-breadcrumbs"><a href="/">Staff Portal</a> / Design System</div>
+        <p class="rtp-page-category">Internal</p>
+        <h1 class="rtp-page-title">Sovereign Ledger Design System</h1>
+        <p class="rtp-page-desc">Shared tokens, components, and patterns for the RTPSC enterprise platform.</p>
+      </header>
+
+      <section class="rtp-card" style="margin-bottom:var(--sp-6)">
+        <h2 class="rtp-card__title">Buttons</h2>
+        <div class="rtp-page-actions">
+          <button class="rtp-btn rtp-btn--primary" type="button">Primary action</button>
+          <button class="rtp-btn rtp-btn--secondary" type="button">Secondary</button>
+          <button class="rtp-btn rtp-btn--tertiary" type="button">Tertiary</button>
+          <button class="rtp-btn rtp-btn--destructive" type="button">Destructive</button>
+        </div>
+      </section>
+
+      <section class="rtp-card" style="margin-bottom:var(--sp-6)">
+        <h2 class="rtp-card__title">Status indicators</h2>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span class="rtp-status rtp-status--active">Active</span>
+          <span class="rtp-status rtp-status--draft">Draft</span>
+          <span class="rtp-status rtp-status--pending">Pending</span>
+          <span class="rtp-status rtp-status--rejected">Rejected</span>
+          <span class="rtp-status rtp-status--limited">Limited</span>
+        </div>
+      </section>
+
+      <section class="rtp-card" style="margin-bottom:var(--sp-6)">
+        <h2 class="rtp-card__title">Form fields</h2>
+        <div class="rtp-field">
+          <label class="rtp-label" for="ds-email">Email <span class="required">*</span></label>
+          <input class="rtp-input" id="ds-email" type="email" placeholder="operator@example.com" />
+          <p class="rtp-helper">Used for secure session recovery only.</p>
+        </div>
+      </section>
+
+      <section class="rtp-empty">
+        <img class="rtp-empty__illus" src="/rtp-design/illustrations/empty-invoices.svg" alt="" />
+        <h3 class="rtp-empty__title">No invoices yet</h3>
+        <p class="rtp-empty__desc">Create your first invoice to begin billing clients for tax preparation services.</p>
+        <a class="rtp-btn rtp-btn--primary" href="http://localhost:3005">Create invoice</a>
+      </section>
+    </div>
+    <script src="/rtp-design/shell.js" defer></script>
+  </body>
+</html>

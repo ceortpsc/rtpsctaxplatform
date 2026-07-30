@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 48" role="img" aria-label="Ross Tax Pro Software Co">
+  <defs>
+    <linearGradient id="wm" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#b8860b"/>
+      <stop offset="100%" stop-color="#14213d"/>
+    </linearGradient>
+  </defs>
+  <text x="0" y="34" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700" fill="url(#wm)">RTPSC</text>
+  <text x="108" y="34" font-family="Segoe UI, system-ui, sans-serif" font-size="14" fill="#6b7280">Ross Tax Pro Software Co</text>
+</svg>

@@ -43,6 +43,8 @@ const modules = [
   '../services/transcript-service/src/index.mjs',
   '../services/analytics-service/src/index.mjs',
   '../services/enrollment-service/src/index.mjs',
+  '../packages/ui-design-system/src/index.mjs',
+  '../services/staff-portal/src/index.mjs',
   '../services/invoice-service/src/index.mjs',
   '../services/pos-crm-service/src/index.mjs',
   '../services/modules-dashboard/src/index.mjs',

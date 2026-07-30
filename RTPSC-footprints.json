@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-27T17:15:31.437Z",
-  "count": 59,
+  "createdAt": "2026-07-30T10:21:57.442Z",
+  "count": 64,
   "ok": true,
   "footprints": [
     {
@@ -448,6 +448,16 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/rtp-datastore",
+      "version": "0.1.0",
+      "location": "packages/rtp-datastore",
+      "sector": "packages",
+      "footprint": "89f999e940790a36",
+      "fingerprint": "89f999e940790a36",
+      "integrity": "sha256-89f999e940790a36049f2f8eee6faf6c9a7706369f1ac5e77aaa2f47b6aaf8d4",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/scoping-agent",
       "version": "0.1.0",
       "location": "agents/scoping-agent",
@@ -475,6 +485,26 @@
       "footprint": "a67cafd766808b42",
       "fingerprint": "a67cafd766808b42",
       "integrity": "sha256-a67cafd766808b425f02e154a5e6c7d822806b6b1d791ab33486c92123d1dd89",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/sri-efin",
+      "version": "0.1.0",
+      "location": "packages/sri-efin",
+      "sector": "packages",
+      "footprint": "e08d53dd48831627",
+      "fingerprint": "e08d53dd48831627",
+      "integrity": "sha256-e08d53dd48831627a46ca0f6b665501af7cbe4b98af19953f1a6bd3e7694c9c7",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/staff-portal",
+      "version": "0.1.0",
+      "location": "services/staff-portal",
+      "sector": "services",
+      "footprint": "fc24972fea43ed23",
+      "fingerprint": "fc24972fea43ed23",
+      "integrity": "sha256-fc24972fea43ed238879c6554e8dcb79e6844b250516669e48223dd6cd0eeaa0",
       "status": "sealed"
     },
     {
@@ -575,6 +605,26 @@
       "footprint": "743c9412b0fb2db0",
       "fingerprint": "743c9412b0fb2db0",
       "integrity": "sha256-743c9412b0fb2db0594c7db956bbc379bd8457037a6428cf3669985776ad1ab4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/ui-design-system",
+      "version": "0.1.0",
+      "location": "packages/ui-design-system",
+      "sector": "packages",
+      "footprint": "424d73a9b27ab783",
+      "fingerprint": "424d73a9b27ab783",
+      "integrity": "sha256-424d73a9b27ab7833c5b37ba1f5542b80e0bbdd53af2fb42834eb720b20aabf1",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/web-portal",
+      "version": "0.1.0",
+      "location": "services/web-portal",
+      "sector": "services",
+      "footprint": "b79fd1c6fe6d554f",
+      "fingerprint": "b79fd1c6fe6d554f",
+      "integrity": "sha256-b79fd1c6fe6d554fe9a5f513305a5fcc9c1420e4f63d6c76b2ee33a47b685a1f",
       "status": "sealed"
     },
     {

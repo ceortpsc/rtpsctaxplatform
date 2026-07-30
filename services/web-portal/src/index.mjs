@@ -197,6 +197,12 @@ export async function createPortalServer({ dbDir, persist = true } = {}) {
         return sendXml(response, 200, 'text/plain; charset=utf-8', renderRobots(config));
       }
 
+      // ---- Design system assets ----
+      if (method === 'GET' && pathname.startsWith('/rtp-design/')) {
+        const { serveDesignSystemAsset } = await import('../../../packages/ui-design-system/src/index.mjs');
+        if (serveDesignSystemAsset(response, pathname)) return;
+      }
+
       // ---- Static assets ----
       if (method === 'GET' && pathname.startsWith('/static/')) {
         if (serveStaticFile(response, publicDir, pathname.replace(/^\/static/, ''))) return;
