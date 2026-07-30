@@ -1,0 +1,14 @@
+{
+  "name": "@rtp/staff-portal",
+  "version": "0.1.0",
+  "description": "Unified RTPSC staff workspace with enterprise application shell",
+  "type": "module",
+  "main": "src/index.mjs",
+  "scripts": {
+    "start": "node src/index.mjs"
+  },
+  "dependencies": {
+    "@rtp/platform-core": "workspace:*",
+    "@rtp/ui-design-system": "workspace:*"
+  }
+}

@@ -10,6 +10,7 @@ import {
 } from '../../../packages/platform-core/src/index.mjs';
 import { answerQuery, buildDependencyGraph, buildInsights } from '../../../packages/module-advisor/src/index.mjs';
 import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor, SERVICE_ENDPOINTS } from './catalog.mjs';
+import { serveDesignSystemAsset } from '../../../packages/ui-design-system/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3010;
@@ -165,6 +166,7 @@ export function createDashboardServer() {
     }
 
     if (request.method === 'GET') {
+      if (serveDesignSystemAsset(response, pathname)) return;
       await serveStatic(response, pathname);
       return;
     }
