@@ -67,19 +67,35 @@ test('formatReleaseTag and production eligibility matrix', () => {
   assert.equal(isProductionEligible('hotfix'), true);
 });
 
-test('resolvePlatformReleaseSync defaults to v2.0-dev', () => {
+test('resolvePlatformReleaseSync defaults to v2.0-dev without stamp/env', () => {
   const prev = process.env.RTPSC_RELEASE_CHANNEL;
   delete process.env.RTPSC_RELEASE_CHANNEL;
   try {
-    const release = resolvePlatformReleaseSync();
+    const release = resolvePlatformReleaseSync({ root: path.join(os.tmpdir(), 'rtpsc-no-stamp') });
     assert.equal(release.tag, 'v2.0-dev');
     assert.equal(release.version, '2.0.0');
     assert.equal(release.channel, 'dev');
     assert.equal(release.source, 'default');
     const block = releaseMetadataBlock(release);
     assert.equal(block.tag, 'v2.0-dev');
-    assert.equal(getPlatformRelease().tag, 'v2.0-dev');
   } finally {
+    if (prev === undefined) delete process.env.RTPSC_RELEASE_CHANNEL;
+    else process.env.RTPSC_RELEASE_CHANNEL = prev;
+  }
+});
+
+test('resolvePlatformReleaseSync reads stamped channel from root', async () => {
+  const prev = process.env.RTPSC_RELEASE_CHANNEL;
+  delete process.env.RTPSC_RELEASE_CHANNEL;
+  const tmp = await mkdtemp(path.join(os.tmpdir(), 'rtpsc-sync-stamp-'));
+  try {
+    await stampPlatformRelease(tmp, { channel: 'stable', requestedBy: 'test' });
+    const release = resolvePlatformReleaseSync({ root: tmp });
+    assert.equal(release.tag, 'v2.0-stable');
+    assert.equal(release.source, 'stamp');
+    assert.match(release.buildId, /^[a-f0-9]{16}$/);
+  } finally {
+    await rm(tmp, { recursive: true, force: true });
     if (prev === undefined) delete process.env.RTPSC_RELEASE_CHANNEL;
     else process.env.RTPSC_RELEASE_CHANNEL = prev;
   }

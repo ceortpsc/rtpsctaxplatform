@@ -15,7 +15,7 @@ export const PLATFORM_IDENTITY = Object.freeze({
   abbreviation: 'RTPSC'
 });
 
-/** Active v2.0 release channel metadata (env → default `dev`). */
+/** Active v2.0 release channel metadata (override → env → stamp → default `dev`). */
 export function getPlatformRelease(overrides = {}) {
   return resolvePlatformReleaseSync(overrides);
 }

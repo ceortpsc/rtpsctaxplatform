@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   formatReleaseTag,
   getChannel,
@@ -83,10 +85,28 @@ export async function resolvePlatformRelease(root, overrides = {}) {
   });
 }
 
-/** Synchronous resolve using env + catalog defaults (no stamp file read). */
+/** Synchronous stamp load (for HTTP metadata / health paths). */
+export function loadReleaseStampSync(root) {
+  if (!root) return null;
+  try {
+    return JSON.parse(readFileSync(path.join(root, STAMP_RELATIVE), 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Synchronous resolve using override → env → stamp → catalog default.
+ * Pass `root` (repo root) so stamped builds show on /metadata without async I/O.
+ */
 export function resolvePlatformReleaseSync(overrides = {}) {
   const catalog = loadChannelCatalog();
-  const channelToken = overrides.channel ?? envChannel() ?? catalog.defaultChannel;
+  const stamped =
+    overrides.channel || envChannel()
+      ? null
+      : loadReleaseStampSync(overrides.root ?? findRepoRoot());
+  const channelToken =
+    overrides.channel ?? envChannel() ?? stamped?.channel ?? catalog.defaultChannel;
   const parsed = parseReleaseToken(channelToken, catalog);
   if (!parsed.ok) {
     throw Object.assign(new Error(`Unknown release channel: ${channelToken}`), {
@@ -95,19 +115,28 @@ export function resolvePlatformReleaseSync(overrides = {}) {
     });
   }
   const channel = parsed.channel;
+  let source = 'default';
+  if (overrides.channel) source = 'override';
+  else if (envChannel()) source = 'env';
+  else if (stamped?.channel) source = 'stamp';
   return freezeRelease({
     product: catalog.product,
-    version: String(overrides.version ?? envVersion() ?? catalog.baseVersion),
+    version: String(overrides.version ?? envVersion() ?? stamped?.version ?? catalog.baseVersion),
     channel: channel.id,
     tag: channel.tag,
     label: channel.label,
     stability: channel.stability,
     productionEligible: channel.productionEligible === true,
-    source: overrides.channel || envChannel() ? (overrides.channel ? 'override' : 'env') : 'default',
-    buildId: overrides.buildId || null,
-    stampedAt: null,
+    source,
+    buildId: overrides.buildId || stamped?.buildId || null,
+    stampedAt: stamped?.stampedAt || null,
     catalogVersion: catalog.baseVersion
   });
+}
+
+function findRepoRoot() {
+  // packages/platform-version/src → repo root
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 }
 
 function freezeRelease(release) {
