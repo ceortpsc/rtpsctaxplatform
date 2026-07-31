@@ -1,0 +1,24 @@
+{
+  "$schema": "../contracts/json-schema/release-channels.schema.json",
+  "product": "Ross Tax Pro Software Co Enterprise Tax Platform",
+  "releaseLine": "2.0",
+  "generatedAt": "2026-07-31T11:34:00Z",
+  "publicationPolicy": "immutable-one-channel-at-a-time",
+  "publicationWorkflow": ".github/workflows/release-channel.yml",
+  "tags": [
+    {"channel":"dev","tag":"v2.0-dev","semanticVersion":"2.0.0-dev.0","status":"not-published","environment":"development"},
+    {"channel":"alpha","tag":"v2.0-alpha","semanticVersion":"2.0.0-alpha.0","status":"not-published","environment":"alpha"},
+    {"channel":"beta","tag":"v2.0-beta","semanticVersion":"2.0.0-beta.0","status":"not-published","environment":"beta"},
+    {"channel":"rc1","tag":"v2.0-rc1","semanticVersion":"2.0.0-rc.1","status":"not-published","environment":"staging"},
+    {"channel":"stable","tag":"v2.0-stable","semanticVersion":"2.0.0","status":"not-published","environment":"production"},
+    {"channel":"lts","tag":"v2.0-lts","semanticVersion":"2.0.0-lts.0","status":"not-published","environment":"production-lts"},
+    {"channel":"enterprise","tag":"v2.0-enterprise","semanticVersion":"2.0.0-enterprise.0","status":"not-published","environment":"production-enterprise"},
+    {"channel":"hotfix","tag":"v2.0-hotfix","semanticVersion":"2.0.0-hotfix.0","status":"not-published","environment":"production-hotfix"}
+  ],
+  "controls": {
+    "overwriteExistingTag": false,
+    "allChannelsMayShareOneCommit": false,
+    "protectedEnvironmentApprovalRequired": true,
+    "validationBeforePublication": true
+  }
+}
