@@ -37,7 +37,29 @@ export const COMMANDS = {
       return node(entry);
     }
   },
-  deploy: { usage: 'deploy [--smoke]', desc: 'Deploy all services + background worker', plan: (rest) => node('scripts/deploy-all.mjs', rest) },
+  deploy: {
+    usage: 'deploy [--smoke] [--full|--platform] [--skip-gates]',
+    desc: 'Deploy platform services (add --full for RTPSC + ROSS.CO Infinite + SEO provisions)',
+    plan: (rest) => {
+      if (rest.includes('--full') || rest.includes('--platform')) {
+        return node(
+          'scripts/deploy-platform.mjs',
+          rest.filter((arg) => arg !== '--full' && arg !== '--platform')
+        );
+      }
+      return node('scripts/deploy-all.mjs', rest);
+    }
+  },
+  'deploy-full': {
+    usage: 'deploy-full [--smoke] [--skip-gates] [--skip-workers]',
+    desc: 'Full deploy: gates, SEO/DNS artifacts, ROSS.CO Infinite, all services, workers, smoke',
+    plan: (rest) => node('scripts/deploy-platform.mjs', rest)
+  },
+  activate: {
+    usage: 'activate [--smoke|--skip-gates|--status|--heartbeat|--json] [--evidence-<flag>]',
+    desc: 'Fully automated production activation (gates, receipts, workflow triggers)',
+    plan: (rest) => node('packages/production-activation/bin/activate.mjs', rest)
+  },
   workflows: { usage: 'workflows', desc: 'List background workflows', plan: () => node('workers/workflow-runner/src/cli.mjs', ['list']) },
   workflow: {
     usage: "workflow run <name> '<json>'  |  workflow emit <event> '<json>'",

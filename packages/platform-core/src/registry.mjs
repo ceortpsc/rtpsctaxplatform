@@ -169,6 +169,24 @@ export const PLATFORM_SERVICES = Object.freeze([
     ]
   },
   {
+    id: 'web-portal',
+    name: 'web-portal',
+    port: 3011,
+    entry: 'services/web-portal/src/index.mjs',
+    aliases: ['web-portal', 'portal', 'web'],
+    pages: ['/'],
+    routes: ['GET /', 'GET /health', 'GET /metadata']
+  },
+  {
+    id: 'staff-portal',
+    name: 'staff-portal',
+    port: 3012,
+    entry: 'services/staff-portal/src/index.mjs',
+    aliases: ['staff-portal', 'staff'],
+    pages: ['/'],
+    routes: ['GET /', 'GET /health', 'GET /metadata']
+  },
+  {
     id: 'irs-gateway',
     name: 'irs-gateway',
     port: 8820,

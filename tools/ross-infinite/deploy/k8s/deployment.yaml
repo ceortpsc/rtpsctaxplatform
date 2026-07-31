@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ross-infinite-registry
+  namespace: ross-infinite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ross-infinite-registry
+  template:
+    metadata:
+      labels:
+        app: ross-infinite-registry
+    spec:
+      containers:
+        - name: registry
+          image: ross-infinite:1.0.0
+          ports:
+            - containerPort: 4873
+          env:
+            - name: PORT
+              value: "4873"
+            - name: ROSS_REGISTRY_DATA
+              value: /data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4873
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4873
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ross-infinite-registry
+  namespace: ross-infinite
+spec:
+  selector:
+    app: ross-infinite-registry
+  ports:
+    - port: 4873
+      targetPort: 4873

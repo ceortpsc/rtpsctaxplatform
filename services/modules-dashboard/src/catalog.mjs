@@ -11,6 +11,8 @@ import { invoiceDescriptor } from '../../../services/invoice-service/src/index.m
 import { posCrmDescriptor } from '../../../services/pos-crm-service/src/index.mjs';
 import { irsGatewayDescriptor } from '../../../services/irs-gateway/src/index.mjs';
 import { aiWorkforceHubDescriptor } from '../../../services/ai-workforce-hub/src/index.mjs';
+import { webPortalDescriptor } from '../../../services/web-portal/src/index.mjs';
+import { staffPortalDescriptor } from '../../../services/staff-portal/src/index.mjs';
 import { TAX_DATA_NOTICE } from '../../../packages/tax-data/src/index.mjs';
 import { listServiceCatalog } from '../../../packages/invoice-core/src/index.mjs';
 import { listPhraseTemplates } from '../../../packages/ero-ops/src/index.mjs';
@@ -35,6 +37,11 @@ import {
   agentTaskRequestedWorkflow,
   agentAssignmentCycleWorkflow
 } from '../../../workflows/agent-assignment-workflow/src/index.mjs';
+import {
+  productionActivationDispatchWorkflow,
+  productionActivationRequestedWorkflow,
+  productionActivationCycleWorkflow
+} from '../../../workflows/production-activation-workflow/src/index.mjs';
 
 // Descriptor for the modules-dashboard itself, defined here to avoid a circular
 // import between the catalog and the HTTP service entrypoint.
@@ -245,6 +252,45 @@ export function buildModuleCatalog() {
           summary: 'Agent Build Engineering Team inventory and assessment runner.',
           tags: ['team', 'build'],
           detail: { commands: ['./scripts/aol run team'] }
+        },
+        {
+          name: '@rtp/rtp-datastore',
+          summary: 'Local JSON datastore helpers for portal accounts and operator records.',
+          tags: ['datastore', 'portal'],
+          detail: { package: '@rtp/rtp-datastore' }
+        },
+        {
+          name: '@rtp/sri-efin',
+          summary: 'SRI / EFIN identity and enrollment reference helpers for the client portal.',
+          tags: ['identity', 'efin', 'portal'],
+          detail: { package: '@rtp/sri-efin' }
+        },
+        {
+          name: '@rtp/ui-design-system',
+          summary: 'Signal Era shared enterprise UI theme, shell, and design assets (/rtp-design).',
+          tags: ['design', 'ui', 'signal-era'],
+          detail: { mount: '/rtp-design', theme: 'Signal Era' }
+        },
+        {
+          name: '@rtp/production-activation',
+          summary: 'Fully automated production activation gates, receipts, and honest state machine.',
+          tags: ['production', 'activation', 'automated'],
+          detail: {
+            states: [
+              'PROPOSED',
+              'GENERATED',
+              'AUTOMATICALLY_TESTED',
+              'STAGING_VERIFIED',
+              'PRODUCTION_VERIFIED',
+              'BLOCKED'
+            ],
+            commands: ['./rtpsc activate', './rtpsc activate --skip-gates', './rtpsc activate --status'],
+            workflows: [
+              'production-activation-dispatch',
+              'production-activation-requested',
+              'production-activation-cycle'
+            ]
+          }
         }
       ]
     },
@@ -260,6 +306,8 @@ export function buildModuleCatalog() {
         serviceEntry(invoiceDescriptor),
         serviceEntry(posCrmDescriptor),
         serviceEntry(modulesDashboardDescriptor),
+        serviceEntry(webPortalDescriptor),
+        serviceEntry(staffPortalDescriptor),
         serviceEntry(irsGatewayDescriptor),
         serviceEntry(aiWorkforceHubDescriptor)
       ]
@@ -283,7 +331,10 @@ export function buildModuleCatalog() {
               'transmission-cycle',
               'agent-assignment-dispatch',
               'agent-task-requested',
-              'agent-assignment-cycle'
+              'agent-assignment-cycle',
+              'production-activation-dispatch',
+              'production-activation-requested',
+              'production-activation-cycle'
             ]
           }
         }
@@ -315,7 +366,10 @@ export function buildModuleCatalog() {
         workflowEntry(transmissionWorkflow),
         workflowEntry(agentAssignmentDispatchWorkflow),
         workflowEntry(agentTaskRequestedWorkflow),
-        workflowEntry(agentAssignmentCycleWorkflow)
+        workflowEntry(agentAssignmentCycleWorkflow),
+        workflowEntry(productionActivationDispatchWorkflow),
+        workflowEntry(productionActivationRequestedWorkflow),
+        workflowEntry(productionActivationCycleWorkflow)
       ]
     }
   ];

@@ -1,0 +1,14 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ROSS.CO — Infinite Transfer Rate Package Manager",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Linux, macOS, Windows",
+  "url": "https://ross.co/",
+  "description": "ROSS.CO Infinite is a secure package manager, registry, transfer engine, and developer platform with deterministic resolution and verified supply-chain controls.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Ross Tax Pro Software Co",
+    "email": "ceo@rosstaxsoftware.com"
+  }
+}

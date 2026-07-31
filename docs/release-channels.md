@@ -1,5 +1,8 @@
 # RTPSC 02.0V release channels
 
+> **Note:** `main` also ships a governed publication registry at `config/release-channels.json` with CLI `scripts/release-channel.mjs` and docs in `docs/releases/v2.0-release-channels.md`. Runtime channel selection in this branch uses `packages/platform-core/src/release-channels.mjs` + `./rtpsc release`. These parallel systems need a single SoT decision (see merge conflict report).
+
+
 Ross Tax Pro Software Co **02.0V** ships on eight explicit release channels:
 
 | Tag | Meaning |

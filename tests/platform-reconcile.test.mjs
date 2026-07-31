@@ -75,12 +75,14 @@ test('pdf fill engine plans deterministic field maps', () => {
 
 test('platform registry lists every service port and route surface', () => {
   const summary = platformRegistrySummary();
-  assert.equal(PLATFORM_SERVICES.length, 10);
+  assert.equal(PLATFORM_SERVICES.length, 12);
   assert.equal(PLATFORM_ENGINES.length, 6);
   assert.ok(summary.routeCount > 40);
   assert.ok(listPlatformPages().some((page) => page.port === 3010));
   assert.equal(resolveServiceEntry('irs').port, 8820);
   assert.equal(resolveServiceEntry('ai-workforce').port, 8860);
+  assert.equal(resolveServiceEntry('web-portal').port, 3011);
+  assert.equal(resolveServiceEntry('staff').port, 3012);
   const routes = listPlatformRoutes();
   assert.ok(routes.find((r) => r.service === 'analytics-service').routes.includes('GET /api/feed'));
 });
@@ -90,6 +92,8 @@ test('catalog and route registry include irs, ai workforce, and all engines', ()
   const services = catalog.find((group) => group.category === 'services').modules.map((m) => m.name);
   assert.ok(services.includes('irs-gateway'));
   assert.ok(services.includes('ai-workforce-hub'));
+  assert.ok(services.includes('web-portal'));
+  assert.ok(services.includes('staff-portal'));
   const engines = catalog.find((group) => group.category === 'engines').modules.map((m) => m.name);
   assert.deepEqual(
     engines.sort(),
@@ -105,8 +109,10 @@ test('catalog and route registry include irs, ai workforce, and all engines', ()
   const endpoints = SERVICE_ENDPOINTS.map((e) => e.name);
   assert.ok(endpoints.includes('irs-gateway'));
   assert.ok(endpoints.includes('ai-workforce-hub'));
+  assert.ok(endpoints.includes('web-portal'));
+  assert.ok(endpoints.includes('staff-portal'));
   assert.equal(new Set(SERVICE_ENDPOINTS.map((e) => e.port)).size, SERVICE_ENDPOINTS.length);
   const registry = buildRouteRegistry();
-  assert.equal(registry.services.length, 10);
+  assert.equal(registry.services.length, 12);
   assert.ok(registry.services.every((s) => Array.isArray(s.routes) && s.routes.length > 0));
 });

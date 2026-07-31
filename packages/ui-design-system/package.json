@@ -1,0 +1,15 @@
+{
+  "name": "@rtp/ui-design-system",
+  "version": "0.1.0",
+  "description": "RTPSC Signal Era — shared enterprise UI design system",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./public/*": "./public/*"
+  },
+  "files": [
+    "src",
+    "public"
+  ]
+}

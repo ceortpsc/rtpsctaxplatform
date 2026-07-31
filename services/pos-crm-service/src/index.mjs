@@ -18,6 +18,7 @@ import {
   scoreRefundIntelligence
 } from '../../../packages/ero-ops/src/index.mjs';
 import { taxLookups } from '../../../packages/invoice-core/src/index.mjs';
+import { serveDesignSystemAsset } from '../../../packages/ui-design-system/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3006;
@@ -391,6 +392,8 @@ export function createPosCrmServer() {
           }
         }
       }
+
+      if (serveDesignSystemAsset(response, pathname)) return;
 
       if (request.method === 'GET') return serveStatic(response, pathname);
       sendJson(response, 405, { error: 'method_not_allowed', method: request.method, path: pathname });

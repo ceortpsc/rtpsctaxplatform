@@ -41,6 +41,21 @@ Docs: `docs/aol-package-manager.md`, `docs/aol-api-and-config.md`,
 ./scripts/rossco seo
 ```
 
+**ROSS.CO Infinite** (`tools/ross-infinite`, `@rtp/ross-infinite`) is the production-candidate
+package manager / task graph / registry / MCP / SEO ownership control plane:
+
+```bash
+./scripts/ross-infinite doctor
+./scripts/ross-infinite seo plan config/seo/ross.co.ownership.json
+./scripts/ross-infinite seo generate config/seo/ross.co.ownership.json
+./scripts/ross-infinite seo prevalidate config/seo/ross.co.ownership.json
+pnpm run ross-infinite:smoke
+```
+
+Docs: `docs/ross-infinite/README.md`, `docs/rossco-seo-ownership.md`,
+`docs/ROSS_CO_SEO_Ownership_Runbook.md`. Agent: `seo-ownership-agent`
+(`./rtpsc agents run seo-ownership-prevalidate`).
+
 Equivalent: `node ./tools/aol/bin/aol.mjs <cmd>`, `node ./tools/rossco/bin/rossco.mjs <cmd>`,
 or `make setup|lint|test|build|start|bench|compliance|rossco`.
 
@@ -101,6 +116,7 @@ Two equivalent runners exist:
 - The "AI Assistant"/insights come from `packages/module-advisor` — a local, dependency-free
   heuristic engine (intent detection + keyword scoring). There is **no external LLM or API key**.
 - `./rtpsc deploy` (or `pnpm run deploy:all`) starts every HTTP service (ports `3000`–`3006` + `3010`)
+- `./rtpsc deploy-full --smoke` (or `pnpm run deploy:full:smoke`) provisions SEO/DNS artifacts, ROSS.CO Infinite evidence, all services including IRS `:8820` / AI workforce `:8860` / registry `:4873` / presence `:3080`, workers, and writes `build/platform-deploy-manifest.json` (docs: `docs/platform-full-deploy.md`).
   plus the background `workflow-runner` as child processes, health-checks them, and stays live
   (Ctrl+C stops all). `./rtpsc deploy --smoke` verifies health once and exits. Free those ports
   first — stop any single-service dev processes so deploy doesn't hit EADDRINUSE.
@@ -139,6 +155,19 @@ Two equivalent runners exist:
   contact. The ERO tab tracks SBTPG report traces, generates automated client/ERO phrases, and
   scores refund intelligence locally (no live SBTPG/IRS). Start with `./rtpsc start pos-crm`
   (aliases: `pos`, `crm`). Seeded demo contact: Jordan Ellis / Orleans Parish.
+- `services/web-portal` (port `3011`) is the **multi-page public site** (`./rtpsc start web-portal`,
+ aliases `portal`/`web`). It uses a **Next.js-style file-based page router** implemented with Node
+ built-ins (no npm framework): pages live in `services/web-portal/src/pages/*.page.mjs` and are
+ rendered to **XHTML** (`application/xhtml+xml`) — output must stay well-formed XML (self-close void
+ tags, escape text, keep JS/JSON-LD external or CDATA-wrapped). It also serves XML surfaces
+ (`/sitemap.xml`, `/feed.xml`, `/opensearch.xml`, `/robots.txt`). Registration/sign-in ("SRI" =
+ Secure Registration & Identity) and EFIN onboarding persist via `@rtp/rtp-datastore`.
+- `packages/rtp-datastore` is the platform's first **persistent datastore ("DB instances")** —
+ dependency-free, file-backed JSON collections under `logs/db/<instance>/` (gitignored). It is
+ **opt-in**; other services still use in-memory stores. Pass `persist:false` for in-memory (tests).
+- `packages/sri-efin` scaffolds IRS **EFIN** provider identity (EFIN/ETIN validation, provider
+ roles, fail-safe suitability lifecycle). EFINs are stored but only returned **masked**; it makes
+ **no** real IRS e-Services calls (scaffold, pending approved integration).
 - `agents/*` (+ `packages/agent-core`) are a **deployment-assist & development team** — dev/deploy
   tooling, NOT a runtime product subsystem. Run with `./rtpsc agents`; regenerate the reports in
   `docs/agents/` with `./rtpsc agents docs`. Required tasks are pre-assigned on the assignment board

@@ -9,6 +9,7 @@ import {
   PLATFORM_IDENTITY,
   redactConfig
 } from '../../../packages/platform-core/src/index.mjs';
+import { serveDesignSystemAsset } from '../../../packages/ui-design-system/src/index.mjs';
 import {
   assistDataEntry,
   approveInvoice,
@@ -217,6 +218,8 @@ export function createInvoiceServer() {
           return sendBinary(response, 200, text, 'text/plain; charset=utf-8', `${invoice.number}-receipt.txt`);
         }
       }
+
+      if (serveDesignSystemAsset(response, pathname)) return;
 
       if (request.method === 'GET') return serveStatic(response, pathname);
 

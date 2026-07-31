@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ross-infinite
+  labels:
+    app.kubernetes.io/part-of: rtpsc
+    app.kubernetes.io/name: ross-infinite
