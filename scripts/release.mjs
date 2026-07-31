@@ -2,6 +2,7 @@
 
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   ACTIVE_RELEASE_CHANNEL,
   RELEASE_CHANNELS,
@@ -15,7 +16,7 @@ import {
   validateReleaseCatalog
 } from '../packages/release-core/src/index.mjs';
 
-const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function parseOptions(args) {
   const positional = [];
@@ -168,7 +169,7 @@ async function main() {
         catalog,
         channels: channels.map((channel) => ({
           ...profileProjection(channel),
-          definitionValid: channel.requiredGates.length > 0 && channel.allowedPromotionTargets.every((target) => getReleaseChannel(target))
+          definitionValid: channel.requiredGates.length > 0 && channel.allowedPromotionTargets.every((target) => Boolean(getReleaseChannel(target)))
         }))
       };
       print(result, true);
