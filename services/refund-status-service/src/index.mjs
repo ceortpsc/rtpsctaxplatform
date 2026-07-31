@@ -221,7 +221,7 @@ export function createRefundStatusServer({ registry, store } = {}) {
         return sendJson(response, 200, { events: refunds.listEvents() });
       }
 
-      if (serveDesignSystemAsset(response, pathname)) return;
+      if (serveDesignSystemAsset(response, request.url || pathname)) return;
 
       if (request.method === 'GET') return serveStatic(response, pathname);
       sendJson(response, 405, { error: 'method_not_allowed', method: request.method, path: pathname });

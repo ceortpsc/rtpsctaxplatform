@@ -204,7 +204,7 @@ export async function createPortalServer({ dbDir, persist = true, env = process.
       if (method === 'GET' && pathname === '/robots.txt') return sendXml(response, 200, 'text/plain; charset=utf-8', renderRobots(config));
       if (method === 'GET' && pathname.startsWith('/rtp-design/')) {
         const { serveDesignSystemAsset } = await import('../../../packages/ui-design-system/src/index.mjs');
-        if (serveDesignSystemAsset(response, pathname)) return;
+        if (serveDesignSystemAsset(response, request.url || pathname)) return;
       }
       if (method === 'GET' && pathname.startsWith('/static/')) {
         if (serveStaticFile(response, publicDir, pathname.replace(/^\/static/, ''))) return;

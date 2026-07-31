@@ -225,7 +225,7 @@ export function createInvoiceServer() {
         }
       }
 
-      if (serveDesignSystemAsset(response, pathname)) return;
+      if (serveDesignSystemAsset(response, request.url || pathname)) return;
 
       if (request.method === 'GET') return serveStatic(response, pathname);
 

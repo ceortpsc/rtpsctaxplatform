@@ -262,7 +262,7 @@ export function startHttpService({
         return;
       }
 
-      if (serveDesignSystemAsset(response, url.pathname)) return;
+      if (serveDesignSystemAsset(response, `${url.pathname}${url.search}`)) return;
 
       if (staticDir && request.method === 'GET') {
         if (serveStaticFile(response, staticDir, url.pathname)) return;

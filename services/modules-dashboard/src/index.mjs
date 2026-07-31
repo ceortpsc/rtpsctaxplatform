@@ -172,7 +172,7 @@ export function createDashboardServer() {
     }
 
     if (request.method === 'GET') {
-      if (serveDesignSystemAsset(response, pathname)) return;
+      if (serveDesignSystemAsset(response, request.url || pathname)) return;
       await serveStatic(response, pathname);
       return;
     }
