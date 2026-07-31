@@ -2,13 +2,30 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  RELEASE_LINE,
+  RELEASE_CHANNELS,
+  DEFAULT_RELEASE_CHANNEL,
+  listReleaseChannels,
+  resolveReleaseChannel,
+  resolveChannelFromEnv,
+  describeReleaseChannel,
+  buildReleaseManifest
+} from './release-channels.mjs';
 import { serveDesignSystemAsset } from '../../ui-design-system/src/static.mjs';
 
 // Product identity for Ross Tax Pro Software Co (RTPSC).
 export const PLATFORM_IDENTITY = Object.freeze({
   company: 'Ross Tax Pro Software Co',
   application: 'Efile Transmission Software',
-  abbreviation: 'RTPSC'
+  abbreviation: 'RTPSC',
+  version: '02.0V',
+  release: 'Ross Tax Pro Software Co 02.0V',
+  positioning: 'The hierarchy of enterprise-grade tax pro software',
+  grade: 'enterprise',
+  market: 'tax-pro-software',
+  releaseLine: RELEASE_LINE,
+  defaultReleaseChannel: DEFAULT_RELEASE_CHANNEL
 });
 
 const defaultComplianceNotice = [
@@ -23,11 +40,15 @@ const PRODUCTION_ENVIRONMENTS = new Set(['prod', 'production']);
 export function loadRuntimeConfig(overrides = {}) {
   const appEnv = overrides.appEnv ?? process.env.APP_ENV ?? 'local';
   const servicePort = Number(overrides.servicePort ?? process.env.SERVICE_PORT ?? 3000);
+  const releaseChannel = resolveChannelFromEnv(process.env, overrides);
 
   return {
     appEnv,
     nodeEnv: overrides.nodeEnv ?? process.env.NODE_ENV ?? 'development',
     servicePort,
+    releaseChannelId: releaseChannel.id,
+    releaseChannelTag: releaseChannel.tag,
+    releaseChannel,
     apiClientId: overrides.apiClientId ?? process.env.API_CLIENT_ID ?? 'unset',
     apiClientSecret: overrides.apiClientSecret ?? process.env.API_CLIENT_SECRET ?? 'unset',
     tdsClientId: overrides.tdsClientId ?? process.env.TDS_CLIENT_ID ?? 'unset',
@@ -45,6 +66,8 @@ export function redactConfig(config) {
     appEnv: config.appEnv,
     nodeEnv: config.nodeEnv,
     servicePort: config.servicePort,
+    releaseChannelId: config.releaseChannelId,
+    releaseChannelTag: config.releaseChannelTag,
     apiClientId: config.apiClientId,
     tdsClientId: config.tdsClientId,
     tunnelClientId: config.tunnelClientId,
@@ -70,6 +93,7 @@ export function evaluateEnvironmentProtection(config = loadRuntimeConfig()) {
   );
   const approvedTunnel = Boolean(config.approvedTunnelEndpoint) && config.approvedTunnelEndpoint !== 'unset';
   const transmissionFlagEnabled = config.efileTransmissionEnabled === true;
+  const channel = config.releaseChannel || resolveChannelFromEnv();
 
   const reasons = [];
   if (!isProduction) reasons.push(`Environment "${appEnv}" is not a production environment.`);
@@ -81,6 +105,17 @@ export function evaluateEnvironmentProtection(config = loadRuntimeConfig()) {
   return Object.freeze({
     company: PLATFORM_IDENTITY.company,
     application: PLATFORM_IDENTITY.application,
+    version: PLATFORM_IDENTITY.version,
+    release: PLATFORM_IDENTITY.release,
+    positioning: PLATFORM_IDENTITY.positioning,
+    grade: PLATFORM_IDENTITY.grade,
+    releaseChannel: {
+      id: channel.id,
+      tag: channel.tag,
+      description: channel.description,
+      productionReady: channel.productionReady,
+      stability: channel.stability
+    },
     appEnv,
     environment: isProduction ? 'production' : appEnv,
     protected: !transmissionAllowed,
@@ -140,7 +175,27 @@ export function readJsonBody(request, { limitBytes = 1_000_000 } = {}) {
   });
 }
 
-export function sendJson(response, statusCode, body) {
+/** Baseline security headers applied to platform HTTP responses (fail-open if already set). */
+export const PLATFORM_SECURITY_HEADERS = Object.freeze({
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'no-referrer',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin'
+});
+
+export function applyPlatformSecurityHeaders(response, extra = {}) {
+  for (const [key, value] of Object.entries(PLATFORM_SECURITY_HEADERS)) {
+    if (!response.getHeader(key)) response.setHeader(key, value);
+  }
+  for (const [key, value] of Object.entries(extra)) {
+    response.setHeader(key, value);
+  }
+}
+
+export function sendJson(response, statusCode, body, { securityHeaders = true } = {}) {
+  if (securityHeaders) applyPlatformSecurityHeaders(response);
   response.setHeader('content-type', 'application/json; charset=utf-8');
   response.writeHead(statusCode);
   response.end(JSON.stringify(body, null, 2));
@@ -231,7 +286,8 @@ export function startHttpService({
   extraMetadata = {},
   routes = {},
   staticDir = null,
-  onReady = null
+  onReady = null,
+  securityHeaders = true
 } = {}) {
   const config = loadRuntimeConfig({ servicePort: defaultPort });
   const payload = {
@@ -243,16 +299,17 @@ export function startHttpService({
   };
 
   const server = http.createServer(async (request, response) => {
+    if (securityHeaders) applyPlatformSecurityHeaders(response);
     const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
     const routeKey = `${request.method || 'GET'} ${url.pathname}`;
 
     try {
       if (url.pathname === '/health' && request.method === 'GET') {
-        sendJson(response, 200, { status: 'ok', service: descriptor.name, environment: config.appEnv });
+        sendJson(response, 200, { status: 'ok', service: descriptor.name, environment: config.appEnv }, { securityHeaders });
         return;
       }
       if (url.pathname === '/metadata' && request.method === 'GET') {
-        sendJson(response, 200, payload);
+        sendJson(response, 200, payload, { securityHeaders });
         return;
       }
 
@@ -307,3 +364,25 @@ export function runWorker({ descriptor, steps = [] }) {
 export function packageDir(importMetaUrl, ...segments) {
   return path.join(path.dirname(fileURLToPath(importMetaUrl)), ...segments);
 }
+
+export {
+  PLATFORM_SERVICES,
+  PLATFORM_ENGINES,
+  listServiceEndpoints,
+  listPlatformPages,
+  listPlatformRoutes,
+  resolveServiceEntry,
+  buildServiceCliMap,
+  platformRegistrySummary
+} from './registry.mjs';
+
+export {
+  RELEASE_LINE,
+  RELEASE_CHANNELS,
+  DEFAULT_RELEASE_CHANNEL,
+  listReleaseChannels,
+  resolveReleaseChannel,
+  resolveChannelFromEnv,
+  describeReleaseChannel,
+  buildReleaseManifest
+};

@@ -50,14 +50,18 @@ The platform provides a governed baseline for tax operations, secure integration
 
 ### Shared packages
 
-- `platform-core`: runtime config loading, health-response helpers, service/worker descriptors.
+- `platform-core`: runtime config loading, health-response helpers, service/worker descriptors, baseline security headers.
 - `client-config`: required client ID and secret placeholders, plus governance text.
-- `secure-tunnel`: compliant adapter contract and approval checkpoints.
+- `client-identity`: API/TDS client issuance, hashed secrets, scoped authentication.
+- `security-core`: HMAC bearer tokens, AES-256-GCM field encryption, rate limits, security audit JSONL.
+- `secrets-config`: redacted secrets catalog and readiness evaluation.
+- `secure-tunnel`: compliant adapter contract, tunnel gate, and approval checkpoints (live transport stays stub).
 - `agent-build-team`: Agent Build Engineering Team — inventories all developmental modules and runs multi-role build/compliance assessments.
 
 ### Security boundaries
 
 1. Secrets are environment-only and absent from source control.
+1b. Security posture APIs (`security-status-service` `:3007`, `./rtpsc security`) never return raw secret values.
 2. Secure tunnel code is an interface scaffold only; no hardcoded credentials or unapproved endpoints.
 3. Refund status processing is event-driven and explicitly excludes scraping.
 4. Sensitive taxpayer integrations require approval gates before implementation.

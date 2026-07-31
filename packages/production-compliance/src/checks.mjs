@@ -9,7 +9,12 @@ const DEFAULT_LIVE_ENDPOINTS = Object.freeze([
   { id: 'refund-status', url: 'http://127.0.0.1:3001/health' },
   { id: 'transcript', url: 'http://127.0.0.1:3002/health' },
   { id: 'analytics', url: 'http://127.0.0.1:3003/health' },
-  { id: 'irs-gateway', url: 'http://127.0.0.1:8820/health' }
+  { id: 'enrollment', url: 'http://127.0.0.1:3004/health' },
+  { id: 'invoice', url: 'http://127.0.0.1:3005/health' },
+  { id: 'pos-crm', url: 'http://127.0.0.1:3006/health' },
+  { id: 'modules-dashboard', url: 'http://127.0.0.1:3010/health' },
+  { id: 'irs-gateway', url: 'http://127.0.0.1:8820/health' },
+  { id: 'ai-workforce-hub', url: 'http://127.0.0.1:8860/health' }
 ]);
 
 async function exists(root, relativePath) {
@@ -174,6 +179,72 @@ async function runAutomatedItem(root, item, context) {
       const { createSecureTunnelAdapter } = await import(path.join(root, 'packages/secure-tunnel/src/index.mjs'));
       const adapter = createSecureTunnelAdapter();
       return result(item, adapter.status === 'stub' ? 'pass' : 'fail', `Secure tunnel status=${adapter.status}`);
+    }
+    case 'SEC-001': {
+      const mod = await import(path.join(root, 'packages/security-core/src/index.mjs'));
+      const ok =
+        typeof mod.mintAccessToken === 'function' &&
+        typeof mod.encryptField === 'function' &&
+        typeof mod.createRateLimiter === 'function' &&
+        typeof mod.applySecurityHeaders === 'function' &&
+        mod.SECURITY_HEADERS &&
+        typeof mod.SECURITY_HEADERS === 'object';
+      return result(item, ok ? 'pass' : 'fail', 'Security-core exports present');
+    }
+    case 'SEC-002': {
+      const mod = await import(path.join(root, 'packages/secrets-config/src/index.mjs'));
+      const status = mod.evaluateSecretsStatus({
+        env: {
+          API_CLIENT_ID: 'a',
+          API_CLIENT_SECRET: 'b',
+          TDS_CLIENT_ID: 'c',
+          TDS_CLIENT_SECRET: 'd',
+          TUNNEL_CLIENT_ID: 'e',
+          TUNNEL_CLIENT_SECRET: 'f',
+          APPROVED_TUNNEL_ENDPOINT: 'https://approved.example',
+          SESSION_SECRET: 'session-test-secret',
+          ENCRYPTION_KEY: '0123456789abcdef0123456789abcdef'
+        }
+      });
+      const leaked = JSON.stringify(status).includes('session-test-secret');
+      const ok = status.ready === true && !leaked && Array.isArray(mod.listSecretCatalog());
+      return result(item, ok ? 'pass' : 'fail', 'Secrets-config readiness is redacted');
+    }
+    case 'SEC-003': {
+      const { createSecureTunnelAdapter, evaluateTunnelGate } = await import(
+        path.join(root, 'packages/secure-tunnel/src/index.mjs')
+      );
+      const gate = evaluateTunnelGate({
+        env: {
+          TUNNEL_CLIENT_ID: 'tunnel-id',
+          TUNNEL_CLIENT_SECRET: 'tunnel-secret',
+          APPROVED_TUNNEL_ENDPOINT: 'https://approved-tunnel.example'
+        }
+      });
+      const adapter = createSecureTunnelAdapter();
+      const ok = gate.configReady === true && adapter.status === 'stub' && gate.status === 'stub';
+      return result(item, ok ? 'pass' : 'fail', 'Tunnel gate validates config while adapter stays stub');
+    }
+    case 'SEC-004': {
+      const serviceOk = await exists(root, 'services/security-status-service/src/index.mjs');
+      const workerOk = await exists(root, 'workers/security-scanner-worker/src/index.mjs');
+      const cliOk = await exists(root, 'scripts/security.mjs');
+      return result(
+        item,
+        serviceOk && workerOk && cliOk ? 'pass' : 'fail',
+        'Security status service, scanner worker, and CLI present'
+      );
+    }
+    case 'SEC-005': {
+      const gateway = await readText(root, 'services/api-gateway/src/index.mjs');
+      const core = await import(path.join(root, 'packages/security-core/src/index.mjs'));
+      const minted = core.mintAccessToken(
+        { sub: 'rtp_api_probe', kind: 'api', scopes: ['api:read'] },
+        { secret: 'compliance-probe-session-secret', ttlSec: 60 }
+      );
+      const verified = core.verifyAccessToken(minted.accessToken, { secret: 'compliance-probe-session-secret' });
+      const ok = gateway.includes('mintAccessToken') && minted.ok && verified.ok;
+      return result(item, ok ? 'pass' : 'fail', 'Gateway integrates HMAC access tokens');
     }
     case 'BND-006': {
       const { AI_ASSIST_COMPLIANCE, askAssist } = await import(path.join(root, 'packages/ai-assist/src/index.mjs'));
