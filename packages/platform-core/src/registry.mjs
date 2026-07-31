@@ -164,6 +164,7 @@ export const PLATFORM_SERVICES = Object.freeze([
       'GET /api/graph',
       'GET /api/status',
       'GET /api/routes',
+      'GET /api/release',
       'POST /api/assistant'
     ]
   },

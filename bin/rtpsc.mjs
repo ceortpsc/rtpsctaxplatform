@@ -73,7 +73,12 @@ export const COMMANDS = {
     desc: 'Issue/list full API and TDS client ids (secrets gitignored)',
     plan: (rest) => node('scripts/clients.mjs', rest.length ? rest : ['status'])
   },
-  env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') }
+  env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') },
+  release: {
+    usage: 'release [list|describe|build|activate|status|path]',
+    desc: 'Build and activate RTPSC 02.0V release channels (alpha…enterprise/hotfix)',
+    plan: (rest) => node('scripts/release.mjs', rest.length ? rest : ['list'])
+  }
 };
 
 export function buildUsage() {

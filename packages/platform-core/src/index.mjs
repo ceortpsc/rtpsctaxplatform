@@ -2,6 +2,16 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  RELEASE_LINE,
+  RELEASE_CHANNELS,
+  DEFAULT_RELEASE_CHANNEL,
+  listReleaseChannels,
+  resolveReleaseChannel,
+  resolveChannelFromEnv,
+  describeReleaseChannel,
+  buildReleaseManifest
+} from './release-channels.mjs';
 
 // Product identity for Ross Tax Pro Software Co (RTPSC).
 export const PLATFORM_IDENTITY = Object.freeze({
@@ -12,7 +22,9 @@ export const PLATFORM_IDENTITY = Object.freeze({
   release: 'Ross Tax Pro Software Co 02.0V',
   positioning: 'The hierarchy of enterprise-grade tax pro software',
   grade: 'enterprise',
-  market: 'tax-pro-software'
+  market: 'tax-pro-software',
+  releaseLine: RELEASE_LINE,
+  defaultReleaseChannel: DEFAULT_RELEASE_CHANNEL
 });
 
 const defaultComplianceNotice = [
@@ -27,11 +39,15 @@ const PRODUCTION_ENVIRONMENTS = new Set(['prod', 'production']);
 export function loadRuntimeConfig(overrides = {}) {
   const appEnv = overrides.appEnv ?? process.env.APP_ENV ?? 'local';
   const servicePort = Number(overrides.servicePort ?? process.env.SERVICE_PORT ?? 3000);
+  const releaseChannel = resolveChannelFromEnv(process.env, overrides);
 
   return {
     appEnv,
     nodeEnv: overrides.nodeEnv ?? process.env.NODE_ENV ?? 'development',
     servicePort,
+    releaseChannelId: releaseChannel.id,
+    releaseChannelTag: releaseChannel.tag,
+    releaseChannel,
     apiClientId: overrides.apiClientId ?? process.env.API_CLIENT_ID ?? 'unset',
     apiClientSecret: overrides.apiClientSecret ?? process.env.API_CLIENT_SECRET ?? 'unset',
     tdsClientId: overrides.tdsClientId ?? process.env.TDS_CLIENT_ID ?? 'unset',
@@ -49,6 +65,8 @@ export function redactConfig(config) {
     appEnv: config.appEnv,
     nodeEnv: config.nodeEnv,
     servicePort: config.servicePort,
+    releaseChannelId: config.releaseChannelId,
+    releaseChannelTag: config.releaseChannelTag,
     apiClientId: config.apiClientId,
     tdsClientId: config.tdsClientId,
     tunnelClientId: config.tunnelClientId,
@@ -74,6 +92,7 @@ export function evaluateEnvironmentProtection(config = loadRuntimeConfig()) {
   );
   const approvedTunnel = Boolean(config.approvedTunnelEndpoint) && config.approvedTunnelEndpoint !== 'unset';
   const transmissionFlagEnabled = config.efileTransmissionEnabled === true;
+  const channel = config.releaseChannel || resolveChannelFromEnv();
 
   const reasons = [];
   if (!isProduction) reasons.push(`Environment "${appEnv}" is not a production environment.`);
@@ -89,6 +108,13 @@ export function evaluateEnvironmentProtection(config = loadRuntimeConfig()) {
     release: PLATFORM_IDENTITY.release,
     positioning: PLATFORM_IDENTITY.positioning,
     grade: PLATFORM_IDENTITY.grade,
+    releaseChannel: {
+      id: channel.id,
+      tag: channel.tag,
+      description: channel.description,
+      productionReady: channel.productionReady,
+      stability: channel.stability
+    },
     appEnv,
     environment: isProduction ? 'production' : appEnv,
     protected: !transmissionAllowed,
@@ -284,3 +310,14 @@ export {
   buildServiceCliMap,
   platformRegistrySummary
 } from './registry.mjs';
+
+export {
+  RELEASE_LINE,
+  RELEASE_CHANNELS,
+  DEFAULT_RELEASE_CHANNEL,
+  listReleaseChannels,
+  resolveReleaseChannel,
+  resolveChannelFromEnv,
+  describeReleaseChannel,
+  buildReleaseManifest
+};

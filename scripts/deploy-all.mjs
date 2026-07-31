@@ -8,10 +8,12 @@
 import { spawn } from 'node:child_process';
 import process from 'node:process';
 import { PLATFORM_SERVICES } from '../packages/platform-core/src/registry.mjs';
+import { resolveChannelFromEnv } from '../packages/platform-core/src/release-channels.mjs';
 
 const root = process.cwd();
 const smoke = process.argv.includes('--smoke');
 const appEnv = process.env.APP_ENV || 'local';
+const releaseChannel = resolveChannelFromEnv();
 
 const services = PLATFORM_SERVICES.map((service) => ({
   name: service.name,
@@ -76,7 +78,9 @@ function shutdown(code) {
 }
 
 async function main() {
-  console.log(`▶ Deploying all RTPSC platform components (APP_ENV=${appEnv})…\n`);
+  console.log(
+    `▶ Deploying all RTPSC platform components (APP_ENV=${appEnv}, channel=${releaseChannel.tag})…\n`
+  );
   [...services, ...workers].forEach(launch);
 
   const results = await Promise.all(services.map(async (service) => ({ service, healthy: await waitHealthy(service) })));

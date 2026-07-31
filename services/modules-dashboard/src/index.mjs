@@ -6,12 +6,16 @@ import {
   evaluateEnvironmentProtection,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
-  redactConfig
+  redactConfig,
+  listReleaseChannels,
+  describeReleaseChannel,
+  resolveChannelFromEnv
 } from '../../../packages/platform-core/src/index.mjs';
 import { answerQuery, buildDependencyGraph, buildInsights } from '../../../packages/module-advisor/src/index.mjs';
 import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor, SERVICE_ENDPOINTS, buildRouteRegistry } from './catalog.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const DEFAULT_PORT = 3010;
 
 export const dashboardDescriptor = modulesDashboardDescriptor;
@@ -156,6 +160,23 @@ export function createDashboardServer() {
 
     if (request.method === 'GET' && pathname === '/api/routes') {
       sendJson(response, 200, buildRouteRegistry());
+      return;
+    }
+
+    if (request.method === 'GET' && pathname === '/api/release') {
+      const channel = resolveChannelFromEnv();
+      let active = null;
+      try {
+        active = JSON.parse(await readFile(path.join(repoRoot, 'build/active-release.json'), 'utf8'));
+      } catch {
+        active = null;
+      }
+      sendJson(response, 200, {
+        identity: PLATFORM_IDENTITY,
+        active,
+        env: describeReleaseChannel(channel.id),
+        channels: listReleaseChannels()
+      });
       return;
     }
 
