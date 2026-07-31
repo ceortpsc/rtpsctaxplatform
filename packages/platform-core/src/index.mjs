@@ -2,13 +2,27 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadReleaseConfig, resolveChannel } from '../../../scripts/release-channel.mjs';
 import { serveDesignSystemAsset } from '../../ui-design-system/src/static.mjs';
+
+const releaseConfig = loadReleaseConfig();
+const releaseIdentity = resolveChannel(
+  releaseConfig,
+  process.env.RTPSC_RELEASE_CHANNEL ?? releaseConfig.defaultChannel
+);
 
 // Product identity for Ross Tax Pro Software Co (RTPSC).
 export const PLATFORM_IDENTITY = Object.freeze({
   company: 'Ross Tax Pro Software Co',
   application: 'Efile Transmission Software',
-  abbreviation: 'RTPSC'
+  abbreviation: 'RTPSC',
+  product: releaseConfig.product,
+  releaseLine: releaseConfig.majorMinor,
+  release: releaseIdentity.tag,
+  version: releaseIdentity.semanticVersion,
+  channel: releaseIdentity.id,
+  releaseDisplayName: releaseIdentity.displayName,
+  deploymentEnvironment: releaseIdentity.deploymentEnvironment
 });
 
 const defaultComplianceNotice = [
@@ -81,6 +95,9 @@ export function evaluateEnvironmentProtection(config = loadRuntimeConfig()) {
   return Object.freeze({
     company: PLATFORM_IDENTITY.company,
     application: PLATFORM_IDENTITY.application,
+    release: PLATFORM_IDENTITY.release,
+    version: PLATFORM_IDENTITY.version,
+    releaseChannel: PLATFORM_IDENTITY.channel,
     appEnv,
     environment: isProduction ? 'production' : appEnv,
     protected: !transmissionAllowed,
@@ -208,7 +225,13 @@ export function startHttpService({
 
     try {
       if (url.pathname === '/health' && request.method === 'GET') {
-        sendJson(response, 200, { status: 'ok', service: descriptor.name, environment: config.appEnv });
+        sendJson(response, 200, {
+          status: 'ok',
+          service: descriptor.name,
+          environment: config.appEnv,
+          release: PLATFORM_IDENTITY.release,
+          version: PLATFORM_IDENTITY.version
+        });
         return;
       }
       if (url.pathname === '/metadata' && request.method === 'GET') {

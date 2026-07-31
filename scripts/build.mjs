@@ -1,5 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import {
+  createReleaseManifest,
+  loadReleaseConfig
+} from './release-channel.mjs';
 
 const modules = [
   '../packages/platform-core/src/index.mjs',
@@ -80,15 +84,39 @@ const modules = [
   '../tools/rossco/src/index.mjs'
 ];
 
+const releaseConfig = loadReleaseConfig();
+const releaseChannel = process.env.RTPSC_RELEASE_CHANNEL ?? releaseConfig.defaultChannel;
+const releaseManifest = createReleaseManifest(releaseConfig, releaseChannel, {
+  commitSha: process.env.GITHUB_SHA,
+  sourceBranch: process.env.GITHUB_REF_NAME,
+  repository: process.env.GITHUB_REPOSITORY
+});
+
 const manifest = [];
 for (const modulePath of modules) {
   const imported = await import(new URL(modulePath, import.meta.url));
   manifest.push({ modulePath, exports: Object.keys(imported) });
 }
 
-await mkdir(path.join(process.cwd(), 'build'), { recursive: true });
+const buildDir = path.join(process.cwd(), 'build');
+await mkdir(buildDir, { recursive: true });
 await writeFile(
-  path.join(process.cwd(), 'build/platform-manifest.json'),
+  path.join(buildDir, 'platform-manifest.json'),
   `${JSON.stringify(manifest, null, 2)}\n`
 );
-console.log('Build scaffold verification passed.');
+await writeFile(
+  path.join(buildDir, 'release-manifest.json'),
+  `${JSON.stringify(releaseManifest, null, 2)}\n`
+);
+
+console.log(
+  JSON.stringify({
+    ok: true,
+    message: 'Build scaffold verification passed.',
+    moduleCount: manifest.length,
+    release: releaseManifest.tag,
+    version: releaseManifest.semanticVersion,
+    releaseManifest: 'build/release-manifest.json',
+    externalRuntimeDeploymentClaimed: false
+  })
+);
