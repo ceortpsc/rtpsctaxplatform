@@ -5,9 +5,11 @@ import path from 'node:path';
 import {
   createServiceDescriptor,
   evaluateEnvironmentProtection,
+  getPlatformRelease,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
-  redactConfig
+  redactConfig,
+  releaseMetadataBlock
 } from '../../../packages/platform-core/src/index.mjs';
 import {
   createEnrollment,
@@ -117,6 +119,7 @@ export function createEnrollmentServer() {
       if (request.method === 'GET' && pathname === '/metadata') {
         return sendJson(response, 200, {
           identity: PLATFORM_IDENTITY,
+          release: releaseMetadataBlock(getPlatformRelease()),
           service: enrollmentDescriptor,
           runtime: redactConfig(config),
           provider: SBTPG_PROVIDER,

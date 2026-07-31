@@ -5,9 +5,11 @@ import { fileURLToPath } from 'node:url';
 import {
   createServiceDescriptor,
   evaluateEnvironmentProtection,
+  getPlatformRelease,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
   redactConfig,
+  releaseMetadataBlock,
   sendJson
 } from '../../../packages/platform-core/src/index.mjs';
 import {
@@ -81,6 +83,7 @@ export function createStaffPortalServer() {
       if (request.method === 'GET' && pathname === '/metadata') {
         return sendJson(response, 200, {
           identity: PLATFORM_IDENTITY,
+          release: releaseMetadataBlock(getPlatformRelease()),
           service: staffPortalDescriptor,
           runtime: redactConfig(config),
           environmentProtection: evaluateEnvironmentProtection(config),

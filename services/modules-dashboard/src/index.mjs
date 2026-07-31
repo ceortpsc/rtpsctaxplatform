@@ -4,9 +4,11 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import {
   evaluateEnvironmentProtection,
+  getPlatformRelease,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
-  redactConfig
+  redactConfig,
+  releaseMetadataBlock
 } from '../../../packages/platform-core/src/index.mjs';
 import { answerQuery, buildDependencyGraph, buildInsights } from '../../../packages/module-advisor/src/index.mjs';
 import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor, SERVICE_ENDPOINTS } from './catalog.mjs';
@@ -113,6 +115,7 @@ export function createDashboardServer() {
     if (request.method === 'GET' && pathname === '/metadata') {
       sendJson(response, 200, {
         identity: PLATFORM_IDENTITY,
+        release: releaseMetadataBlock(getPlatformRelease()),
         service: dashboardDescriptor,
         runtime: redactConfig(config),
         environmentProtection: evaluateEnvironmentProtection(config),

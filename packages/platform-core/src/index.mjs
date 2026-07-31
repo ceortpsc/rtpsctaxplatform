@@ -3,6 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serveDesignSystemAsset } from '../../ui-design-system/src/static.mjs';
+import {
+  releaseMetadataBlock,
+  resolvePlatformReleaseSync
+} from '../../platform-version/src/index.mjs';
 
 // Product identity for Ross Tax Pro Software Co (RTPSC).
 export const PLATFORM_IDENTITY = Object.freeze({
@@ -10,6 +14,13 @@ export const PLATFORM_IDENTITY = Object.freeze({
   application: 'Efile Transmission Software',
   abbreviation: 'RTPSC'
 });
+
+/** Active v2.0 release channel metadata (override → env → stamp → default `dev`). */
+export function getPlatformRelease(overrides = {}) {
+  return resolvePlatformReleaseSync(overrides);
+}
+
+export { releaseMetadataBlock, resolvePlatformReleaseSync };
 
 const defaultComplianceNotice = [
   'No unauthorized access to IRS systems.',
@@ -194,8 +205,10 @@ export function startHttpService({
   onReady = null
 } = {}) {
   const config = loadRuntimeConfig({ servicePort: defaultPort });
+  const release = releaseMetadataBlock(getPlatformRelease());
   const payload = {
     identity: PLATFORM_IDENTITY,
+    release,
     service: descriptor,
     runtime: redactConfig(config),
     environmentProtection: evaluateEnvironmentProtection(config),
@@ -208,7 +221,12 @@ export function startHttpService({
 
     try {
       if (url.pathname === '/health' && request.method === 'GET') {
-        sendJson(response, 200, { status: 'ok', service: descriptor.name, environment: config.appEnv });
+        sendJson(response, 200, {
+          status: 'ok',
+          service: descriptor.name,
+          environment: config.appEnv,
+          release: { tag: release.tag, channel: release.channel, version: release.version }
+        });
         return;
       }
       if (url.pathname === '/metadata' && request.method === 'GET') {

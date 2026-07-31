@@ -1,7 +1,12 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { resolvePlatformRelease, stampPlatformRelease } from '../packages/platform-version/src/index.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const modules = [
+  '../packages/platform-version/src/index.mjs',
   '../packages/platform-core/src/index.mjs',
   '../packages/rtp-datastore/src/index.mjs',
   '../packages/sri-efin/src/index.mjs',
@@ -86,9 +91,36 @@ for (const modulePath of modules) {
   manifest.push({ modulePath, exports: Object.keys(imported) });
 }
 
-await mkdir(path.join(process.cwd(), 'build'), { recursive: true });
+await mkdir(path.join(root, 'build'), { recursive: true });
+
+// Preserve an existing stamped/env channel; refresh buildId on every build.
+const prior = await resolvePlatformRelease(root);
+const releaseStamp = await stampPlatformRelease(root, {
+  channel: prior.channel,
+  version: prior.version,
+  note: 'platform build',
+  requestedBy: process.env.USER || 'build'
+});
+const release = releaseStamp.release;
+
+const platformManifest = {
+  product: 'RTPSC Tax Platform',
+  release: {
+    version: release.version,
+    channel: release.channel,
+    tag: release.tag,
+    label: release.label,
+    stability: release.stability,
+    productionEligible: release.productionEligible,
+    buildId: release.buildId,
+    stampedAt: release.stampedAt
+  },
+  builtAt: new Date().toISOString(),
+  modules: manifest
+};
+
 await writeFile(
-  path.join(process.cwd(), 'build/platform-manifest.json'),
-  `${JSON.stringify(manifest, null, 2)}\n`
+  path.join(root, 'build/platform-manifest.json'),
+  `${JSON.stringify(platformManifest, null, 2)}\n`
 );
-console.log('Build scaffold verification passed.');
+console.log(`Build scaffold verification passed (${release.tag}, buildId=${releaseStamp.release.buildId}).`);

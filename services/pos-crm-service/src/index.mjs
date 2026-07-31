@@ -5,9 +5,11 @@ import path from 'node:path';
 import {
   createServiceDescriptor,
   evaluateEnvironmentProtection,
+  getPlatformRelease,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
-  redactConfig
+  redactConfig,
+  releaseMetadataBlock
 } from '../../../packages/platform-core/src/index.mjs';
 import { createCrmStore } from '../../../packages/crm-core/src/index.mjs';
 import { createPosStore } from '../../../packages/pos-core/src/index.mjs';
@@ -128,6 +130,7 @@ export function createPosCrmServer() {
       if (request.method === 'GET' && pathname === '/metadata') {
         return sendJson(response, 200, {
           identity: PLATFORM_IDENTITY,
+          release: releaseMetadataBlock(getPlatformRelease()),
           service: posCrmDescriptor,
           runtime: redactConfig(config),
           environmentProtection: evaluateEnvironmentProtection(config),

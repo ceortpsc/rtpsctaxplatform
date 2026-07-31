@@ -73,6 +73,12 @@ const requiredPaths = [
   'scripts/deploy-platform.mjs',
   'docs/platform-full-deploy.md',
   'docs/production-activation-automation.md',
+  'docs/platform-release-channels.md',
+  'config/release/channels.json',
+  'packages/platform-version/package.json',
+  'packages/platform-version/src/index.mjs',
+  'packages/platform-version/src/channels.mjs',
+  'packages/platform-version/bin/release.mjs',
   'packages/production-activation/package.json',
   'packages/production-activation/src/index.mjs',
   'packages/production-activation/bin/activate.mjs',
@@ -119,6 +125,7 @@ const requiredPaths = [
 const packageFiles = [
   'package.json',
   'packages/platform-core/package.json',
+  'packages/platform-version/package.json',
   'packages/rtp-datastore/package.json',
   'packages/sri-efin/package.json',
   'packages/client-config/package.json',
@@ -181,6 +188,7 @@ const criticalJsonFiles = [
   'aol.config.json',
   'rossco.config.json',
   'config/seo/ross.co.ownership.json',
+  'config/release/channels.json',
   'tools/ross-infinite/package.json',
   'RTPSC-package-lock.json',
   'RTPSC-footprints.json',
@@ -217,6 +225,25 @@ function assertLockfileShape(lock) {
   }
   if (!lock.stats || typeof lock.stats.workspaceCount !== 'number') {
     throw new Error('RTPSC-package-lock.json missing stats.workspaceCount.');
+  }
+}
+
+function assertReleaseChannelsShape(catalog) {
+  const required = ['alpha', 'beta', 'rc1', 'stable', 'lts', 'enterprise', 'dev', 'hotfix'];
+  if (catalog.baseVersion !== '2.0.0') {
+    throw new Error(`config/release/channels.json baseVersion must be "2.0.0" (got ${JSON.stringify(catalog.baseVersion)}).`);
+  }
+  if (!Array.isArray(catalog.channels)) {
+    throw new Error('config/release/channels.json must declare channels[].');
+  }
+  const ids = new Set(catalog.channels.map((ch) => ch.id));
+  for (const id of required) {
+    if (!ids.has(id)) throw new Error(`config/release/channels.json missing channel "${id}".`);
+  }
+  for (const ch of catalog.channels) {
+    if (!ch.tag || !String(ch.tag).startsWith('v2.0-')) {
+      throw new Error(`Channel ${ch.id} must use a v2.0-* tag (got ${JSON.stringify(ch.tag)}).`);
+    }
   }
 }
 
@@ -275,6 +302,9 @@ for (const relativePath of criticalJsonFiles) {
   }
   if (relativePath === '.cursor/environment.json') {
     assertEnvironmentShape(parsed);
+  }
+  if (relativePath === 'config/release/channels.json') {
+    assertReleaseChannelsShape(parsed);
   }
 }
 

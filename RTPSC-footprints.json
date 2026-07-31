@@ -1,10 +1,10 @@
 {
   "name": "rtpsctaxplatform",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-30T10:21:57.442Z",
-  "count": 64,
+  "createdAt": "2026-07-31T09:43:38.815Z",
+  "count": 65,
   "ok": true,
   "footprints": [
     {
@@ -315,6 +315,16 @@
       "footprint": "961bfb7ade63a768",
       "fingerprint": "961bfb7ade63a768",
       "integrity": "sha256-961bfb7ade63a7689d60c2112765530a020f28ff2d355b38742b55b7b31870a4",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/platform-version",
+      "version": "2.0.0",
+      "location": "packages/platform-version",
+      "sector": "packages",
+      "footprint": "ebab117afc369aec",
+      "fingerprint": "ebab117afc369aec",
+      "integrity": "sha256-ebab117afc369aeca8cb597909488d5c39dc1e4fb7696dff144ce3a6f0599b07",
       "status": "sealed"
     },
     {

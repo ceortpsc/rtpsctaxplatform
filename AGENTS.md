@@ -67,6 +67,32 @@ Concept extras: `aol commands`, `aol config`, `aol codes`, `aol api`,
 `aol copyright`, `aol doctor`, `aol graph`, `aol mail`, `aol whoami`,
 `rossco lifecycle|plan|scope|stage|verify|register|seo`.
 
+### v2.0 release channels
+
+Platform builds use named channels on base version `2.0.0` (`@rtp/platform-version`):
+
+| Channel | Tag | Meaning |
+|---------|-----|---------|
+| `alpha` | `v2.0-alpha` | Early unstable build |
+| `beta` | `v2.0-beta` | Feature-complete but not final |
+| `rc1` | `v2.0-rc1` | Release candidate |
+| `stable` | `v2.0-stable` | Final production build |
+| `lts` | `v2.0-lts` | Long-term support |
+| `enterprise` | `v2.0-enterprise` | Enterprise-grade build |
+| `dev` | `v2.0-dev` | Developer build (default) |
+| `hotfix` | `v2.0-hotfix` | Emergency patch |
+
+```bash
+./rtpsc release list
+./rtpsc release status
+./rtpsc release set beta
+./rtpsc release stamp stable
+./rtpsc version
+```
+
+Catalog: `config/release/channels.json`. Stamp: `build/platform-release.json`.
+Docs: `docs/platform-release-channels.md`. Env: `RTPSC_RELEASE_CHANNEL`, `RTPSC_VERSION`.
+
 ### Agent Build Engineering Team
 
 Use the Agent Build Engineering Team to inventory and assess **every**
