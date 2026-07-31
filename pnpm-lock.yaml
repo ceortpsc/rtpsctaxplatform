@@ -44,7 +44,11 @@ importers:
 
   packages/module-advisor: {}
 
-  packages/platform-core: {}
+  packages/platform-core:
+    dependencies:
+      '@rtp/release-core':
+        specifier: workspace:*
+        version: link:../release-core
 
   packages/pos-core: {}
 
