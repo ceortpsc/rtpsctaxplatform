@@ -68,3 +68,11 @@ test('Signal Era emblem and orbit motif exist', () => {
   assert.match(emblem, /Signal Era|signal/i);
   assert.match(emblem, /#0a7ea4|#1a9bc7/);
 });
+
+test('illustrations use Signal Era mist/signal (not cream/gold)', () => {
+  for (const file of ['empty-invoices.svg', 'access-denied.svg']) {
+    const svg = fs.readFileSync(path.join(pkgRoot, 'public/illustrations', file), 'utf8');
+    assert.doesNotMatch(svg, /#f8f2e2|#f1e8d2|#b8860b|#d4af37/i);
+    assert.match(svg, /#eef3f8|#0a7ea4|#0b1220/);
+  }
+});

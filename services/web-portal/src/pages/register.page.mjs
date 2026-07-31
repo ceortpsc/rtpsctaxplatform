@@ -27,6 +27,7 @@ export default {
       (tier) => `<option value="${esc(tier.key)}"${tier.key === data.tier ? ' selected="selected"' : ''}>${esc(tier.name)} (${esc(tier.price)})</option>`
     ).join('\n              ');
     return `      <section class="form-card">
+        <p class="eyebrow">Signal Era enrollment</p>
         <h1>Create a development account</h1>
         <p class="lede">Local registration is available only when <code>PORTAL_AUTH_MODE=local</code>. Passwords are scrypt-hashed and nothing is transmitted to the IRS.</p>
         <form class="stack-form" method="post" action="/api/register" data-api="/api/register" data-redirect="/account">

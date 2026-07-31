@@ -4,7 +4,7 @@ export const SITE = Object.freeze({
   name: 'Ross Tax Pro Software Co',
   product: 'Efile Transmission Software',
   short: 'RTPSC',
-  tagline: 'Signal-clear e-file transmission, refund intelligence, and operator tooling for the next era of tax tech.',
+  tagline: 'New-era e-file transmission, refund intelligence, and operator tooling — signal-clear from first viewport to XML rollout.',
   baseUrlEnv: 'PORTAL_PUBLIC_URL'
 });
 
@@ -108,7 +108,8 @@ export const SERVICE_TARGETS = Object.freeze([
 
 /** Documentation links surfaced on the /docs page. */
 export const DOC_LINKS = Object.freeze([
-  { title: 'Web Portal', href: 'https://github.com/ceortpsc/rtpsctaxplatform/blob/main/docs/web-portal.md' },
+  { title: 'Web Portal (XHTML/XML)', href: 'https://github.com/ceortpsc/rtpsctaxplatform/blob/main/docs/web-portal.md' },
+  { title: 'Signal Era Design System', href: 'https://github.com/ceortpsc/rtpsctaxplatform/blob/main/docs/design-system.md' },
   { title: 'Architecture', href: 'https://github.com/ceortpsc/rtpsctaxplatform/blob/main/docs/architecture.md' },
   { title: 'API Spec Overview', href: 'https://github.com/ceortpsc/rtpsctaxplatform/blob/main/docs/api-spec-overview.md' },
   { title: 'Engineering Standards', href: 'https://github.com/ceortpsc/rtpsctaxplatform/blob/main/docs/engineering-standards.md' },

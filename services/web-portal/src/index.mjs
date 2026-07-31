@@ -114,7 +114,29 @@ function wantsJson(request, body) {
   return body.isJson || String(request.headers.accept ?? '').includes('application/json') || request.headers['x-requested-with'] === 'fetch';
 }
 function render404() {
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta charset="utf-8" /><title>Not found · ${SITE.short}</title><link rel="stylesheet" href="/static/styles.css" /></head><body><main class="wrap"><section class="form-card"><h1>404 — not found</h1><p class="lede">That page does not exist.</p><a class="cta-btn" href="/">Back home</a></section></main></body></html>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Not found · ${SITE.short}</title>
+    <link rel="icon" type="image/svg+xml" href="/rtp-design/assets/emblem.svg" />
+    <link rel="stylesheet" href="/rtp-design/theme.css" />
+    <link rel="stylesheet" href="/rtp-design/components.css" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="wrap" id="main">
+      <section class="form-card">
+        <p class="eyebrow">Signal Era</p>
+        <h1>404 — not found</h1>
+        <p class="lede">That page does not exist on this XHTML portal.</p>
+        <a class="cta-btn block" href="/">Back home</a>
+      </section>
+    </main>
+  </body>
+</html>`;
 }
 
 export async function createPortalServer({ dbDir, persist = true, env = process.env, fetchImpl = globalThis.fetch } = {}) {
