@@ -58,8 +58,14 @@ export function designSystemStylesheets() {
     `${DESIGN_SYSTEM_PREFIX}/theme.css`,
     `${DESIGN_SYSTEM_PREFIX}/components.css`,
     `${DESIGN_SYSTEM_PREFIX}/shell.css`,
-    `${DESIGN_SYSTEM_PREFIX}/brand/brand.css`
+    `${DESIGN_SYSTEM_PREFIX}/brand/brand.css`,
+    `${DESIGN_SYSTEM_PREFIX}/product-experience.css`
   ];
+}
+
+/** Scripts for the shared product launcher and command palette. */
+export function designSystemScripts() {
+  return [`${DESIGN_SYSTEM_PREFIX}/product-tools.js`];
 }
 
 /** Brand logo download catalog (extensions required for Save-As / attachment). */
