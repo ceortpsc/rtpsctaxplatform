@@ -56,6 +56,7 @@ export function designSystemStylesheets() {
   return [
     `${DESIGN_SYSTEM_PREFIX}/theme.css`,
     `${DESIGN_SYSTEM_PREFIX}/components.css`,
-    `${DESIGN_SYSTEM_PREFIX}/shell.css`
+    `${DESIGN_SYSTEM_PREFIX}/shell.css`,
+    `${DESIGN_SYSTEM_PREFIX}/cosmetics.css`
   ];
 }
