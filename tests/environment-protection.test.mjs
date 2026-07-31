@@ -2,14 +2,23 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { evaluateEnvironmentProtection, loadRuntimeConfig, PLATFORM_IDENTITY } from '../packages/platform-core/src/index.mjs';
 
-test('platform identity is Ross Tax Pro Software Co / Efile Transmission Software', () => {
+test('platform identity is governed Ross Tax Pro Software Co v2.0-alpha', () => {
   assert.equal(PLATFORM_IDENTITY.company, 'Ross Tax Pro Software Co');
   assert.equal(PLATFORM_IDENTITY.application, 'Efile Transmission Software');
   assert.equal(PLATFORM_IDENTITY.abbreviation, 'RTPSC');
+  assert.equal(PLATFORM_IDENTITY.product, 'Ross Tax Pro Software Co Enterprise Tax Platform');
+  assert.equal(PLATFORM_IDENTITY.releaseLine, '2.0');
+  assert.equal(PLATFORM_IDENTITY.release, 'v2.0-alpha');
+  assert.equal(PLATFORM_IDENTITY.version, '2.0.0-alpha.0');
+  assert.equal(PLATFORM_IDENTITY.channel, 'alpha');
+  assert.equal(PLATFORM_IDENTITY.deploymentEnvironment, 'alpha');
 });
 
 test('local environment is protected and blocks transmission by default', () => {
   const result = evaluateEnvironmentProtection(loadRuntimeConfig({ appEnv: 'local' }));
+  assert.equal(result.release, 'v2.0-alpha');
+  assert.equal(result.version, '2.0.0-alpha.0');
+  assert.equal(result.releaseChannel, 'alpha');
   assert.equal(result.protected, true);
   assert.equal(result.transmissionAllowed, false);
   assert.ok(result.reasons.some((r) => /not a production environment/.test(r)));
