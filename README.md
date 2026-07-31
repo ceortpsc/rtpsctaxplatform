@@ -265,6 +265,30 @@ Modular engineering packages fully integrated with the existing operating stack:
 REST highlights: `GET/POST /api/contacts`, `POST /api/pos/sessions` → `/items` → `/checkout`,
 `GET/POST /api/sbtpg/traces`, `POST /api/ero/phrases`, `POST /api/ero/intelligence`.
 
+## Web Portal — multi-page XHTML/XML + SRI-EFIN onboarding
+
+`services/web-portal` (port **3011**) is a public **multi-page site** built with a
+Next.js-style file-based page router (Node built-ins only — no npm framework). It
+serves **XHTML** pages (`application/xhtml+xml`) plus **XML** machine surfaces
+(`/sitemap.xml`, `/feed.xml`, `/opensearch.xml`, `/robots.txt`) and wires routes,
+CTAs, and APIs to real registration and EFIN onboarding.
+
+```bash
+./rtpsc start web-portal    # http://localhost:3011  (aliases: portal, web)
+```
+
+- Pages: `/`, `/platform`, `/pricing`, `/register`, `/signin`, `/account`,
+  `/efin`, `/status`, `/docs`.
+- **Secure Registration & Identity (SRI):** `/register` + `/signin` create/verify
+  accounts (scrypt-hashed passwords, `HttpOnly` session cookie), persisted via
+  the new **`@rtp/rtp-datastore`** file-backed **DB instances** (`logs/db/portal`).
+- **SRI-EFIN scaffolding** (`packages/sri-efin`): `/efin` registers IRS Authorized
+  e-file Provider identities — validates EFIN (6 digits) / ETIN (5 digits), models
+  provider roles + a fail-safe suitability lifecycle, stores EFINs **masked**.
+  Scaffold only — no real IRS e-Services calls.
+
+Details: [`docs/web-portal.md`](docs/web-portal.md).
+
 ## Deployment Assist & Development Team
 
 A virtual **deployment-assist and development team** ships as developer/deployment tooling under

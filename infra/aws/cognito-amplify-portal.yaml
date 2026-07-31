@@ -1,0 +1,180 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Ross Tax Pro Software Co portal authentication and optional Amplify front-door hosting.
+  Cognito uses authorization-code flow with PKCE and no app-client secret.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: staging
+    AllowedValues: [development, staging, production]
+  DomainPrefix:
+    Type: String
+    Description: Globally unique Cognito managed-login domain prefix.
+    AllowedPattern: '^[a-z0-9-]{3,63}$'
+  CallbackUrl:
+    Type: String
+    Description: Exact portal callback URL, for example https://portal.example.com/auth/callback
+  LogoutUrl:
+    Type: String
+    Description: Exact post-logout URL.
+  CreateAmplifyApp:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+  RepositoryUrl:
+    Type: String
+    Default: https://github.com/ceortpsc/rtpsctaxplatform
+  RepositoryAccessToken:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: GitHub access token used only when CreateAmplifyApp is true. Supply from a secret source.
+  BranchName:
+    Type: String
+    Default: main
+  PortalApiBaseUrl:
+    Type: String
+    Default: ''
+    Description: HTTPS base URL of the stateful web-portal service.
+
+Conditions:
+  CreateAmplify: !Equals [!Ref CreateAmplifyApp, 'true']
+
+Resources:
+  PortalUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub rtpsc-portal-${EnvironmentName}
+      UsernameAttributes: [email]
+      AutoVerifiedAttributes: [email]
+      MfaConfiguration: OPTIONAL
+      EnabledMfas: [SOFTWARE_TOKEN_MFA]
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          TemporaryPasswordValidityDays: 3
+      UserPoolAddOns:
+        AdvancedSecurityMode: ENFORCED
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate: [email]
+      DeletionProtection: ACTIVE
+      Tags:
+        Application: RTPSC
+        Environment: !Ref EnvironmentName
+        DataClassification: Restricted
+
+  PortalUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub rtpsc-portal-${EnvironmentName}
+      UserPoolId: !Ref PortalUserPool
+      GenerateSecret: false
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows: [code]
+      AllowedOAuthScopes: [openid, email, profile]
+      CallbackURLs: [!Ref CallbackUrl]
+      LogoutURLs: [!Ref LogoutUrl]
+      SupportedIdentityProviders: [COGNITO]
+      AccessTokenValidity: 15
+      IdTokenValidity: 15
+      RefreshTokenValidity: 1
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  PortalUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Ref DomainPrefix
+      UserPoolId: !Ref PortalUserPool
+      ManagedLoginVersion: 2
+
+  AmplifyApp:
+    Type: AWS::Amplify::App
+    Condition: CreateAmplify
+    Properties:
+      Name: !Sub rtpsc-portal-${EnvironmentName}
+      Description: RTPSC authenticated portal front door
+      Repository: !Ref RepositoryUrl
+      AccessToken: !Ref RepositoryAccessToken
+      EnableBranchAutoDeletion: true
+      EnvironmentVariables:
+        - Name: PORTAL_API_BASE_URL
+          Value: !Ref PortalApiBaseUrl
+        - Name: COGNITO_REGION
+          Value: !Ref AWS::Region
+        - Name: COGNITO_USER_POOL_ID
+          Value: !Ref PortalUserPool
+        - Name: COGNITO_CLIENT_ID
+          Value: !Ref PortalUserPoolClient
+        - Name: COGNITO_DOMAIN
+          Value: !Sub https://${DomainPrefix}.auth.${AWS::Region}.amazoncognito.com
+        - Name: COGNITO_CALLBACK_URL
+          Value: !Ref CallbackUrl
+        - Name: COGNITO_LOGOUT_URL
+          Value: !Ref LogoutUrl
+      BuildSpec: |
+        version: 1
+        frontend:
+          phases:
+            build:
+              commands:
+                - node scripts/build-amplify-portal.mjs
+          artifacts:
+            baseDirectory: build/amplify-portal
+            files:
+              - '**/*'
+          cache:
+            paths: []
+      CustomHeaders: |
+        customHeaders:
+          - pattern: '**/*'
+            headers:
+              - key: Strict-Transport-Security
+                value: max-age=31536000; includeSubDomains
+              - key: X-Content-Type-Options
+                value: nosniff
+              - key: Referrer-Policy
+                value: no-referrer
+              - key: Content-Security-Policy
+                value: "default-src 'self'; connect-src 'self' https:; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https:"
+
+  AmplifyBranch:
+    Type: AWS::Amplify::Branch
+    Condition: CreateAmplify
+    Properties:
+      AppId: !GetAtt AmplifyApp.AppId
+      BranchName: !Ref BranchName
+      EnableAutoBuild: true
+      EnablePullRequestPreview: false
+      Stage: PRODUCTION
+
+Outputs:
+  UserPoolId:
+    Value: !Ref PortalUserPool
+  UserPoolClientId:
+    Value: !Ref PortalUserPoolClient
+  CognitoDomain:
+    Value: !Sub https://${DomainPrefix}.auth.${AWS::Region}.amazoncognito.com
+  CognitoIssuer:
+    Value: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${PortalUserPool}
+  AmplifyAppId:
+    Condition: CreateAmplify
+    Value: !GetAtt AmplifyApp.AppId
+  AmplifyDefaultDomain:
+    Condition: CreateAmplify
+    Value: !GetAtt AmplifyApp.DefaultDomain

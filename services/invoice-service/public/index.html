@@ -3,68 +3,84 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Invoicing Machine · RTPSC</title>
+    <title>Invoices · RTPSC</title>
+    <link rel="icon" href="/rtp-design/assets/emblem.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/rtp-design/theme.css" />
+    <link rel="stylesheet" href="/rtp-design/components.css" />
+    <link rel="stylesheet" href="/rtp-design/shell.css" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">RTPSC</span>
-        <span class="brand-sub">Invoicing Machine · Operations</span>
+    <a class="rtp-skip-link" href="#main-content">Skip to main content</a>
+    <div class="bg-decor" aria-hidden="true">
+      <img class="decor-rosette decor-rosette--tr" src="/rtp-design/assets/guilloche.svg" alt="" />
+    </div>
+
+    <header class="topbar rtp-topbar">
+      <div class="topbar-lead rtp-topbar__lead">
+        <p class="rtp-page-category">Financial Operations</p>
+        <h1 class="view-title rtp-topbar__title">Invoices</h1>
+        <p class="view-kicker rtp-topbar__kicker">Create, approve, deliver, collect, and reconcile professional-service invoices.</p>
       </div>
-      <div class="provider">State &amp; county/parish tax · AI data entry · PDF / receipt paper</div>
+      <div class="topbar-right rtp-topbar__actions">
+        <a class="rtp-btn rtp-btn--secondary rtp-btn--sm" href="http://localhost:3012">Staff Portal</a>
+        <button class="rtp-icon-btn icon-btn" id="rtp-theme-toggle" type="button" title="Toggle dark theme">◐</button>
+      </div>
     </header>
 
-    <main class="wrap">
-      <section class="banner">
-        Full-fledged invoicing for tax-prep operations: AI-assisted entry, jurisdiction tax math,
-        payment approval &amp; confirmation, export to PDF and thermal receipt paper.
+    <main class="wrap rtp-workspace" id="main-content">
+      <section class="rtp-banner banner">
+        Full invoicing for tax-prep operations: AI-assisted entry, jurisdiction tax math,
+        payment approval and confirmation, export to PDF and thermal receipt paper.
       </section>
+
+      <div class="rtp-page-actions actions" style="margin-top:0">
+        <button type="button" id="createBtn" class="primary-btn rtp-btn rtp-btn--primary">Create invoice</button>
+        <button type="button" id="assistBtn" class="secondary-btn rtp-btn rtp-btn--secondary">Run AI assist</button>
+      </div>
 
       <section class="grid">
         <div class="col">
-          <h2>1 · AI-assisted data entry</h2>
-          <div class="field">
-            <label>Describe the job (natural language)</label>
-            <textarea id="assistText" rows="3" placeholder="e.g. 2 hours consultation and 1040 prep for Jordan Ellis in Orleans Parish LA $400"></textarea>
+          <h2>AI-assisted data entry</h2>
+          <div class="field rtp-field">
+            <label class="rtp-label">Describe the job (natural language)</label>
+            <textarea id="assistText" class="rtp-textarea" rows="3" placeholder="e.g. 2 hours consultation and 1040 prep for Jordan Ellis in Orleans Parish LA $400"></textarea>
           </div>
-          <button type="button" id="assistBtn" class="secondary-btn">Run AI assist</button>
           <div id="assistOut" class="assist-out" hidden></div>
 
-          <h2>2 · Client &amp; jurisdiction</h2>
-          <div class="field"><label>Client name</label><input id="clientName" value="" placeholder="Jordan Ellis" /></div>
-          <div class="field"><label>Email</label><input id="email" type="email" value="" placeholder="client@example.com" /></div>
-          <div class="row2">
-            <div class="field">
-              <label>State</label>
-              <select id="state"></select>
+          <h2>Client and jurisdiction</h2>
+          <div class="field rtp-field"><label class="rtp-label">Client name</label><input id="clientName" class="rtp-input" placeholder="Jordan Ellis" /></div>
+          <div class="field rtp-field"><label class="rtp-label">Email</label><input id="email" class="rtp-input" type="email" placeholder="client@example.com" /></div>
+          <div class="row2 rtp-row">
+            <div class="field rtp-field">
+              <label class="rtp-label">State</label>
+              <select id="state" class="rtp-select"></select>
             </div>
-            <div class="field">
-              <label id="localityLabel">County / Parish</label>
-              <select id="locality"></select>
+            <div class="field rtp-field">
+              <label class="rtp-label" id="localityLabel">County / Parish</label>
+              <select id="locality" class="rtp-select"></select>
             </div>
           </div>
           <div id="taxPreview" class="tax-preview">Select a jurisdiction to preview tax rate.</div>
 
-          <h2>3 · Line items</h2>
+          <h2>Line items</h2>
           <div id="lines" class="lines"></div>
-          <button type="button" id="addLine" class="ghost-btn">+ Add line</button>
+          <button type="button" id="addLine" class="ghost-btn rtp-btn rtp-btn--tertiary">Add line item</button>
         </div>
 
         <div class="col">
-          <h2>4 · Create &amp; operate</h2>
-          <div class="field"><label>Notes</label><textarea id="notes" rows="2" placeholder="Optional operations notes"></textarea></div>
-          <div class="totals" id="totals">Totals appear after create / assist.</div>
-          <div class="actions">
-            <button type="button" id="createBtn" class="primary-btn">Create invoice</button>
-            <button type="button" id="submitBtn" class="secondary-btn" disabled>Submit for approval</button>
-            <button type="button" id="approveBtn" class="secondary-btn" disabled>Approve</button>
-            <button type="button" id="payBtn" class="primary-btn" disabled>Record payment</button>
+          <h2>Create and operate</h2>
+          <div class="field rtp-field"><label class="rtp-label">Notes</label><textarea id="notes" class="rtp-textarea" rows="2" placeholder="Optional operations notes"></textarea></div>
+          <div class="totals rtp-card" id="totals">Totals appear after create or assist.</div>
+          <div class="actions rtp-page-actions">
+            <button type="button" id="submitBtn" class="secondary-btn rtp-btn rtp-btn--secondary" disabled>Submit for approval</button>
+            <button type="button" id="approveBtn" class="secondary-btn rtp-btn rtp-btn--secondary" disabled>Approve invoice</button>
+            <button type="button" id="payBtn" class="primary-btn rtp-btn rtp-btn--primary" disabled>Record payment</button>
           </div>
-          <div class="pay-row" id="payRow" hidden>
-            <div class="field">
-              <label>Payment method</label>
-              <select id="payMethod">
+          <div class="pay-row rtp-row" id="payRow" hidden>
+            <div class="field rtp-field">
+              <label class="rtp-label">Payment method</label>
+              <select id="payMethod" class="rtp-select">
                 <option value="card">Card</option>
                 <option value="cash">Cash</option>
                 <option value="check">Check</option>
@@ -72,13 +88,13 @@
                 <option value="other">Other</option>
               </select>
             </div>
-            <div class="field"><label>Reference</label><input id="payRef" placeholder="Auth / check #" /></div>
+            <div class="field rtp-field"><label class="rtp-label">Reference</label><input id="payRef" class="rtp-input" placeholder="Auth or check number" /></div>
           </div>
           <div id="result" class="result" hidden></div>
           <div class="exports" id="exports" hidden>
-            <a id="pdfLink" href="#" target="_blank">Download invoice PDF</a>
-            <a id="receiptPdfLink" href="#" target="_blank">Download receipt PDF</a>
-            <a id="receiptTxtLink" href="#" target="_blank">Download receipt paper (.txt)</a>
+            <a id="pdfLink" href="#" target="_blank" rel="noopener">Download invoice PDF</a>
+            <a id="receiptPdfLink" href="#" target="_blank" rel="noopener">Download receipt PDF</a>
+            <a id="receiptTxtLink" href="#" target="_blank" rel="noopener">Download receipt paper (.txt)</a>
           </div>
 
           <h2>Service catalog</h2>
@@ -88,11 +104,14 @@
 
       <section>
         <h2>Recent invoices</h2>
-        <div id="invoiceList" class="invoice-list">None yet.</div>
+        <div class="rtp-table-wrap">
+          <div id="invoiceList" class="invoice-list rtp-table-empty">No invoices yet. Create your first invoice above.</div>
+        </div>
       </section>
     </main>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast rtp-toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/rtp-design/shell.js" defer></script>
     <script src="/app.js"></script>
   </body>
 </html>

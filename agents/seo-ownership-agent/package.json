@@ -1,0 +1,8 @@
+{
+  "name": "@rtp/seo-ownership-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs",
+  "description": "ROSS.CO Infinite SEO Ownership and Search Console control-plane agent"
+}

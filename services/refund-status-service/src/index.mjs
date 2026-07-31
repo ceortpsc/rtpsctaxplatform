@@ -11,6 +11,7 @@ import {
 } from '../../../packages/platform-core/src/index.mjs';
 import { createRefundStore } from '../../../packages/refund-core/src/index.mjs';
 import { createClientRegistry, extractClientCredentials } from '../../../packages/client-identity/src/index.mjs';
+import { serveDesignSystemAsset } from '../../../packages/ui-design-system/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3001;
@@ -212,6 +213,8 @@ export function createRefundStatusServer({ registry, store } = {}) {
       if (request.method === 'GET' && pathname === '/api/events') {
         return sendJson(response, 200, { events: refunds.listEvents() });
       }
+
+      if (serveDesignSystemAsset(response, pathname)) return;
 
       if (request.method === 'GET') return serveStatic(response, pathname);
       sendJson(response, 405, { error: 'method_not_allowed', method: request.method, path: pathname });

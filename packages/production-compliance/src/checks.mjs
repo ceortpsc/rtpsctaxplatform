@@ -9,7 +9,12 @@ const DEFAULT_LIVE_ENDPOINTS = Object.freeze([
   { id: 'refund-status', url: 'http://127.0.0.1:3001/health' },
   { id: 'transcript', url: 'http://127.0.0.1:3002/health' },
   { id: 'analytics', url: 'http://127.0.0.1:3003/health' },
-  { id: 'irs-gateway', url: 'http://127.0.0.1:8820/health' }
+  { id: 'enrollment', url: 'http://127.0.0.1:3004/health' },
+  { id: 'invoice', url: 'http://127.0.0.1:3005/health' },
+  { id: 'pos-crm', url: 'http://127.0.0.1:3006/health' },
+  { id: 'modules-dashboard', url: 'http://127.0.0.1:3010/health' },
+  { id: 'irs-gateway', url: 'http://127.0.0.1:8820/health' },
+  { id: 'ai-workforce-hub', url: 'http://127.0.0.1:8860/health' }
 ]);
 
 async function exists(root, relativePath) {

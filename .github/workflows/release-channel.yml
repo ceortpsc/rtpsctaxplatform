@@ -1,0 +1,147 @@
+name: release-channel
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Release channel to validate or publish
+        required: true
+        type: choice
+        default: alpha
+        options:
+          - dev
+          - alpha
+          - beta
+          - rc1
+          - stable
+          - lts
+          - enterprise
+          - hotfix
+      ref:
+        description: Branch, tag, or commit SHA to release
+        required: true
+        default: main
+        type: string
+      publish:
+        description: Create the immutable Git tag and GitHub release after validation
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.channel }}-${{ inputs.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      channel: ${{ steps.release.outputs.channel }}
+      tag: ${{ steps.release.outputs.tag }}
+      semantic_version: ${{ steps.release.outputs.semantic_version }}
+      display_name: ${{ steps.release.outputs.display_name }}
+      deployment_environment: ${{ steps.release.outputs.deployment_environment }}
+      prerelease: ${{ steps.release.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Resolve release channel
+        id: release
+        shell: bash
+        run: node scripts/release-channel.mjs github-output "${{ inputs.channel }}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate release registry
+        run: node scripts/release-channel.mjs validate
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Reject existing tag
+        shell: bash
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${{ steps.release.outputs.tag }}" >/dev/null 2>&1; then
+            echo "Tag ${{ steps.release.outputs.tag }} already exists and will not be moved." >&2
+            exit 1
+          fi
+
+      - name: Generate release manifest
+        env:
+          GITHUB_REF_NAME: ${{ inputs.ref }}
+        run: node scripts/release-channel.mjs manifest "${{ inputs.channel }}" --output "build/releases/${{ steps.release.outputs.tag }}.json"
+
+      - name: Upload release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.release.outputs.tag }}-evidence
+          path: |
+            build/releases/${{ steps.release.outputs.tag }}.json
+            docs/releases/v2.0-release-channels.md
+          if-no-files-found: error
+          retention-days: 90
+
+  publish:
+    needs: validate
+    permissions:
+      contents: write
+    if: ${{ inputs.publish }}
+    runs-on: ubuntu-latest
+    environment: release-${{ needs.validate.outputs.deployment_environment }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Configure release identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create immutable annotated tag
+        run: |
+          git tag -a "${{ needs.validate.outputs.tag }}" -m "${{ needs.validate.outputs.display_name }} (${{ needs.validate.outputs.semantic_version }})"
+          git push origin "refs/tags/${{ needs.validate.outputs.tag }}"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          args=(
+            "${{ needs.validate.outputs.tag }}"
+            --verify-tag
+            --title "${{ needs.validate.outputs.display_name }} — ${{ needs.validate.outputs.tag }}"
+            --notes-file docs/releases/v2.0-release-channels.md
+          )
+          if [[ "${{ needs.validate.outputs.prerelease }}" == "true" ]]; then
+            args+=(--prerelease)
+          fi
+          gh release create "${args[@]}"
