@@ -31,7 +31,14 @@ const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8'
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon'
 };
 
 function sendJson(response, statusCode, body) {
@@ -214,7 +221,7 @@ export function createRefundStatusServer({ registry, store } = {}) {
         return sendJson(response, 200, { events: refunds.listEvents() });
       }
 
-      if (serveDesignSystemAsset(response, pathname)) return;
+      if (serveDesignSystemAsset(response, request.url || pathname)) return;
 
       if (request.method === 'GET') return serveStatic(response, pathname);
       sendJson(response, 405, { error: 'method_not_allowed', method: request.method, path: pathname });

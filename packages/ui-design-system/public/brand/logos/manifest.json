@@ -1,0 +1,26 @@
+{
+  "product": "RTPSC",
+  "kind": "brand-logo-assets",
+  "motif": "signal-era-constellation",
+  "generatedAt": "2026-07-31T10:35:13.928Z",
+  "extensions": [
+    ".svg",
+    ".png",
+    ".ico"
+  ],
+  "files": [
+    "rtpsc-emblem-mark.ico",
+    "rtpsc-emblem-mark.png",
+    "rtpsc-emblem.svg",
+    "rtpsc-favicon.ico",
+    "rtpsc-favicon.png",
+    "rtpsc-lockup-stacked.svg",
+    "rtpsc-monogram-256.png",
+    "rtpsc-monogram.ico",
+    "rtpsc-monogram.png",
+    "rtpsc-monogram.svg",
+    "rtpsc-wordmark.png",
+    "rtpsc-wordmark.svg"
+  ],
+  "monogramPngSha12": "408a0b15b4e0"
+}

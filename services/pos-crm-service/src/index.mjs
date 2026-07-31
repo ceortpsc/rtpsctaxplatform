@@ -40,8 +40,14 @@ const CONTENT_TYPES = {
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
-  '.pdf': 'application/pdf',
-  '.txt': 'text/plain; charset=utf-8'
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.txt': 'text/plain; charset=utf-8',
+  '.pdf': 'application/pdf'
 };
 
 function sendJson(response, statusCode, body) {
@@ -393,7 +399,7 @@ export function createPosCrmServer() {
         }
       }
 
-      if (serveDesignSystemAsset(response, pathname)) return;
+      if (serveDesignSystemAsset(response, request.url || pathname)) return;
 
       if (request.method === 'GET') return serveStatic(response, pathname);
       sendJson(response, 405, { error: 'method_not_allowed', method: request.method, path: pathname });

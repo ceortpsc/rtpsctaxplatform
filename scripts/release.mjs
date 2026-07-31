@@ -36,8 +36,13 @@ async function ensurePlatformManifest() {
     await access(platformManifest);
     return platformManifest;
   } catch {
+    // Call the exported builder quietly so release CLI stdout stays pure JSON for CI parsers.
     const buildUrl = pathToFileURL(path.join(root, 'scripts', 'build.mjs')).href;
-    await import(buildUrl);
+    const mod = await import(buildUrl);
+    if (typeof mod.buildPlatform !== 'function') {
+      throw new Error('scripts/build.mjs must export buildPlatform()');
+    }
+    await mod.buildPlatform({ cwd: root, quiet: true });
     return platformManifest;
   }
 }

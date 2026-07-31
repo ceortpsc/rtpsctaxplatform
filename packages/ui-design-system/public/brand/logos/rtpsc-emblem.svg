@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="RTPSC Signal Era emblem">
+  <defs>
+    <linearGradient id="signalStroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4eb8d9" />
+      <stop offset="55%" stop-color="#0a7ea4" />
+      <stop offset="100%" stop-color="#064f6a" />
+    </linearGradient>
+    <linearGradient id="field" x1="0.2" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#1a2740" />
+      <stop offset="100%" stop-color="#0b1220" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square chassis -->
+  <rect x="14" y="14" width="172" height="172" rx="36" fill="url(#field)" stroke="url(#signalStroke)" stroke-width="3" />
+  <rect x="28" y="28" width="144" height="144" rx="28" fill="none" stroke="#1a9bc7" stroke-width="1.2" opacity="0.45" />
+
+  <!-- Signal node constellation -->
+  <g fill="none" stroke="url(#signalStroke)" stroke-width="2.2" stroke-linecap="round">
+    <path d="M56 128 L88 78 L112 108 L144 64" />
+    <path d="M88 78 L112 108" opacity="0.5" />
+  </g>
+  <g fill="#4eb8d9">
+    <circle cx="56" cy="128" r="6" />
+    <circle cx="88" cy="78" r="7" />
+    <circle cx="112" cy="108" r="6" />
+    <circle cx="144" cy="64" r="8" />
+  </g>
+
+  <!-- Monogram -->
+  <text x="100" y="162" text-anchor="middle" font-family="Syne, Bahnschrift, Segoe UI, sans-serif"
+    font-size="22" font-weight="800" letter-spacing="3" fill="#e8eef6">RTPSC</text>
+</svg>

@@ -23,9 +23,22 @@ language across operator and public surfaces. It replaces the rejected
 | `shell.css` | App shell, sidebar, topbar, responsive |
 | `shell.js` | Theme toggle, mobile nav, toasts |
 
-## Brand assets
+## Brand assets (Signal Era)
 
-`public/brand/logos/`, `public/illustrations/`, `public/patterns/`,
+Motif: **rising-signal constellation** on a graphite chassis — not generic letter tiles.
+
+`public/brand/logos/`, `public/brand/brand.css`, `public/illustrations/`, `public/patterns/`  
+Canonical copies: `assets/logos/`
+
+| Ext | MIME | Notes |
+|-----|------|-------|
+| `.svg` | `image/svg+xml` | Vector source (monogram, wordmark, stacked lockup) |
+| `.png` | `image/png` | Raster download (incl. 256px master) |
+| `.ico` | `image/x-icon` | Favicon |
+
+Force download (keeps extension): `/rtp-design/brand/logos/rtpsc-monogram.png?download=1`  
+Regenerate: `node scripts/generate-logo-assets.mjs` / `pnpm run logos:generate`  
+Kit UI: staff portal Design System + modules-dashboard Design System view.,
 `public/assets/{emblem,guilloche}.svg`
 
 ## Showcase

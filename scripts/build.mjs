@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const modules = [
   '../packages/platform-core/src/index.mjs',
@@ -87,15 +88,25 @@ const modules = [
   '../tools/rossco/src/index.mjs'
 ];
 
-const manifest = [];
-for (const modulePath of modules) {
-  const imported = await import(new URL(modulePath, import.meta.url));
-  manifest.push({ modulePath, exports: Object.keys(imported) });
+export async function buildPlatform({ cwd = process.cwd(), quiet = false } = {}) {
+  const manifest = [];
+  for (const modulePath of modules) {
+    const imported = await import(new URL(modulePath, import.meta.url));
+    manifest.push({ modulePath, exports: Object.keys(imported) });
+  }
+
+  await mkdir(path.join(cwd, 'build'), { recursive: true });
+  const outPath = path.join(cwd, 'build/platform-manifest.json');
+  await writeFile(outPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  if (!quiet) console.log('Build scaffold verification passed.');
+  return { manifest, outPath };
 }
 
-await mkdir(path.join(process.cwd(), 'build'), { recursive: true });
-await writeFile(
-  path.join(process.cwd(), 'build/platform-manifest.json'),
-  `${JSON.stringify(manifest, null, 2)}\n`
-);
-console.log('Build scaffold verification passed.');
+const isMain =
+  Boolean(process.argv[1]) && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+
+// Only auto-run when executed as a CLI entrypoint. Importers (e.g. release.mjs)
+// call buildPlatform({ quiet: true }) so their stdout can stay pure JSON for CI.
+if (isMain) {
+  await buildPlatform({ quiet: false });
+}
