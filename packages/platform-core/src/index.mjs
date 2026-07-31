@@ -2,13 +2,21 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { activeRelease } from '../../release-core/src/index.mjs';
 import { serveDesignSystemAsset } from '../../ui-design-system/src/static.mjs';
+
+const releaseIdentity = activeRelease();
 
 // Product identity for Ross Tax Pro Software Co (RTPSC).
 export const PLATFORM_IDENTITY = Object.freeze({
   company: 'Ross Tax Pro Software Co',
   application: 'Efile Transmission Software',
-  abbreviation: 'RTPSC'
+  abbreviation: 'RTPSC',
+  productLine: 'Platform v2.0',
+  release: releaseIdentity.tag,
+  version: releaseIdentity.semver,
+  channel: releaseIdentity.key,
+  displayName: `Ross Tax Pro Software Co Platform ${releaseIdentity.tag}`
 });
 
 const defaultComplianceNotice = [
@@ -81,6 +89,8 @@ export function evaluateEnvironmentProtection(config = loadRuntimeConfig()) {
   return Object.freeze({
     company: PLATFORM_IDENTITY.company,
     application: PLATFORM_IDENTITY.application,
+    release: PLATFORM_IDENTITY.release,
+    version: PLATFORM_IDENTITY.version,
     appEnv,
     environment: isProduction ? 'production' : appEnv,
     protected: !transmissionAllowed,
@@ -208,7 +218,12 @@ export function startHttpService({
 
     try {
       if (url.pathname === '/health' && request.method === 'GET') {
-        sendJson(response, 200, { status: 'ok', service: descriptor.name, environment: config.appEnv });
+        sendJson(response, 200, {
+          status: 'ok',
+          service: descriptor.name,
+          environment: config.appEnv,
+          release: PLATFORM_IDENTITY.release
+        });
         return;
       }
       if (url.pathname === '/metadata' && request.method === 'GET') {
