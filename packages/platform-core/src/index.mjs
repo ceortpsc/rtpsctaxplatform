@@ -8,6 +8,8 @@ export const PLATFORM_IDENTITY = Object.freeze({
   company: 'Ross Tax Pro Software Co',
   application: 'Efile Transmission Software',
   abbreviation: 'RTPSC',
+  version: '02.0V',
+  release: 'Ross Tax Pro Software Co 02.0V',
   positioning: 'The hierarchy of enterprise-grade tax pro software',
   grade: 'enterprise',
   market: 'tax-pro-software'
@@ -83,6 +85,8 @@ export function evaluateEnvironmentProtection(config = loadRuntimeConfig()) {
   return Object.freeze({
     company: PLATFORM_IDENTITY.company,
     application: PLATFORM_IDENTITY.application,
+    version: PLATFORM_IDENTITY.version,
+    release: PLATFORM_IDENTITY.release,
     positioning: PLATFORM_IDENTITY.positioning,
     grade: PLATFORM_IDENTITY.grade,
     appEnv,

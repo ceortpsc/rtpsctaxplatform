@@ -1,7 +1,7 @@
 {
   "name": "rtpsctaxplatform",
-  "version": "0.1.0",
-  "description": "Ross Tax Pro Software Co — Efile Transmission Software",
+  "version": "02.0V",
+  "description": "Ross Tax Pro Software Co 02.0V — Efile Transmission Software · hierarchy of enterprise-grade tax pro software",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.33.3",
