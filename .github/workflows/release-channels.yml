@@ -4,22 +4,30 @@ on:
   pull_request:
     paths:
       - 'packages/release-core/**'
+      - 'packages/platform-core/src/index.mjs'
       - 'scripts/release.mjs'
       - 'scripts/build.mjs'
       - 'bin/rtpsc.mjs'
       - 'package.json'
+      - 'pnpm-lock.yaml'
       - 'tests/release-channels.test.mjs'
+      - 'tests/cli.test.mjs'
+      - 'tests/environment-protection.test.mjs'
       - 'docs/releases/**'
       - '.github/workflows/release-channels.yml'
   push:
     branches: [main]
     paths:
       - 'packages/release-core/**'
+      - 'packages/platform-core/src/index.mjs'
       - 'scripts/release.mjs'
       - 'scripts/build.mjs'
       - 'bin/rtpsc.mjs'
       - 'package.json'
+      - 'pnpm-lock.yaml'
       - 'tests/release-channels.test.mjs'
+      - 'tests/cli.test.mjs'
+      - 'tests/environment-protection.test.mjs'
       - 'docs/releases/**'
       - '.github/workflows/release-channels.yml'
   workflow_dispatch:
@@ -55,17 +63,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: pnpm
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.33.3
           run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install workspace
         run: pnpm install --frozen-lockfile
