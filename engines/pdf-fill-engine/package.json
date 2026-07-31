@@ -1,0 +1,7 @@
+{
+  "name": "@rtp/pdf-fill-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic PDF form-fill engine (Node descriptor + Python scaffold)"
+}

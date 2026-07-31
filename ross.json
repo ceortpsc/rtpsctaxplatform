@@ -1,8 +1,9 @@
 {
   "name": "application",
-  "version": "0.1.0",
+  "version": "02.0V",
   "product": "Ross Tax Pro Software Co | RunTime AI Assist",
   "brand": "Ross Tax Pro Software Co",
+  "release": "Ross Tax Pro Software Co 02.0V",
   "runtime": {
     "python": ">=3.11",
     "entry": "ross.py",
@@ -25,5 +26,5 @@
       ".env.example"
     ]
   },
-  "rossVersion": "0.1.0"
+  "rossVersion": "02.0V"
 }

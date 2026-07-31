@@ -212,8 +212,10 @@ export function start(options = {}) {
 
   const server = http.createServer(async (request, response) => {
     response.setHeader('content-type', 'application/json; charset=utf-8');
+    const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
+    const pathname = url.pathname;
 
-    if (request.method === 'GET' && request.url === '/health') {
+    if (request.method === 'GET' && pathname === '/health') {
       response.writeHead(200);
       response.end(
         JSON.stringify({
@@ -225,13 +227,13 @@ export function start(options = {}) {
       return;
     }
 
-    if (request.method === 'GET' && request.url === '/metadata') {
+    if (request.method === 'GET' && pathname === '/metadata') {
       response.writeHead(200);
       response.end(JSON.stringify(payload, null, 2));
       return;
     }
 
-    if (request.method === 'POST' && request.url === '/irs/token') {
+    if (request.method === 'POST' && pathname === '/irs/token') {
       try {
         request.resume();
         const token = await requestIrsAccessToken(irs, { fetchImpl: options.fetchImpl });

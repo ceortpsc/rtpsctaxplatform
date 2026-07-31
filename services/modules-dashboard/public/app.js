@@ -101,6 +101,8 @@ const VIEW_META = {
   insights: { title: "Insights", kicker: "AI-assisted analysis & recommendations" },
   assistant: { title: "AI Assistant", kicker: "Ask the platform about its modules" },
   graph: { title: "Dependency Graph", kicker: "How the modules connect" },
+  routes: { title: "Routes", kicker: "Registered pages and API surfaces" },
+  status: { title: "System Status", kicker: "Live health across every service" },
   design: { title: "Design System", kicker: "The Signal Era visual language" }
 };
 
@@ -125,6 +127,7 @@ function render() {
   else if (state.view === "insights") renderInsights(view);
   else if (state.view === "assistant") view.appendChild(renderAssistant());
   else if (state.view === "graph") renderGraph(view);
+  else if (state.view === "routes") renderRoutes(view);
   else if (state.view === "design") renderDesign(view);
   else if (state.view === "status") renderStatus(view);
 }
@@ -935,6 +938,74 @@ function copyText(text, message) {
   } else {
     toast("Clipboard unavailable");
   }
+}
+
+/* ---------- Routes registry ---------- */
+async function renderRoutes(view) {
+  view.appendChild(el("p", { class: "empty", text: "Loading route registry…" }));
+  let data;
+  try {
+    data = await getJSON("/api/routes");
+  } catch (error) {
+    view.innerHTML = `<p class="empty">Failed to load routes: ${error.message}</p>`;
+    return;
+  }
+  view.innerHTML = "";
+
+  const totalRoutes = data.services.reduce((sum, s) => sum + (s.routes?.length || 0), 0);
+  const totalPages = data.services.reduce((sum, s) => sum + (s.pages?.length || 0), 0);
+  view.appendChild(
+    el("div", { class: "status-banner up reveal" }, [
+      document.createTextNode(
+        `${data.services.length} services · ${totalPages} pages · ${totalRoutes} registered routes`
+      )
+    ])
+  );
+
+  const list = el("div", { class: "route-list" });
+  for (const service of data.services) {
+    const card = el("article", { class: "module-card reveal" }, [
+      el("div", { class: "module-head" }, [
+        el("h3", { class: "module-name", text: service.service }),
+        el("span", { class: "tag", text: `:${service.port}` })
+      ]),
+      el(
+        "p",
+        {
+          class: "module-summary",
+          text: service.pages.length
+            ? `Pages: ${service.pages.join(", ")}`
+            : "API-only (no HTML page)"
+        }
+      ),
+      el(
+        "div",
+        { class: "tag-row" },
+        service.routes.map((route) => el("span", { class: "tag", text: route }))
+      ),
+      el("div", { class: "module-actions" }, [
+        el("a", {
+          class: "mini-btn",
+          href: `http://127.0.0.1:${service.port}/health`,
+          target: "_blank",
+          rel: "noopener",
+          text: "Health"
+        }),
+        service.pages.includes("/")
+          ? el("a", {
+              class: "mini-btn",
+              href: `http://127.0.0.1:${service.port}/`,
+              target: "_blank",
+              rel: "noopener",
+              text: "Open page"
+            })
+          : null
+      ])
+    ]);
+    list.appendChild(card);
+  }
+  view.appendChild(list);
+  animateReveal(view);
 }
 
 /* ---------- System Status ---------- */
