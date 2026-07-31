@@ -15,6 +15,9 @@ test('unknown command reports an error', () => {
 });
 
 test('core commands resolve to node spawn plans (no pnpm)', () => {
+  assert.match(planCommand(['version']).args.join(' '), /scripts\/release\.mjs current$/);
+  assert.match(planCommand(['release', 'list']).args.join(' '), /scripts\/release\.mjs list$/);
+  assert.match(planCommand(['release', 'build', 'all']).args.join(' '), /scripts\/release\.mjs build all$/);
   assert.match(planCommand(['lint']).args.join(' '), /scripts\/lint\.mjs$/);
   assert.deepEqual(planCommand(['test']).args, ['--test']);
   assert.match(planCommand(['build']).args.join(' '), /scripts\/build\.mjs$/);
@@ -50,11 +53,12 @@ test('agents subcommands pass through to scripts/agents.mjs', () => {
   assert.equal(planCommand(['agents']).args.some((a) => a === 'docs'), false);
 });
 
-test('usage lists the commands', () => {
+test('usage lists the commands and active v2 identity', () => {
   const usage = buildUsage();
-  for (const name of ['lint', 'test', 'build', 'deploy', 'deploy-full', 'activate', 'agents', 'canvas', 'cloud', 'workflow', 'clients']) {
+  for (const name of ['version', 'release', 'lint', 'test', 'build', 'deploy', 'deploy-full', 'activate', 'agents', 'canvas', 'cloud', 'workflow', 'clients']) {
     assert.ok(usage.includes(name), `usage should mention ${name}`);
   }
+  assert.match(usage, /Platform v2\.0-dev/);
 });
 
 test('activate command resolves to production-activation CLI', () => {
