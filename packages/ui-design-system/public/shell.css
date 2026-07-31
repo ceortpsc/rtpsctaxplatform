@@ -27,11 +27,14 @@ body {
   opacity: 0.7;
   animation: rtp-grid-drift 28s linear infinite;
 }
+.decor-orbit,
 .decor-rosette {
   position: absolute; width: 520px; height: 520px; opacity: 0.55;
   animation: rtp-float 10s ease-in-out infinite;
 }
+.decor-orbit--tr,
 .decor-rosette--tr { top: -160px; right: -140px; }
+.decor-orbit--bl,
 .decor-rosette--bl { bottom: -180px; left: -160px; animation-direction: reverse; opacity: 0.4; }
 
 /* ---- App grid ---- */

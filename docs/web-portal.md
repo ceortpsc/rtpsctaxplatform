@@ -58,17 +58,20 @@ production storage remains a milestone).
 
 ## 2. web-portal (`services/web-portal`, port 3011)
 
-Multi-page XHTML/XML site with a Next.js-style router.
+Multi-page XHTML/XML site with a Next.js-style router and **Signal Era**
+presentations (Sovereign Ledger cream · gold · serif is not approved).
 
 ### Pages (XHTML, `application/xhtml+xml`)
 
 `/` (home) · `/platform` · `/pricing` · `/register` · `/signin` · `/account`
-· `/efin` (EFIN onboarding) · `/status` (live service health) · `/docs`.
+· `/efin` (EFIN onboarding) · `/client-import` · `/status` · `/docs`.
 
 Each page is a module in `src/pages/<name>.page.mjs` exporting
 `{ route, title, description, getServerData?, render(data, ctx) }`. The router
 (`src/router.mjs`) discovers them at startup and renders through the shared XHTML
-layout (`src/layout.mjs`).
+layout (`src/layout.mjs`) plus presentation helpers (`src/presentations.mjs`:
+`pageIntro`, `featureRows`, `accessBand`, `workspacePanel`). Approved fixtures
+live in `assets/xhtml/`.
 
 ### XML / machine surfaces
 

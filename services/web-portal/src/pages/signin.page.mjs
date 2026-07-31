@@ -20,6 +20,7 @@ export default {
       </section>`;
     }
     return `      <section class="form-card">
+        <p class="eyebrow">Signal Era access</p>
         <h1>Development sign in</h1>
         <p class="lede">Local Secure Registration &amp; Identity credentials are enabled only for the development authentication mode.</p>
         <form class="stack-form" method="post" action="/api/signin" data-api="/api/signin" data-redirect="/account">
