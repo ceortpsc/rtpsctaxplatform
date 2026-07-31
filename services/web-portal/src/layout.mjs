@@ -1,10 +1,7 @@
-// XHTML document shell for the web portal. Output is well-formed XML served as
-// application/xhtml+xml. All dynamic text must pass through esc(); scripts and
-// JSON-LD are externalized or CDATA-wrapped so the XML stays well-formed.
+// XHTML document shell for the web portal. Dynamic text must pass through esc().
 
 import { SITE, NAV, baseUrl } from './content.mjs';
 
-/** Escape text for XML/XHTML text nodes and attribute values. */
 export function esc(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -14,7 +11,6 @@ export function esc(value) {
     .replace(/'/g, '&#39;');
 }
 
-/** Build a safe attribute string from a plain object. */
 export function attrs(map = {}) {
   return Object.entries(map)
     .filter(([, value]) => value !== undefined && value !== null && value !== false)
@@ -23,15 +19,10 @@ export function attrs(map = {}) {
 }
 
 function navMarkup(activePath) {
-  const links = NAV.map((item) => {
+  return NAV.map((item) => {
     const current = item.path === activePath;
-    const cls = current ? 'nav-link active' : 'nav-link';
-    return `<a class="${cls}" href="${esc(item.path)}"${current ? ' aria-current="page"' : ''}>${esc(item.label)}</a>`;
+    return `<a class="${current ? 'nav-link active' : 'nav-link'}" href="${esc(item.path)}"${current ? ' aria-current="page"' : ''}>${esc(item.label)}</a>`;
   }).join('\n          ');
-
-  return `<nav class="site-nav" aria-label="Primary">
-          ${links}
-        </nav>`;
 }
 
 function jsonLd(canonical) {
@@ -44,19 +35,20 @@ function jsonLd(canonical) {
     url: canonical,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }
   };
-  // CDATA keeps JSON (which may contain reserved chars) well-formed inside XHTML.
   return `<script type="application/ld+json">/*<![CDATA[*/${JSON.stringify(data)}/*]]>*/</script>`;
 }
 
-/**
- * Render a complete XHTML document.
- * @param {object} page
- * @param {string} page.title
- * @param {string} page.description
- * @param {string} page.body        Pre-rendered XHTML markup for <main>.
- * @param {string} page.activePath  Current route (for nav highlighting).
- * @param {object} [config]         Runtime config (for base URL).
- */
+function accessMarkup(page) {
+  if (page.session?.ok) {
+    return `<a class="cta-btn" href="/account">Open workspace</a>`;
+  }
+  if (page.auth?.enabled) {
+    if (!page.auth.configured) return `<span class="status blocked">Identity configuration required</span>`;
+    return `<a class="cta-btn" href="/auth/login?next=%2Faccount">Secure sign in</a>`;
+  }
+  return `<a class="cta-btn" href="/register">Get started</a>`;
+}
+
 export function renderDocument(page, config = {}) {
   const canonical = `${baseUrl(config)}${page.activePath === '/' ? '' : page.activePath}`;
   const title = `${page.title} · ${SITE.short}`;
@@ -82,14 +74,8 @@ export function renderDocument(page, config = {}) {
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="/">
-        <span class="brand-mark">${esc(SITE.short)}</span>
-        <span class="brand-sub">${esc(SITE.product)}</span>
-      </a>
-      <div class="top-right">
-        ${navMarkup(page.activePath)}
-        <a class="cta-btn" href="/register">Get started</a>
-      </div>
+      <a class="brand" href="/"><span class="brand-mark">${esc(SITE.short)}</span><span class="brand-sub">${esc(SITE.product)}</span></a>
+      <div class="top-right"><nav class="site-nav" aria-label="Primary">${navMarkup(page.activePath)}</nav>${accessMarkup(page)}</div>
     </header>
     <main class="wrap" id="main">
 ${page.body}
@@ -97,12 +83,7 @@ ${page.body}
     <footer class="site-footer">
       <div class="footer-inner">
         <span>${esc(SITE.name)} — ${esc(SITE.product)}</span>
-        <span class="footer-links">
-          <a href="/status">Status</a>
-          <a href="/docs">Docs</a>
-          <a href="/sitemap.xml">Sitemap</a>
-          <a href="/feed.xml">Feed</a>
-        </span>
+        <span class="footer-links"><a href="/status">Status</a><a href="/docs">Docs</a><a href="/sitemap.xml">Sitemap</a><a href="/feed.xml">Feed</a></span>
       </div>
     </footer>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
