@@ -113,7 +113,19 @@ const requiredPaths = [
   'packages/sri-efin/src/index.mjs',
   'services/web-portal/src/index.mjs',
   'services/web-portal/public/styles.css',
-  'services/web-portal/public/app.js'
+  'services/web-portal/public/app.js',
+  'assets/logos/README.md',
+  'assets/logos/manifest.json',
+  'assets/logos/rtpsc-monogram.svg',
+  'assets/logos/rtpsc-monogram.png',
+  'assets/logos/rtpsc-monogram.ico',
+  'assets/logos/rtpsc-wordmark.svg',
+  'assets/logos/rtpsc-wordmark.png',
+  'assets/logos/rtpsc-favicon.ico',
+  'assets/logos/rtpsc-lockup-stacked.svg',
+  'packages/ui-design-system/public/brand/logos/rtpsc-monogram.png',
+  'packages/ui-design-system/public/brand/brand.css',
+  'scripts/generate-logo-assets.mjs'
 ];
 
 const packageFiles = [

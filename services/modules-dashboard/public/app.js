@@ -626,19 +626,69 @@ function renderDesign(view) {
   ]);
   view.appendChild(dsPanel("Motion", "Purposeful motion: fade-rise entrances, staggered reveals, signal shimmer, and soft orbit drift. Honors prefers-reduced-motion.", motion));
 
-  // Artwork
-  const art = el("div", { class: "ds-art" }, [
-    el("img", { src: "/assets/emblem.svg", alt: "RTPSC signal emblem", width: "128", height: "128" }),
-    el("img", { src: "/assets/guilloche.svg", alt: "Signal orbit motif", width: "180", height: "180" }),
+  // Signal Era brand kit — constellation marks with extension-preserving downloads
+  const brandCard = (title, desc, stageClass, img, actions) =>
+    el("article", { class: "rtp-brand-card" }, [
+      el("div", { class: `rtp-brand-card__stage${stageClass ? ` ${stageClass}` : ""}` }, [img]),
+      el("div", { class: "rtp-brand-card__meta" }, [
+        el("h3", { class: "rtp-brand-card__title", text: title }),
+        el("p", { class: "rtp-brand-card__desc", text: desc })
+      ]),
+      el("div", { class: "rtp-brand-card__actions" }, actions)
+    ]);
+  const dl = (href, filename, label, ext) =>
+    el("a", { class: "rtp-brand-dl", href, download: filename }, [
+      document.createTextNode(`${label} `),
+      el("span", { class: "rtp-brand-dl__ext", text: ext })
+    ]);
+  const brandKit = el("div", { class: "rtp-brand-kit" }, [
     el("p", {
-      class: "ds-note",
-      style: "max-width:34ch",
+      class: "rtp-brand-kit__intro",
       text:
-        "The emblem is a rounded chassis with a rising signal constellation. The orbit motif " +
-        "replaces currency guilloché with lattice rings and node points for a tech-forward atmosphere."
-    })
+        "Rising-signal constellation on a graphite chassis — not generic letter tiles. " +
+        "Each download forces Content-Disposition with the real file extension."
+    }),
+    el("div", { class: "rtp-brand-grid" }, [
+      brandCard(
+        "Monogram",
+        "App icon & favicon. Four-node rising path.",
+        "",
+        el("img", { src: "/rtp-design/brand/logos/rtpsc-monogram.svg", alt: "RTPSC monogram", width: "72", height: "72" }),
+        [
+          dl("/rtp-design/brand/logos/rtpsc-monogram.svg?download=1", "rtpsc-monogram.svg", "Vector", ".svg"),
+          dl("/rtp-design/brand/logos/rtpsc-monogram.png?download=1", "rtpsc-monogram.png", "Raster", ".png"),
+          dl("/rtp-design/brand/logos/rtpsc-monogram.ico?download=1", "rtpsc-monogram.ico", "Icon", ".ico")
+        ]
+      ),
+      brandCard(
+        "Wordmark",
+        "Horizontal lockup for headers and documents.",
+        "rtp-brand-card__stage--light",
+        el("img", { src: "/rtp-design/brand/logos/rtpsc-wordmark.svg", alt: "RTPSC wordmark", height: "44" }),
+        [
+          dl("/rtp-design/brand/logos/rtpsc-wordmark.svg?download=1", "rtpsc-wordmark.svg", "Vector", ".svg"),
+          dl("/rtp-design/brand/logos/rtpsc-wordmark.png?download=1", "rtpsc-wordmark.png", "Raster", ".png")
+        ]
+      ),
+      brandCard(
+        "Emblem + orbit",
+        "Full Signal Era emblem and lattice orbit motif.",
+        "",
+        el("div", { style: "display:flex;gap:16px;align-items:center;justify-content:center" }, [
+          el("img", { src: "/assets/emblem.svg", alt: "RTPSC emblem", width: "72", height: "72" }),
+          el("img", { src: "/assets/guilloche.svg", alt: "Orbit motif", width: "72", height: "72" })
+        ]),
+        [
+          dl("/rtp-design/assets/emblem.svg?download=1", "rtpsc-emblem.svg", "Emblem", ".svg"),
+          dl("/rtp-design/brand/logos/rtpsc-lockup-stacked.svg?download=1", "rtpsc-lockup-stacked.svg", "Lockup", ".svg"),
+          dl("/rtp-design/brand/logos/rtpsc-favicon.ico?download=1", "rtpsc-favicon.ico", "Favicon", ".ico")
+        ]
+      )
+    ])
   ]);
-  view.appendChild(dsPanel("Concept artwork", "Original, dependency-free SVG graphics — no external assets.", art));
+  view.appendChild(
+    dsPanel("Brand logos & downloads", "Signal Era constellation marks with .svg / .png / .ico downloads.", brandKit)
+  );
 
   animateReveal(view);
 }

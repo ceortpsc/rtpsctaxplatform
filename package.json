@@ -23,6 +23,7 @@
     "lint": "./scripts/lint.sh",
     "test": "./scripts/test.sh",
     "build": "./scripts/build.sh",
+    "logos:generate": "node ./scripts/generate-logo-assets.mjs",
     "start": "./scripts/start.sh",
     "start:gateway": "node ./tools/aol/bin/aol.mjs run -w @rtp/api-gateway start",
     "start:irs-gateway": "node ./tools/aol/bin/aol.mjs run -w @rtp/irs-gateway start",
