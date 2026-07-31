@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RTPSC — Ross Tax Pro Software Co · Efile Transmission Software
+// RTPSC — Ross Tax Pro Software Co Platform v2.0-dev
 // Custom, dependency-free command runner. Drives the platform directly through
 // `node` (no package-manager `run` required). Usage: `./rtpsc <command> [args]`.
 
@@ -39,9 +39,19 @@ const SERVICE_ENTRIES = {
 };
 
 export const COMMANDS = {
+  version: {
+    usage: 'version [--json]',
+    desc: 'Show the active Ross Tax Pro Software Co v2 release identity',
+    plan: (rest) => node('scripts/release.mjs', ['current', ...rest])
+  },
+  release: {
+    usage: 'release [current|list|show|validate|build|promote] [args]',
+    desc: 'Inspect, validate, package, or evaluate promotion of v2 release channels',
+    plan: (rest) => node('scripts/release.mjs', rest.length ? rest : ['current'])
+  },
   lint: { usage: 'lint', desc: 'Run scaffold lint checks', plan: () => node('scripts/lint.mjs') },
   test: { usage: 'test', desc: 'Run the automated test suite', plan: () => nodeRaw(['--test']) },
-  build: { usage: 'build', desc: 'Build the platform manifest', plan: () => node('scripts/build.mjs') },
+  build: { usage: 'build', desc: 'Build the platform and active release manifests', plan: () => node('scripts/build.mjs') },
   start: {
     usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard|staff-portal|web-portal]',
     desc: 'Start a service (defaults to the api-gateway)',
@@ -115,7 +125,7 @@ export const COMMANDS = {
 
 export function buildUsage() {
   const lines = [
-    'RTPSC — Ross Tax Pro Software Co · Efile Transmission Software',
+    'RTPSC — Ross Tax Pro Software Co Platform v2.0-dev',
     '',
     'Usage: ./rtpsc <command> [args]',
     '',
