@@ -1,11 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateEnvironmentProtection, loadRuntimeConfig, PLATFORM_IDENTITY } from '../packages/platform-core/src/index.mjs';
+import {
+  evaluateEnvironmentProtection,
+  getPlatformRelease,
+  loadRuntimeConfig,
+  PLATFORM_IDENTITY,
+  releaseMetadataBlock
+} from '../packages/platform-core/src/index.mjs';
 
 test('platform identity is Ross Tax Pro Software Co / Efile Transmission Software', () => {
   assert.equal(PLATFORM_IDENTITY.company, 'Ross Tax Pro Software Co');
   assert.equal(PLATFORM_IDENTITY.application, 'Efile Transmission Software');
   assert.equal(PLATFORM_IDENTITY.abbreviation, 'RTPSC');
+});
+
+test('platform release metadata defaults to v2.0-dev', () => {
+  const prev = process.env.RTPSC_RELEASE_CHANNEL;
+  delete process.env.RTPSC_RELEASE_CHANNEL;
+  try {
+    const release = releaseMetadataBlock(getPlatformRelease());
+    assert.equal(release.version, '2.0.0');
+    assert.equal(release.channel, 'dev');
+    assert.equal(release.tag, 'v2.0-dev');
+  } finally {
+    if (prev === undefined) delete process.env.RTPSC_RELEASE_CHANNEL;
+    else process.env.RTPSC_RELEASE_CHANNEL = prev;
+  }
 });
 
 test('local environment is protected and blocks transmission by default', () => {

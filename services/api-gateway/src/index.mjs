@@ -4,9 +4,11 @@ import path from 'node:path';
 import {
   createServiceDescriptor,
   evaluateEnvironmentProtection,
+  getPlatformRelease,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
-  redactConfig
+  redactConfig,
+  releaseMetadataBlock
 } from '../../../packages/platform-core/src/index.mjs';
 import { createSecureTunnelAdapter } from '../../../packages/secure-tunnel/src/index.mjs';
 import { createClientRegistry, extractClientCredentials } from '../../../packages/client-identity/src/index.mjs';
@@ -83,6 +85,7 @@ export function createGatewayServer({ registry } = {}) {
       if (request.method === 'GET' && pathname === '/metadata') {
         return sendJson(response, 200, {
           identity: PLATFORM_IDENTITY,
+          release: releaseMetadataBlock(getPlatformRelease()),
           service: gatewayDescriptor,
           runtime: redactConfig(config),
           environmentProtection: evaluateEnvironmentProtection(config),

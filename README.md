@@ -13,6 +13,21 @@ approved secure tunnel endpoint is set, and `EFILE_TRANSMISSION_ENABLED=true`. E
 reports its protection state at `GET /metadata`; the dashboard exposes `GET /api/environment`
 and a live indicator (sidebar badge + System Status panel).
 
+## v2.0 release channels
+
+Platform builds are tagged on base version **2.0.0** with named channels:
+
+`v2.0-alpha` · `v2.0-beta` · `v2.0-rc1` · `v2.0-stable` · `v2.0-lts` · `v2.0-enterprise` · `v2.0-dev` · `v2.0-hotfix`
+
+```bash
+./rtpsc release list
+./rtpsc release set beta
+./rtpsc release stamp stable
+./rtpsc version
+```
+
+Docs: [`docs/platform-release-channels.md`](docs/platform-release-channels.md).
+
 ## Package Managers: AOL + ROSS.CO ITR
 
 This monorepo uses **AOL** (Adaptive Optimized Linker) for workspace linking, and

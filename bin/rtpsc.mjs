@@ -75,6 +75,16 @@ export const COMMANDS = {
     desc: 'Fully automated production activation (gates, receipts, workflow triggers)',
     plan: (rest) => node('packages/production-activation/bin/activate.mjs', rest)
   },
+  release: {
+    usage: 'release [list|status|set <channel>|stamp [channel]|develop|tag <channel>] [--json]',
+    desc: 'Manage v2.0 release channels (alpha/beta/rc1/stable/lts/enterprise/dev/hotfix)',
+    plan: (rest) => node('packages/platform-version/bin/release.mjs', rest.length ? rest : ['status'])
+  },
+  version: {
+    usage: 'version [--json]',
+    desc: 'Print the active platform release tag (e.g. v2.0-dev)',
+    plan: (rest) => node('packages/platform-version/bin/release.mjs', ['version', ...rest])
+  },
   workflows: { usage: 'workflows', desc: 'List background workflows', plan: () => node('workers/workflow-runner/src/cli.mjs', ['list']) },
   workflow: {
     usage: "workflow run <name> '<json>'  |  workflow emit <event> '<json>'",

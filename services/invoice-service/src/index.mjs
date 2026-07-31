@@ -5,9 +5,11 @@ import path from 'node:path';
 import {
   createServiceDescriptor,
   evaluateEnvironmentProtection,
+  getPlatformRelease,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
-  redactConfig
+  redactConfig,
+  releaseMetadataBlock
 } from '../../../packages/platform-core/src/index.mjs';
 import { serveDesignSystemAsset } from '../../../packages/ui-design-system/src/index.mjs';
 import {
@@ -127,6 +129,7 @@ export function createInvoiceServer() {
       if (request.method === 'GET' && pathname === '/metadata') {
         return sendJson(response, 200, {
           identity: PLATFORM_IDENTITY,
+          release: releaseMetadataBlock(getPlatformRelease()),
           service: invoiceDescriptor,
           runtime: redactConfig(config),
           environmentProtection: evaluateEnvironmentProtection(config),

@@ -5,8 +5,10 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import {
   createServiceDescriptor,
+  getPlatformRelease,
   loadRuntimeConfig,
-  redactConfig
+  redactConfig,
+  releaseMetadataBlock
 } from '../../../packages/platform-core/src/index.mjs';
 import { clientIdentityPlaceholders } from '../../../packages/client-config/src/index.mjs';
 
@@ -200,6 +202,7 @@ export function start(options = {}) {
   const runtime = loadRuntimeConfig({ servicePort: options.port ?? DEFAULT_PORT });
   const irs = loadIrsConfig(options.irs);
   const payload = {
+    release: releaseMetadataBlock(getPlatformRelease()),
     service: irsGatewayDescriptor,
     runtime: redactConfig(runtime),
     irs: redactIrsConfig(irs),

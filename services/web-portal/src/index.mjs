@@ -4,9 +4,11 @@ import { fileURLToPath } from 'node:url';
 import {
   createServiceDescriptor,
   evaluateEnvironmentProtection,
+  getPlatformRelease,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
   redactConfig,
+  releaseMetadataBlock,
   serveStaticFile,
   packageDir
 } from '../../../packages/platform-core/src/index.mjs';
@@ -169,6 +171,7 @@ export async function createPortalServer({ dbDir, persist = true, env = process.
       if (method === 'GET' && pathname === '/metadata') {
         return sendJson(response, 200, {
           identity: PLATFORM_IDENTITY,
+          release: releaseMetadataBlock(getPlatformRelease()),
           service: webPortalDescriptor,
           runtime: redactConfig(config),
           environmentProtection: evaluateEnvironmentProtection(config),

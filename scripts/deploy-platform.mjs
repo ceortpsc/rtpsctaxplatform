@@ -23,6 +23,7 @@ import { mkdir, writeFile, readFile, access, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
+import { resolvePlatformRelease } from '../packages/platform-version/src/index.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = new Set(process.argv.slice(2));
@@ -456,11 +457,23 @@ async function main() {
 
   const allHealthy = health.every((h) => h.healthy);
   const provisionsOk = provisions.every((p) => p.ok || p.optional || p.skipped);
+  const release = await resolvePlatformRelease(root);
   const status = {
     product: 'RTPSC Tax Platform + ROSS.CO Infinite',
     mode: smoke ? 'smoke' : 'live',
     deployedAt: new Date().toISOString(),
     ok: allHealthy && provisionsOk,
+    release: {
+      version: release.version,
+      channel: release.channel,
+      tag: release.tag,
+      label: release.label,
+      stability: release.stability,
+      productionEligible: release.productionEligible,
+      buildId: release.buildId,
+      stampedAt: release.stampedAt,
+      source: release.source
+    },
     provisions,
     health,
     workersBackground: WORKERS_BACKGROUND.map((w) => w.name),
@@ -469,7 +482,8 @@ async function main() {
       seo: 'deploy/seo',
       presence: 'presence/rossco',
       rossInfinite: 'tools/ross-infinite',
-      evidence: 'tools/ross-infinite/release-evidence/v1'
+      evidence: 'tools/ross-infinite/release-evidence/v1',
+      platformRelease: 'build/platform-release.json'
     }
   };
   const manifest = await writeManifest(status);

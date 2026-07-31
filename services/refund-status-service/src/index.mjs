@@ -5,9 +5,11 @@ import path from 'node:path';
 import {
   createServiceDescriptor,
   evaluateEnvironmentProtection,
+  getPlatformRelease,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
-  redactConfig
+  redactConfig,
+  releaseMetadataBlock
 } from '../../../packages/platform-core/src/index.mjs';
 import { createRefundStore } from '../../../packages/refund-core/src/index.mjs';
 import { createClientRegistry, extractClientCredentials } from '../../../packages/client-identity/src/index.mjs';
@@ -132,6 +134,7 @@ export function createRefundStatusServer({ registry, store } = {}) {
       if (request.method === 'GET' && pathname === '/metadata') {
         return sendJson(response, 200, {
           identity: PLATFORM_IDENTITY,
+          release: releaseMetadataBlock(getPlatformRelease()),
           service: refundStatusDescriptor,
           runtime: redactConfig(config),
           environmentProtection: evaluateEnvironmentProtection(config),

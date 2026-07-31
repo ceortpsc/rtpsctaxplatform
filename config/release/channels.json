@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "baseVersion": "2.0.0",
+  "tagPrefix": "v2.0",
+  "defaultChannel": "dev",
+  "product": "RTPSC Tax Platform",
+  "channels": [
+    {
+      "id": "alpha",
+      "tag": "v2.0-alpha",
+      "label": "Early unstable build",
+      "stability": "unstable",
+      "productionEligible": false,
+      "order": 10
+    },
+    {
+      "id": "beta",
+      "tag": "v2.0-beta",
+      "label": "Feature-complete but not final",
+      "stability": "feature-complete",
+      "productionEligible": false,
+      "order": 20
+    },
+    {
+      "id": "rc1",
+      "tag": "v2.0-rc1",
+      "label": "Release candidate",
+      "stability": "release-candidate",
+      "productionEligible": false,
+      "order": 30
+    },
+    {
+      "id": "stable",
+      "tag": "v2.0-stable",
+      "label": "Final production build",
+      "stability": "stable",
+      "productionEligible": true,
+      "order": 40
+    },
+    {
+      "id": "lts",
+      "tag": "v2.0-lts",
+      "label": "Long-term support",
+      "stability": "lts",
+      "productionEligible": true,
+      "order": 50
+    },
+    {
+      "id": "enterprise",
+      "tag": "v2.0-enterprise",
+      "label": "Enterprise-grade build",
+      "stability": "enterprise",
+      "productionEligible": true,
+      "order": 60
+    },
+    {
+      "id": "dev",
+      "tag": "v2.0-dev",
+      "label": "Developer build",
+      "stability": "development",
+      "productionEligible": false,
+      "order": 5
+    },
+    {
+      "id": "hotfix",
+      "tag": "v2.0-hotfix",
+      "label": "Emergency patch",
+      "stability": "hotfix",
+      "productionEligible": true,
+      "order": 70
+    }
+  ]
+}

@@ -3,7 +3,7 @@ AOL := node ./tools/aol/bin/aol.mjs
 ROSSCO := node ./tools/rossco/bin/rossco.mjs
 ROSS_INFINITE := node ./tools/ross-infinite/bin/ross.mjs
 
-.PHONY: setup lint test build start start-all start-check gateway workers bench aol team team-inventory rossco itr ross-infinite deploy-full deploy-full-smoke ross ross-dev ross-doctor compliance compliance-checklist compliance-log
+.PHONY: setup lint test build start start-all start-check gateway workers bench aol team team-inventory rossco itr ross-infinite deploy-full deploy-full-smoke ross ross-dev ross-doctor compliance compliance-checklist compliance-log release release-list release-stamp version
 
 setup:
 	./scripts/setup.sh
@@ -16,6 +16,18 @@ test:
 
 build:
 	./scripts/build.sh
+
+release:
+	node ./packages/platform-version/bin/release.mjs $(ARGS)
+
+release-list:
+	node ./packages/platform-version/bin/release.mjs list
+
+release-stamp:
+	node ./packages/platform-version/bin/release.mjs stamp $(CHANNEL)
+
+version:
+	node ./packages/platform-version/bin/release.mjs version
 
 start:
 	./scripts/start.sh
