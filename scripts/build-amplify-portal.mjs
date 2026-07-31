@@ -1,8 +1,30 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function validateApiBase(value) {
+  const raw = String(value ?? '').trim().replace(/\/+$/, '');
+  if (!raw) return '';
+  let url;
+  try { url = new URL(raw); }
+  catch { throw new Error('PORTAL_API_BASE_URL must be a valid absolute URL.'); }
+  if (url.protocol !== 'https:') throw new Error('PORTAL_API_BASE_URL must use HTTPS.');
+  if (url.username || url.password || url.search || url.hash) {
+    throw new Error('PORTAL_API_BASE_URL cannot contain credentials, query parameters, or a fragment.');
+  }
+  return url.toString().replace(/\/+$/, '');
+}
+
 const outDir = path.resolve(process.cwd(), 'build', 'amplify-portal');
-const apiBase = String(process.env.PORTAL_API_BASE_URL ?? '').trim().replace(/\/+$/, '');
+const apiBase = validateApiBase(process.env.PORTAL_API_BASE_URL);
 const loginUrl = apiBase ? `${apiBase}/auth/login?next=%2Faccount` : '#configuration-required';
 const importUrl = apiBase ? `${apiBase}/auth/login?next=%2Fclient-import` : '#configuration-required';
 const status = apiBase ? 'READY_FOR_AUTHENTICATED_REDIRECT' : 'BLOCKED_CONFIGURATION_REQUIRED';
@@ -24,18 +46,18 @@ const html = `<!doctype html>
     .eyebrow{color:var(--gold);font-weight:800;letter-spacing:.14em;text-transform:uppercase}.status{display:inline-block;padding:6px 10px;border:1px solid #526b88;border-radius:999px;color:var(--muted);font-size:.8rem}
     h1{font-size:clamp(2rem,6vw,4rem);line-height:1.05;margin:.35em 0}.lede{font-size:1.2rem;color:var(--muted);max-width:65ch}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
     a{display:inline-block;padding:13px 18px;border-radius:10px;text-decoration:none;font-weight:800}.primary{background:var(--gold);color:#101820}.secondary{border:1px solid #526b88;color:var(--text)}
-    .notice{margin-top:32px;padding:18px;border-left:4px solid var(--gold);background:#091b31;color:var(--muted)}code{color:var(--gold)}
+    .notice{margin-top:32px;padding:18px;border-left:4px solid var(--gold);background:#091b31;color:var(--muted)}
   </style>
 </head>
 <body>
 <main>
   <p class="eyebrow">Ross Tax Pro Software Co</p>
-  <span class="status">${status}</span>
+  <span class="status">${escapeHtml(status)}</span>
   <h1>Sovereign Ledger Secure Access</h1>
   <p class="lede">Authentication is completed through the protected portal. Credentials, taxpayer records, EFIN documentation, and client imports are never collected on this static landing page.</p>
   <div class="actions">
-    <a class="primary" href="${loginUrl}">Sign in to workspace</a>
-    <a class="secondary" href="${importUrl}">Secure client import</a>
+    <a class="primary" href="${escapeHtml(loginUrl)}">Sign in to workspace</a>
+    <a class="secondary" href="${escapeHtml(importUrl)}">Secure client import</a>
   </div>
   <div class="notice">Do not email or text Social Security numbers, tax returns, identity documents, banking data, or unencrypted software exports. ${apiBase ? 'Continue through the authenticated portal.' : 'Deployment is blocked until PORTAL_API_BASE_URL is configured.'}</div>
 </main>
@@ -50,3 +72,5 @@ fs.writeFileSync(
   'utf8'
 );
 console.log(JSON.stringify({ ok: true, outDir, status }));
+
+export const __testing = { escapeHtml, validateApiBase };
