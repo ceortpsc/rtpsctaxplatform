@@ -5,5 +5,6 @@ export {
   DESIGN_SYSTEM_PUBLIC,
   DESIGN_SYSTEM_PREFIX,
   serveDesignSystemAsset,
-  designSystemStylesheets
+  designSystemStylesheets,
+  designSystemScripts
 } from './static.mjs';
