@@ -1,9 +1,12 @@
 {
   "name": "@rtp/platform-core",
-  "version": "0.1.0",
+  "version": "2.0.0-dev.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test"
+  },
+  "dependencies": {
+    "@rtp/release-core": "workspace:*"
   }
 }
