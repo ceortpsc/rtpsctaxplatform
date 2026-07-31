@@ -2,6 +2,8 @@ import { createServiceDescriptor, listPlatformRoutes, PLATFORM_SERVICES } from '
 import { describeWorkflow } from '../../../packages/workflow-engine/src/index.mjs';
 import { clientIdentityPlaceholders } from '../../../packages/client-config/src/index.mjs';
 import { createSecureTunnelAdapter } from '../../../packages/secure-tunnel/src/index.mjs';
+import { createSecurityCoreDescriptor } from '../../../packages/security-core/src/index.mjs';
+import { createSecretsConfigDescriptor } from '../../../packages/secrets-config/src/index.mjs';
 import { gatewayDescriptor } from '../../../services/api-gateway/src/index.mjs';
 import { refundStatusDescriptor } from '../../../services/refund-status-service/src/index.mjs';
 import { transcriptDescriptor } from '../../../services/transcript-service/src/index.mjs';
@@ -9,6 +11,7 @@ import { analyticsDescriptor } from '../../../services/analytics-service/src/ind
 import { enrollmentDescriptor } from '../../../services/enrollment-service/src/index.mjs';
 import { invoiceDescriptor } from '../../../services/invoice-service/src/index.mjs';
 import { posCrmDescriptor } from '../../../services/pos-crm-service/src/index.mjs';
+import { securityStatusDescriptor } from '../../../services/security-status-service/src/index.mjs';
 import { irsGatewayDescriptor } from '../../../services/irs-gateway/src/index.mjs';
 import { aiWorkforceHubDescriptor } from '../../../services/ai-workforce-hub/src/index.mjs';
 import { webPortalDescriptor } from '../../../services/web-portal/src/index.mjs';
@@ -19,6 +22,7 @@ import { listPhraseTemplates } from '../../../packages/ero-ops/src/index.mjs';
 import { tdsWorkerDescriptor } from '../../../workers/tds-worker/src/index.mjs';
 import { transcriptPullWorkerDescriptor } from '../../../workers/transcript-pull-worker/src/index.mjs';
 import { liveSourceFetcherDescriptor } from '../../../workers/live-source-fetcher/src/index.mjs';
+import { securityScannerDescriptor } from '../../../workers/security-scanner-worker/src/index.mjs';
 import { aiPersonaWorkerDescriptor } from '../../../workers/ai-persona-worker/src/index.mjs';
 import { transmissionPipeline } from '../../../pipelines/transmission-pipeline/src/index.mjs';
 import { masterfilePipeline } from '../../../pipelines/masterfile-pipeline/src/index.mjs';
@@ -146,6 +150,21 @@ export function buildModuleCatalog() {
           detail: { kinds: ['api', 'tds'], commands: ['./rtpsc clients issue api', './rtpsc clients issue tds'] }
         },
         {
+          name: '@rtp/security-core',
+          summary: 'HMAC access tokens, AES-256-GCM field encryption, security headers, rate limits, audit.',
+          tags: ['security', 'tokens', 'encryption'],
+          detail: {
+            capabilities: createSecurityCoreDescriptor().capabilities,
+            commands: ['./rtpsc security status', './rtpsc security doctor']
+          }
+        },
+        {
+          name: '@rtp/secrets-config',
+          summary: 'Secrets catalog and redacted readiness evaluation by environment group.',
+          tags: ['security', 'secrets', 'config'],
+          detail: { descriptor: createSecretsConfigDescriptor().name, commands: ['./rtpsc security secrets'] }
+        },
+        {
           name: '@rtp/refund-core',
           summary: 'Full refund cases, approved-event ingest, pipeline stages, workflow + intelligence.',
           tags: ['refund', 'pipeline', 'intelligence'],
@@ -153,9 +172,9 @@ export function buildModuleCatalog() {
         },
         {
           name: '@rtp/secure-tunnel',
-          summary: 'Compliant secure tunnel adapter interface (stub-safe).',
-          tags: ['compliance'],
-          detail: { status: createSecureTunnelAdapter().status }
+          summary: 'Compliant secure tunnel adapter + fail-safe tunnel gate (live transport stays stub).',
+          tags: ['compliance', 'security'],
+          detail: { status: createSecureTunnelAdapter().status, gate: 'evaluateTunnelGate' }
         },
         {
           name: '@rtp/workflow-engine',
@@ -305,6 +324,7 @@ export function buildModuleCatalog() {
         serviceEntry(enrollmentDescriptor),
         serviceEntry(invoiceDescriptor),
         serviceEntry(posCrmDescriptor),
+        serviceEntry(securityStatusDescriptor),
         serviceEntry(modulesDashboardDescriptor),
         serviceEntry(webPortalDescriptor),
         serviceEntry(staffPortalDescriptor),
@@ -319,6 +339,7 @@ export function buildModuleCatalog() {
         workerEntry(tdsWorkerDescriptor),
         workerEntry(transcriptPullWorkerDescriptor),
         workerEntry(liveSourceFetcherDescriptor),
+        workerEntry(securityScannerDescriptor),
         workerEntry(aiPersonaWorkerDescriptor),
         {
           name: 'workflow-runner',

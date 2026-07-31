@@ -16,6 +16,8 @@ export const PLATFORM_SERVICES = Object.freeze([
       'GET /metadata',
       'GET /api/clients',
       'POST /api/auth/token',
+      'POST /api/auth/introspect',
+      'GET /api/security/status',
       'GET /api/refund',
       'GET /api/refund/*',
       'POST /api/refund/*'
@@ -145,6 +147,23 @@ export const PLATFORM_SERVICES = Object.freeze([
       'POST /api/ero/intelligence',
       'GET /api/sbtpg/traces',
       'POST /api/sbtpg/traces'
+    ]
+  },
+  {
+    id: 'security',
+    name: 'security-status-service',
+    port: 3007,
+    entry: 'services/security-status-service/src/index.mjs',
+    aliases: ['security', 'security-status'],
+    pages: [],
+    routes: [
+      'GET /health',
+      'GET /metadata',
+      'GET /api/security/status',
+      'GET /api/security/secrets',
+      'GET /api/security/tunnel',
+      'GET /api/security/audit',
+      'POST /api/security/audit'
     ]
   },
   {

@@ -3,8 +3,8 @@
   "version": "02.0V",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-31T10:30:13.818Z",
-  "count": 65,
+  "createdAt": "2026-07-31T10:33:11.144Z",
+  "count": 69,
   "ok": true,
   "footprints": [
     {
@@ -478,6 +478,16 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/secrets-config",
+      "version": "0.1.0",
+      "location": "packages/secrets-config",
+      "sector": "packages",
+      "footprint": "cff30ce2147ec2cb",
+      "fingerprint": "cff30ce2147ec2cb",
+      "integrity": "sha256-cff30ce2147ec2cbd1ee8efe201194d7c2134db9cb705bc9a3975e055110c392",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/secure-tunnel",
       "version": "0.1.0",
       "location": "packages/secure-tunnel",
@@ -485,6 +495,36 @@
       "footprint": "8e79948424fddc04",
       "fingerprint": "8e79948424fddc04",
       "integrity": "sha256-8e79948424fddc0465cbee5ddb62a3e26eab526daf1b8e7e0305efda9d78d37a",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/security-core",
+      "version": "0.1.0",
+      "location": "packages/security-core",
+      "sector": "packages",
+      "footprint": "734d2b1aae628e5d",
+      "fingerprint": "734d2b1aae628e5d",
+      "integrity": "sha256-734d2b1aae628e5d76c85ae00045004e80f6d6d2388bb2250cdf31fcedccfb28",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/security-scanner-worker",
+      "version": "0.1.0",
+      "location": "workers/security-scanner-worker",
+      "sector": "workers",
+      "footprint": "5cd6c79316587855",
+      "fingerprint": "5cd6c79316587855",
+      "integrity": "sha256-5cd6c7931658785530bb948d5c669cc59c912b75692b8ef939884d1bcc4a1623",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/security-status-service",
+      "version": "0.1.0",
+      "location": "services/security-status-service",
+      "sector": "services",
+      "footprint": "34ebb9450a4b542c",
+      "fingerprint": "34ebb9450a4b542c",
+      "integrity": "sha256-34ebb9450a4b542cdadaba5888b695d15742ab4c50ef1d18824d7552963aa0d5",
       "status": "sealed"
     },
     {

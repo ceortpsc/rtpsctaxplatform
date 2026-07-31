@@ -19,6 +19,10 @@
 - Use environment variables or approved secret stores only.
 - Redact secrets in logs and operator-visible metadata.
 - Document handling procedures before enabling any taxpayer data exchange.
+- Prefer `@rtp/security-core` field encryption (`ENCRYPTION_KEY`) for sensitive local fields.
+- Prefer HMAC bearer tokens (`SESSION_SECRET`) over opaque demo tokens at the API gateway.
+
+See also: [`security-platform.md`](./security-platform.md).
 
 ## Live production checklist and compliance report
 

@@ -75,7 +75,7 @@ test('pdf fill engine plans deterministic field maps', () => {
 
 test('platform registry lists every service port and route surface', () => {
   const summary = platformRegistrySummary();
-  assert.equal(PLATFORM_SERVICES.length, 12);
+  assert.equal(PLATFORM_SERVICES.length, 13);
   assert.equal(PLATFORM_ENGINES.length, 6);
   assert.ok(summary.routeCount > 40);
   assert.ok(listPlatformPages().some((page) => page.port === 3010));
@@ -83,8 +83,10 @@ test('platform registry lists every service port and route surface', () => {
   assert.equal(resolveServiceEntry('ai-workforce').port, 8860);
   assert.equal(resolveServiceEntry('web-portal').port, 3011);
   assert.equal(resolveServiceEntry('staff').port, 3012);
+  assert.equal(resolveServiceEntry('security').port, 3007);
   const routes = listPlatformRoutes();
   assert.ok(routes.find((r) => r.service === 'analytics-service').routes.includes('GET /api/feed'));
+  assert.ok(routes.find((r) => r.service === 'security-status-service').routes.includes('GET /api/security/status'));
 });
 
 test('catalog and route registry include irs, ai workforce, and all engines', () => {
@@ -94,6 +96,7 @@ test('catalog and route registry include irs, ai workforce, and all engines', ()
   assert.ok(services.includes('ai-workforce-hub'));
   assert.ok(services.includes('web-portal'));
   assert.ok(services.includes('staff-portal'));
+  assert.ok(services.includes('security-status-service'));
   const engines = catalog.find((group) => group.category === 'engines').modules.map((m) => m.name);
   assert.deepEqual(
     engines.sort(),
@@ -111,8 +114,9 @@ test('catalog and route registry include irs, ai workforce, and all engines', ()
   assert.ok(endpoints.includes('ai-workforce-hub'));
   assert.ok(endpoints.includes('web-portal'));
   assert.ok(endpoints.includes('staff-portal'));
+  assert.ok(endpoints.includes('security-status-service'));
   assert.equal(new Set(SERVICE_ENDPOINTS.map((e) => e.port)).size, SERVICE_ENDPOINTS.length);
   const registry = buildRouteRegistry();
-  assert.equal(registry.services.length, 12);
+  assert.equal(registry.services.length, 13);
   assert.ok(registry.services.every((s) => Array.isArray(s.routes) && s.routes.length > 0));
 });
