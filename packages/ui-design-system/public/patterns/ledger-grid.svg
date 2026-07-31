@@ -1,8 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" aria-hidden="true">
-  <defs>
-    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e9dcbd" stroke-width="0.5"/>
-    </pattern>
-  </defs>
-  <rect width="400" height="400" fill="url(#grid)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <path d="M48 0H0V48" fill="none" stroke="#0a7ea4" stroke-opacity="0.09" stroke-width="1"/>
 </svg>

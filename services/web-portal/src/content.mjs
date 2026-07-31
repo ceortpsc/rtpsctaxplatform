@@ -4,7 +4,7 @@ export const SITE = Object.freeze({
   name: 'Ross Tax Pro Software Co',
   product: 'Efile Transmission Software',
   short: 'RTPSC',
-  tagline: 'Secure tax e-file transmission, refund intelligence, and operator tooling.',
+  tagline: 'Signal-clear e-file transmission, refund intelligence, and operator tooling for the next era of tax tech.',
   baseUrlEnv: 'PORTAL_PUBLIC_URL'
 });
 

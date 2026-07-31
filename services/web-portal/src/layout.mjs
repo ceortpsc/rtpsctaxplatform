@@ -65,6 +65,9 @@ export function renderDocument(page, config = {}) {
     <meta property="og:description" content="${esc(page.description)}" />
     <meta property="og:type" content="website" />
     <link rel="icon" type="image/svg+xml" href="/rtp-design/assets/emblem.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Syne:wght@600;700;800&amp;display=swap" />
     <link rel="stylesheet" href="/rtp-design/theme.css" />
     <link rel="stylesheet" href="/rtp-design/components.css" />
     <link rel="stylesheet" href="/rtp-design/shell.css" />

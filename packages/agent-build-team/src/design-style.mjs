@@ -4,7 +4,7 @@
  */
 
 export const DESIGN_STYLE_GUIDANCE = Object.freeze({
-  brandSignals: ['rtpsc', 'ross tax', 'efile', 'aol', 'adaptive optimized linker'],
+  brandSignals: ['rtpsc', 'ross tax', 'efile', 'aol', 'adaptive optimized linker', 'signal era'],
   avoidedLooks: [
     {
       id: 'purple-gradient',
@@ -13,8 +13,8 @@ export const DESIGN_STYLE_GUIDANCE = Object.freeze({
     },
     {
       id: 'cream-terracotta',
-      pattern: /(#f4f1ea|#f5f0e6|terracotta|#c45c26)/i,
-      message: 'Avoid warm-cream + terracotta serif default look.'
+      pattern: /(#f4f1ea|#f5f0e6|#f1e8d2|#f8f2e2|terracotta|#c45c26|#b8860b|#d4af37)/i,
+      message: 'Avoid warm-cream + gold/terracotta serif ledger look (Sovereign Ledger rejected).'
     },
     {
       id: 'system-sans',
@@ -25,6 +25,11 @@ export const DESIGN_STYLE_GUIDANCE = Object.freeze({
       id: 'glow-stack',
       pattern: /(box-shadow\s*:[^;]{0,80}(0\s+0\s+\d+px|glow)|filter\s*:\s*drop-shadow)/i,
       message: 'Avoid glow / multi-layer shadow noise on presentation surfaces.'
+    },
+    {
+      id: 'sovereign-ledger',
+      pattern: /(sovereign\s*ledger|guilloch[eé]|iowan\s*old\s*style|palatino)/i,
+      message: 'Sovereign Ledger motifs are not approved; use Signal Era (mist · signal · graphite · Syne/DM Sans).'
     }
   ]
 });
