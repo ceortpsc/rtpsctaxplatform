@@ -1,0 +1,123 @@
+name: release-channels
+
+on:
+  pull_request:
+    paths:
+      - 'packages/release-core/**'
+      - 'scripts/release.mjs'
+      - 'scripts/build.mjs'
+      - 'bin/rtpsc.mjs'
+      - 'package.json'
+      - 'tests/release-channels.test.mjs'
+      - 'docs/releases/**'
+      - '.github/workflows/release-channels.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'packages/release-core/**'
+      - 'scripts/release.mjs'
+      - 'scripts/build.mjs'
+      - 'bin/rtpsc.mjs'
+      - 'package.json'
+      - 'tests/release-channels.test.mjs'
+      - 'docs/releases/**'
+      - '.github/workflows/release-channels.yml'
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Release channel manifest set to build
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - dev
+          - alpha
+          - beta
+          - rc1
+          - stable
+          - lts
+          - enterprise
+          - hotfix
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rtpsc-release-channels-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.3
+          run_install: false
+
+      - name: Install workspace
+        run: pnpm install --frozen-lockfile
+
+      - name: Repository quality gates
+        run: |
+          pnpm lint
+          pnpm test
+          pnpm build
+
+      - name: Validate channel catalog
+        run: node scripts/release.mjs validate all --json
+
+      - name: Build release manifests
+        shell: bash
+        run: |
+          channel="${{ github.event.inputs.channel }}"
+          if [[ -z "${channel}" ]]; then channel="all"; fi
+          node scripts/release.mjs build "${channel}" \
+            --clean \
+            --commit "${GITHUB_SHA}" \
+            --build-number "${GITHUB_RUN_NUMBER}" \
+            --app-env "ci"
+
+      - name: Verify release artifacts
+        shell: bash
+        run: |
+          test -s build/releases/catalog.json
+          test -s build/releases/SHA256SUMS
+          if [[ "${{ github.event.inputs.channel }}" == "" || "${{ github.event.inputs.channel }}" == "all" ]]; then
+            for channel in dev alpha beta rc1 stable lts enterprise hotfix; do
+              test -s "build/releases/v2.0-${channel}/manifest.json"
+            done
+          fi
+
+      - name: Upload channel manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: rtpsc-v2-release-manifests-${{ github.sha }}
+          path: build/releases
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Release summary
+        shell: bash
+        run: |
+          {
+            echo '## RTPSC v2 release-channel artifacts'
+            echo ''
+            echo "- Source commit: \`${GITHUB_SHA}\`"
+            echo '- Catalog validation: **PASS**'
+            echo '- Integrity manifests: **GENERATED**'
+            echo '- External runtime deployment: **NOT CLAIMED**'
+            echo '- Git tags or GitHub Releases: **NOT CREATED BY THIS WORKFLOW**'
+          } >> "${GITHUB_STEP_SUMMARY}"
