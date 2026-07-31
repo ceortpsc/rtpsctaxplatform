@@ -1,7 +1,7 @@
 {
   "name": "@rtp/ui-design-system",
   "version": "0.1.0",
-  "description": "RTPSC Sovereign Ledger — shared enterprise UI design system",
+  "description": "RTPSC Signal Era — shared enterprise UI design system",
   "type": "module",
   "main": "src/index.mjs",
   "exports": {

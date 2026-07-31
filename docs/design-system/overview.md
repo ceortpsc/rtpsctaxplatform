@@ -1,6 +1,8 @@
-# Sovereign Ledger Design System — Overview
+# Signal Era Design System — Overview
 
-The RTPSC **Sovereign Ledger** design system provides a unified enterprise visual language across all operator and public surfaces.
+The RTPSC **Signal Era** design system provides a unified new-era tech visual
+language across operator and public surfaces. It replaces the rejected
+**Sovereign Ledger** (cream · gold · serif) look.
 
 ## Package
 
@@ -8,25 +10,28 @@ The RTPSC **Sovereign Ledger** design system provides a unified enterprise visua
 
 ## Themes
 
-- **Light** (default): cream base, navy ink, gold accent
-- **Dark** (`data-theme="midnight"`): deep navy canvas, gold highlights
+- **Light** (default): mist base, graphite ink, signal azure accent
+- **Dark** (`data-theme="midnight"`): cool graphite canvas, signal highlights
 - **Print**: `@media print` rules in `components.css`
 
 ## Core files
 
 | File | Purpose |
 |------|---------|
-| `theme.css` | Design tokens |
+| `theme.css` | Design tokens (+ legacy name remaps) |
 | `components.css` | Buttons, forms, tables, cards, status, modals |
 | `shell.css` | App shell, sidebar, topbar, responsive |
 | `shell.js` | Theme toggle, mobile nav, toasts |
 
 ## Brand assets
 
-`public/brand/logos/`, `public/illustrations/`, `public/patterns/`
+`public/brand/logos/`, `public/illustrations/`, `public/patterns/`,
+`public/assets/{emblem,guilloche}.svg`
 
 ## Showcase
 
-`http://localhost:3012/design-system` (staff-portal)
+- `http://localhost:3012/design-system` (staff-portal)
+- `http://localhost:3010` → Design System view (modules-dashboard)
+- `http://localhost:3011` (web-portal Signal Era marketing hero)
 
-See also: `docs/design-system.md` (modules-dashboard origin doc).
+See also: `docs/design-system.md`.

@@ -43,3 +43,20 @@ test('brand assets present', () => {
   assert.ok(fs.existsSync(path.join(pkgRoot, 'public/brand/logos/monogram.svg')));
   assert.ok(fs.existsSync(path.join(pkgRoot, 'public/illustrations/empty-invoices.svg')));
 });
+
+test('Signal Era theme tokens replace Sovereign Ledger cream/gold', () => {
+  const theme = fs.readFileSync(path.join(DESIGN_SYSTEM_PUBLIC, 'theme.css'), 'utf8');
+  assert.match(theme, /Signal Era/);
+  assert.match(theme, /--signal-500:\s*#0a7ea4/);
+  assert.match(theme, /--mist-200:\s*#e4ecf4/);
+  assert.match(theme, /Syne/);
+  assert.doesNotMatch(theme, /#f1e8d2/);
+  assert.doesNotMatch(theme, /#b8860b/);
+  assert.doesNotMatch(theme, /Iowan Old Style/);
+});
+
+test('Signal Era emblem and orbit motif exist', () => {
+  const emblem = fs.readFileSync(path.join(pkgRoot, 'public/assets/emblem.svg'), 'utf8');
+  assert.match(emblem, /Signal Era|signal/i);
+  assert.match(emblem, /#0a7ea4|#1a9bc7/);
+});

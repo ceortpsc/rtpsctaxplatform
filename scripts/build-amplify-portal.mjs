@@ -40,20 +40,20 @@ const html = `<!doctype html>
   <meta name="robots" content="noindex,nofollow">
   <title>Ross Tax Pro Software Co · Secure Portal</title>
   <style>
-    :root{color-scheme:dark;--navy:#06162c;--panel:#0d2442;--gold:#d6ad45;--text:#f4f7fb;--muted:#a9b7ca}
-    *{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,var(--navy),#020814);color:var(--text);font:16px/1.55 Arial,sans-serif;min-height:100vh;display:grid;place-items:center}
-    main{width:min(920px,calc(100% - 32px));padding:48px;border:1px solid #294362;border-radius:24px;background:rgba(13,36,66,.94);box-shadow:0 24px 80px rgba(0,0,0,.35)}
-    .eyebrow{color:var(--gold);font-weight:800;letter-spacing:.14em;text-transform:uppercase}.status{display:inline-block;padding:6px 10px;border:1px solid #526b88;border-radius:999px;color:var(--muted);font-size:.8rem}
-    h1{font-size:clamp(2rem,6vw,4rem);line-height:1.05;margin:.35em 0}.lede{font-size:1.2rem;color:var(--muted);max-width:65ch}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
-    a{display:inline-block;padding:13px 18px;border-radius:10px;text-decoration:none;font-weight:800}.primary{background:var(--gold);color:#101820}.secondary{border:1px solid #526b88;color:var(--text)}
-    .notice{margin-top:32px;padding:18px;border-left:4px solid var(--gold);background:#091b31;color:var(--muted)}
+    :root{--ink:#0b1220;--panel:#0f1724;--signal:#0a7ea4;--text:#e8eef6;--muted:#8b9aab}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 480px at 82% 12%,rgba(26,155,199,.22),transparent 60%),linear-gradient(155deg,#0b1220,#123049 48%,#0a7ea4);color:var(--text);font:16px/1.55 "DM Sans",Avenir Next,Segoe UI,sans-serif;min-height:100vh;display:grid;place-items:center}
+    main{width:min(920px,calc(100% - 32px));padding:48px;border:1px solid rgba(184,199,214,.25);border-radius:14px;background:rgba(15,23,36,.92)}
+    .eyebrow{font-family:Syne,Bahnschrift,sans-serif;font-weight:800;letter-spacing:.08em;font-size:clamp(2.5rem,8vw,5rem);line-height:.95;color:#fff;margin:0 0 12px}.status{display:inline-block;padding:6px 10px;border:1px solid rgba(184,199,214,.3);border-radius:6px;color:var(--muted);font-size:.8rem;margin-bottom:12px}
+    h1{font-family:Syne,Bahnschrift,sans-serif;font-size:clamp(1.4rem,3.5vw,2rem);line-height:1.15;margin:.2em 0 .5em;letter-spacing:-.02em;color:#d7eef7}.lede{font-size:1.05rem;color:var(--muted);max-width:58ch}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+    a{display:inline-flex;align-items:center;padding:13px 18px;border-radius:6px;text-decoration:none;font-weight:700;min-height:44px}.primary{background:#fff;color:var(--ink)}.secondary{border:1px solid rgba(232,238,246,.35);color:var(--text)}
+    .notice{margin-top:32px;padding:18px;border-left:3px solid var(--signal);background:rgba(10,126,164,.08);color:var(--muted)}
   </style>
 </head>
 <body>
 <main>
-  <p class="eyebrow">Ross Tax Pro Software Co</p>
+  <p class="eyebrow">RTPSC</p>
   <span class="status">${escapeHtml(status)}</span>
-  <h1>Sovereign Ledger Secure Access</h1>
+  <h1>Signal Era Secure Access</h1>
   <p class="lede">Authentication is completed through the protected portal. Credentials, taxpayer records, EFIN documentation, and client imports are never collected on this static landing page.</p>
   <div class="actions">
     <a class="primary" href="${escapeHtml(loginUrl)}">Sign in to workspace</a>
