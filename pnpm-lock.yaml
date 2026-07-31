@@ -50,6 +50,8 @@ importers:
 
   packages/refund-core: {}
 
+  packages/release-core: {}
+
   packages/secure-tunnel: {}
 
   packages/tax-data: {}
