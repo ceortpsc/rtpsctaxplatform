@@ -13,10 +13,10 @@ COMPANY = "Ross Tax Pro Software Co"
 COMPANY_LEGAL = "Ross Tax Pro Software Co"
 VERSION = "02.0V"
 RELEASE = "Ross Tax Pro Software Co 02.0V"
-TAGLINE = "The hierarchy of enterprise-grade tax pro software."
+TAGLINE = "The hierarchy of enterprise-grade tax pro software — Signal Era control."
 DESCRIPTION = (
     "Ross Tax Pro Software Co 02.0V — the hierarchy of enterprise-grade tax pro software. "
-    "RunTime AI Assist is the hardened operator control plane for command package "
+    "RunTime AI Assist is the Signal Era operator control plane for command package "
     "development, membership, deploy plans, RBAC, and transparent script execution."
 )
 LONG_DESCRIPTION = (
@@ -51,8 +51,8 @@ APPLICATION_CATEGORY = "FinanceApplication"
 LOCALE = "en_US"
 TWITTER_HANDLE = "@rosstaxsoftware"
 SUPPORT_EMAIL = "support@rosstaxsoftware.com"
-PRIMARY_COLOR = "#1f6f54"
-THEME_COLOR = "#0b1612"
+PRIMARY_COLOR = "#0a7ea4"
+THEME_COLOR = "#0b1220"
 
 
 def brand_dict() -> dict[str, Any]:

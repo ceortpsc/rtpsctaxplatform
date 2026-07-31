@@ -1,4 +1,5 @@
 import { esc } from '../layout.mjs';
+import { pageIntro } from '../presentations.mjs';
 import { PROVIDER_TYPES } from '../../../../packages/sri-efin/src/index.mjs';
 
 const TYPE_LABELS = {
@@ -43,12 +44,10 @@ export default {
           .join('\n          ')
       : `<tr><td colspan="4" class="muted">No EFIN providers registered yet.</td></tr>`;
 
-    return `      <section class="page-head">
-        <h1>EFIN onboarding</h1>
-        <p class="lede">Secure Registration &amp; Identity (SRI) for IRS Authorized e-file
-        Providers. This scaffold validates and records provider identity; it does not contact
-        the IRS. EFINs are stored masked.</p>
-      </section>
+    return `${pageIntro({
+      title: 'EFIN onboarding',
+      lede: 'Secure Registration &amp; Identity (SRI) for IRS Authorized e-file Providers. This scaffold validates and records provider identity; it does not contact the IRS. EFINs are stored masked.'
+    })}
       <div class="grid-2">
         <section class="form-card">
           <h2>Register a provider</h2>

@@ -1,4 +1,5 @@
 import { esc } from '../layout.mjs';
+import { pageIntro, workspacePanel } from '../presentations.mjs';
 
 export default {
   route: '/account',
@@ -14,6 +15,7 @@ export default {
   render(data) {
     if (!data.authed) {
       return `      <section class="form-card">
+        <p class="eyebrow">Workspace</p>
         <h1>Account</h1>
         <p class="lede">You are not signed in.</p>
         <div class="hero-cta">
@@ -37,22 +39,20 @@ export default {
           .join('\n          ')
       : `<tr><td colspan="4" class="muted">No EFIN providers registered yet.</td></tr>`;
 
-    return `      <section class="page-head">
-        <h1>Welcome, ${esc(account.name)}</h1>
-        <p class="lede">${esc(account.email)} · tier <strong>${esc(account.tier)}</strong>${account.org ? ` · ${esc(account.org)}` : ''}</p>
-        <div class="hero-cta">
-          <a class="cta-btn" href="/efin">Register an EFIN</a>
-          <button class="ghost-btn" type="button" data-signout="true">Sign out</button>
-        </div>
-      </section>
-      <section class="panel">
-        <h2>Your EFIN providers</h2>
-        <table class="data-table">
+    return `${pageIntro({
+      title: `Welcome, ${account.name}`,
+      lede: `${esc(account.email)} · tier <strong>${esc(account.tier)}</strong>${account.org ? ` · ${esc(account.org)}` : ''}`,
+      actions: `<a class="cta-btn" href="/efin">Register an EFIN</a>
+          <button class="ghost-btn" type="button" data-signout="true">Sign out</button>`
+    })}
+${workspacePanel({
+  title: 'Your EFIN providers',
+  body: `<table class="data-table">
           <thead><tr><th>EFIN</th><th>Firm</th><th>Roles</th><th>Status</th></tr></thead>
           <tbody>
           ${providerRows}
           </tbody>
-        </table>
-      </section>`;
+        </table>`
+})}`;
   }
 };

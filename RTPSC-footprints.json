@@ -3,8 +3,8 @@
   "version": "02.0V",
   "generatedBy": "aol@0.1.0",
   "lockfile": "RTPSC-package-lock.json",
-  "createdAt": "2026-07-31T10:35:35.507Z",
-  "count": 67,
+  "createdAt": "2026-07-31T13:25:25.395Z",
+  "count": 72,
   "ok": true,
   "footprints": [
     {
@@ -498,6 +498,16 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/secrets-config",
+      "version": "0.1.0",
+      "location": "packages/secrets-config",
+      "sector": "packages",
+      "footprint": "cff30ce2147ec2cb",
+      "fingerprint": "cff30ce2147ec2cb",
+      "integrity": "sha256-cff30ce2147ec2cbd1ee8efe201194d7c2134db9cb705bc9a3975e055110c392",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/secure-tunnel",
       "version": "0.1.0",
       "location": "packages/secure-tunnel",
@@ -505,6 +515,36 @@
       "footprint": "8e79948424fddc04",
       "fingerprint": "8e79948424fddc04",
       "integrity": "sha256-8e79948424fddc0465cbee5ddb62a3e26eab526daf1b8e7e0305efda9d78d37a",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/security-core",
+      "version": "0.1.0",
+      "location": "packages/security-core",
+      "sector": "packages",
+      "footprint": "734d2b1aae628e5d",
+      "fingerprint": "734d2b1aae628e5d",
+      "integrity": "sha256-734d2b1aae628e5d76c85ae00045004e80f6d6d2388bb2250cdf31fcedccfb28",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/security-scanner-worker",
+      "version": "0.1.0",
+      "location": "workers/security-scanner-worker",
+      "sector": "workers",
+      "footprint": "5cd6c79316587855",
+      "fingerprint": "5cd6c79316587855",
+      "integrity": "sha256-5cd6c7931658785530bb948d5c669cc59c912b75692b8ef939884d1bcc4a1623",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/security-status-service",
+      "version": "0.1.0",
+      "location": "services/security-status-service",
+      "sector": "services",
+      "footprint": "34ebb9450a4b542c",
+      "fingerprint": "34ebb9450a4b542c",
+      "integrity": "sha256-34ebb9450a4b542cdadaba5888b695d15742ab4c50ef1d18824d7552963aa0d5",
       "status": "sealed"
     },
     {
@@ -565,6 +605,16 @@
       "footprint": "447a09d18f5f1f82",
       "fingerprint": "447a09d18f5f1f82",
       "integrity": "sha256-447a09d18f5f1f82731a7a97f438afcdf99490d1910ca8ea91a7ce9d1c672856",
+      "status": "sealed"
+    },
+    {
+      "name": "@rtp/tc570-resolution-intelligence",
+      "version": "1.0.0",
+      "location": "packages/tc570-resolution-intelligence",
+      "sector": "packages",
+      "footprint": "4dcdbe39719733b3",
+      "fingerprint": "4dcdbe39719733b3",
+      "integrity": "sha256-4dcdbe39719733b3c93bf0901ac16d62a544a1e5aa134a749d21aa299a9b8020",
       "status": "sealed"
     },
     {

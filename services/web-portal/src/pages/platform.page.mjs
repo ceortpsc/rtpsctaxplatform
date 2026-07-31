@@ -1,32 +1,34 @@
 import { esc } from '../layout.mjs';
+import { accessBand, featureRows, pageIntro } from '../presentations.mjs';
 import { FEATURES } from '../content.mjs';
 
 export default {
   route: '/platform',
   title: 'Platform',
-  description: 'Every operator surface in the RTPSC tax platform, in one place.',
+  description: 'Signal Era rollout of every RTPSC operator surface — transmission-ready presentation stack.',
 
   render() {
-    const cards = FEATURES.map(
-      (feature) => `<article class="card">
-          <h3>${esc(feature.title)}</h3>
-          <p>${esc(feature.body)}</p>
-          <p class="card-meta"><code>${esc(feature.service)}</code> · port ${esc(feature.port)}</p>
-        </article>`
-    ).join('\n        ');
+    const rows = featureRows(
+      FEATURES.map((feature) => ({
+        title: feature.title,
+        body: feature.body,
+        meta: `<code>${esc(feature.service)}</code> · port ${esc(feature.port)}`
+      }))
+    );
 
-    return `      <section class="page-head">
-        <h1>Platform surfaces</h1>
-        <p class="lede">Independent services, one identity. Each surface runs on its own port
-        and shares the platform's compliance boundaries.</p>
+    return `${pageIntro({
+      title: 'Platform rollout',
+      lede: 'Independent services, one Signal Era identity. Each surface runs on its own port and shares the platform compliance boundary.'
+    })}
+      <section class="section-band" aria-label="Operator surfaces">
+        <h2>Operator surfaces in transmission</h2>
+        <p>New-era tech presentations for refund, invoice, POS, enrollment, gateway, and module catalog consoles.</p>
+        ${rows}
       </section>
-      <section class="cards">
-        ${cards}
-      </section>
-      <section class="callout">
-        <h2>Live health</h2>
-        <p>Check which services are currently reachable from this portal.</p>
-        <a class="cta-btn" href="/status">View system status</a>
-      </section>`;
+${accessBand({
+  title: 'Live health',
+  lede: 'Probe which services are reachable from this XHTML portal right now.',
+  actions: '<a class="cta-btn" href="/status">View system status</a>'
+})}`;
   }
 };

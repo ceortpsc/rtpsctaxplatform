@@ -1,6 +1,8 @@
 # Application Route Inventory
 
-Generated during platform unification (Sovereign Ledger design system). Every discovered HTTP route and page surface is listed below.
+Generated during platform unification under the **Signal Era** design system
+(Sovereign Ledger cream · gold · serif is not approved). Every discovered HTTP
+route and page surface is listed below.
 
 ## Summary
 

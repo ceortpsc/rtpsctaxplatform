@@ -175,33 +175,91 @@ export function readJsonBody(request, { limitBytes = 1_000_000 } = {}) {
   });
 }
 
-export function sendJson(response, statusCode, body) {
+/** Baseline security headers applied to platform HTTP responses (fail-open if already set). */
+export const PLATFORM_SECURITY_HEADERS = Object.freeze({
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'no-referrer',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin'
+});
+
+export function applyPlatformSecurityHeaders(response, extra = {}) {
+  for (const [key, value] of Object.entries(PLATFORM_SECURITY_HEADERS)) {
+    if (!response.getHeader(key)) response.setHeader(key, value);
+  }
+  for (const [key, value] of Object.entries(extra)) {
+    response.setHeader(key, value);
+  }
+}
+
+export function sendJson(response, statusCode, body, { securityHeaders = true } = {}) {
+  if (securityHeaders) applyPlatformSecurityHeaders(response);
   response.setHeader('content-type', 'application/json; charset=utf-8');
   response.writeHead(statusCode);
   response.end(JSON.stringify(body, null, 2));
 }
 
-function contentTypeFor(filePath) {
-  switch (path.extname(filePath).toLowerCase()) {
+/** Map file extensions to HTTP Content-Type (includes logo/image download formats). */
+export function contentTypeFor(filePath) {
+  switch (path.extname(String(filePath || '')).toLowerCase()) {
     case '.html':
       return 'text/html; charset=utf-8';
     case '.css':
       return 'text/css; charset=utf-8';
     case '.js':
+    case '.mjs':
       return 'text/javascript; charset=utf-8';
-    case '.svg':
-      return 'image/svg+xml';
     case '.json':
       return 'application/json; charset=utf-8';
+    case '.svg':
+      return 'image/svg+xml';
+    case '.png':
+      return 'image/png';
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg';
+    case '.gif':
+      return 'image/gif';
+    case '.webp':
+      return 'image/webp';
+    case '.ico':
+      return 'image/x-icon';
+    case '.avif':
+      return 'image/avif';
+    case '.txt':
+      return 'text/plain; charset=utf-8';
+    case '.pdf':
+      return 'application/pdf';
     default:
       return 'application/octet-stream';
   }
 }
 
-export function serveStaticFile(response, rootDir, requestPath) {
+/** True when the request asks for a forced file download (keeps the filename extension). */
+export function wantsDownload(requestPathOrUrl) {
+  const raw = String(requestPathOrUrl || '');
+  const qIndex = raw.indexOf('?');
+  if (qIndex === -1) return false;
+  const params = new URLSearchParams(raw.slice(qIndex + 1));
+  const flag = params.get('download');
+  return flag === '' || flag === '1' || flag === 'true' || params.has('attachment');
+}
+
+export function contentDispositionFor(filePath, { download = false } = {}) {
+  const base = path.basename(filePath);
+  // RFC 5987 filename* keeps extensions intact across browsers.
+  const encoded = encodeURIComponent(base).replace(/['()]/g, escape);
+  const disposition = download ? 'attachment' : 'inline';
+  return `${disposition}; filename="${base.replace(/"/g, '')}"; filename*=UTF-8''${encoded}`;
+}
+
+export function serveStaticFile(response, rootDir, requestPath, options = {}) {
   let decodedPath;
+  const original = String(requestPath || '');
   try {
-    decodedPath = decodeURIComponent(String(requestPath || '').split('?')[0]);
+    decodedPath = decodeURIComponent(original.split('?')[0]);
   } catch {
     sendJson(response, 400, { error: 'bad_request', message: 'Malformed URL encoding' });
     return true;
@@ -214,7 +272,9 @@ export function serveStaticFile(response, rootDir, requestPath) {
     return true;
   }
   if (!fs.existsSync(absolute) || fs.statSync(absolute).isDirectory()) return false;
+  const download = options.download === true || wantsDownload(original);
   response.setHeader('content-type', contentTypeFor(absolute));
+  response.setHeader('content-disposition', contentDispositionFor(absolute, { download }));
   response.writeHead(200);
   fs.createReadStream(absolute).pipe(response);
   return true;
@@ -226,7 +286,8 @@ export function startHttpService({
   extraMetadata = {},
   routes = {},
   staticDir = null,
-  onReady = null
+  onReady = null,
+  securityHeaders = true
 } = {}) {
   const config = loadRuntimeConfig({ servicePort: defaultPort });
   const payload = {
@@ -238,16 +299,17 @@ export function startHttpService({
   };
 
   const server = http.createServer(async (request, response) => {
+    if (securityHeaders) applyPlatformSecurityHeaders(response);
     const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
     const routeKey = `${request.method || 'GET'} ${url.pathname}`;
 
     try {
       if (url.pathname === '/health' && request.method === 'GET') {
-        sendJson(response, 200, { status: 'ok', service: descriptor.name, environment: config.appEnv });
+        sendJson(response, 200, { status: 'ok', service: descriptor.name, environment: config.appEnv }, { securityHeaders });
         return;
       }
       if (url.pathname === '/metadata' && request.method === 'GET') {
-        sendJson(response, 200, payload);
+        sendJson(response, 200, payload, { securityHeaders });
         return;
       }
 
@@ -257,7 +319,7 @@ export function startHttpService({
         return;
       }
 
-      if (serveDesignSystemAsset(response, url.pathname)) return;
+      if (serveDesignSystemAsset(response, `${url.pathname}${url.search}`)) return;
 
       if (staticDir && request.method === 'GET') {
         if (serveStaticFile(response, staticDir, url.pathname)) return;

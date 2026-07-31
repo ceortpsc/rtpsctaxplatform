@@ -125,6 +125,41 @@ export const CHECKLIST_SECTIONS = Object.freeze([
         mode: 'automated',
         severity: 'blocker',
         evidence: 'packages/ai-assist compliance guardrails'
+      },
+      {
+        id: 'SEC-001',
+        title: 'Security-core package exports tokens, encryption, headers, and rate limits',
+        mode: 'automated',
+        severity: 'blocker',
+        evidence: 'packages/security-core'
+      },
+      {
+        id: 'SEC-002',
+        title: 'Secrets-config evaluates redacted readiness without exposing values',
+        mode: 'automated',
+        severity: 'blocker',
+        evidence: 'packages/secrets-config'
+      },
+      {
+        id: 'SEC-003',
+        title: 'Secure tunnel gate validates HTTPS endpoint and keeps adapter stub',
+        mode: 'automated',
+        severity: 'blocker',
+        evidence: 'packages/secure-tunnel evaluateTunnelGate'
+      },
+      {
+        id: 'SEC-004',
+        title: 'Security status service and scanner worker are scaffolded',
+        mode: 'automated',
+        severity: 'blocker',
+        evidence: 'services/security-status-service + workers/security-scanner-worker'
+      },
+      {
+        id: 'SEC-005',
+        title: 'API gateway mints HMAC bearer tokens when SESSION_SECRET is set',
+        mode: 'automated',
+        severity: 'blocker',
+        evidence: 'services/api-gateway + security-core mintAccessToken'
       }
     ]
   },

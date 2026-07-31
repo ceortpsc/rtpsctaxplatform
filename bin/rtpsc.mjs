@@ -37,6 +37,11 @@ export const COMMANDS = {
       return node(entry);
     }
   },
+  security: {
+    usage: 'security [status|secrets|tunnel|doctor|scan|encrypt|decrypt|mint-demo]',
+    desc: 'Security posture, secrets readiness, tunnel gate, doctor, and scan',
+    plan: (rest) => node('scripts/security.mjs', rest.length ? rest : ['status'])
+  },
   deploy: {
     usage: 'deploy [--smoke] [--full|--platform] [--skip-gates]',
     desc: 'Deploy platform services (add --full for RTPSC + ROSS.CO Infinite + SEO provisions)',
@@ -101,6 +106,11 @@ export const COMMANDS = {
     plan: (rest) => node('scripts/sync.mjs', rest.length ? rest : ['status'])
   },
   env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') },
+  'worker:security': {
+    usage: 'worker:security',
+    desc: 'Run the security-scanner worker once',
+    plan: () => node('workers/security-scanner-worker/src/index.mjs', ['--once'])
+  },
   release: {
     usage: 'release [list|describe|build|activate|status|path]',
     desc: 'Build and activate RTPSC 02.0V release channels (alpha…enterprise/hotfix)',

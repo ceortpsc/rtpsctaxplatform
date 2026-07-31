@@ -51,6 +51,34 @@ test('web-portal: serves public XHTML/XML and gates protected pages', async () =
   } finally { await close(); }
 });
 
+test('web-portal: Signal Era XHTML presentations reject Sovereign Ledger chrome', async () => {
+  const { base, close } = await startTestServer({ env: localEnv });
+  try {
+    const home = await (await fetch(`${base}/`)).text();
+    assert.match(home, /xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/);
+    assert.match(home, /hero-plane/);
+    assert.match(home, /hero-brand/);
+    assert.match(home, /\/rtp-design\/theme\.css/);
+    assert.doesNotMatch(home, /Iowan Old Style|Palatino|#b8860b|#d4af37|#f4f1ea/i);
+
+    const platform = await (await fetch(`${base}/platform`)).text();
+    assert.match(platform, /page-intro|Platform rollout/);
+    assert.match(platform, /feature-list/);
+    assert.doesNotMatch(platform, /class="cards"/);
+
+    const pricing = await (await fetch(`${base}/pricing`)).text();
+    assert.match(pricing, /tier-label|tier-featured|Membership/);
+    assert.doesNotMatch(pricing, /tier-badge/);
+
+    const notFound = await fetch(`${base}/missing-signal-page`);
+    assert.equal(notFound.status, 404);
+    const body404 = await notFound.text();
+    assert.match(notFound.headers.get('content-type'), /application\/xhtml\+xml/);
+    assert.match(body404, /\/rtp-design\/theme\.css/);
+    assert.match(body404, /Signal Era/);
+  } finally { await close(); }
+});
+
 test('web-portal: local registration, protected EFIN workflow, and secure import gate', async () => {
   const { base, close } = await startTestServer({ env: localEnv });
   try {

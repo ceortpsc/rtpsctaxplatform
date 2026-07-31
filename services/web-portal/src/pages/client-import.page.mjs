@@ -1,4 +1,5 @@
 import { esc } from '../layout.mjs';
+import { pageIntro } from '../presentations.mjs';
 
 export default {
   route: '/client-import',
@@ -21,30 +22,42 @@ export default {
 
   render(data) {
     const sourceOptions = data.sources.map((source) => `<option value="${esc(source)}">${esc(source)}</option>`).join('');
-    return `      <section class="hero compact">
-        <p class="eyebrow">Authenticated transfer control</p>
-        <h1>Secure client import</h1>
-        <p class="lede">Prepare an import request without placing taxpayer data in email, text messages, screenshots, or public files.</p>
-      </section>
-      <section class="grid two-col">
-        <article class="card">
+    return `${pageIntro({
+      title: 'Secure client import',
+      lede: 'Prepare an import request without placing taxpayer data in email, text messages, screenshots, or public files.'
+    })}
+      <div class="grid-2">
+        <section class="form-card">
+          <p class="eyebrow">Transfer control</p>
           <h2>Import readiness gate</h2>
-          <form action="/api/client-import/evaluate" method="post" data-api-form="client-import">
-            <label for="sourceType">Source type</label>
-            <select id="sourceType" name="sourceType" required="required">${sourceOptions}</select>
-            <label for="recordCount">Expected records</label>
-            <input id="recordCount" name="recordCount" type="number" min="1" max="10000" required="required" />
-            <label><input name="taxpayerConsent" type="checkbox" value="true" /> Taxpayer consent or lawful firm authority is documented</label>
-            <label><input name="encryptedTransfer" type="checkbox" value="true" /> Transfer will use the authenticated encrypted portal</label>
-            <button class="cta-btn" type="submit">Evaluate import</button>
+          <form class="stack-form" action="/api/client-import/evaluate" method="post" data-api-form="client-import">
+            <label>Source type
+              <select id="sourceType" name="sourceType" required="required">${sourceOptions}</select>
+            </label>
+            <label>Expected records
+              <input id="recordCount" name="recordCount" type="number" min="1" max="10000" required="required" />
+            </label>
+            <label class="check">
+              <input name="taxpayerConsent" type="checkbox" value="true" />
+              <span>Taxpayer consent or lawful firm authority is documented</span>
+            </label>
+            <label class="check">
+              <input name="encryptedTransfer" type="checkbox" value="true" />
+              <span>Transfer will use the authenticated encrypted portal</span>
+            </label>
+            <button class="cta-btn block" type="submit">Evaluate import</button>
           </form>
-          <p class="muted">A READY result authorizes secure upload preparation only. It does not import records automatically.</p>
-        </article>
-        <article class="card">
+          <p class="muted small">A READY result authorizes secure upload preparation only. It does not import records automatically.</p>
+        </section>
+        <section class="panel">
           <h2>Client-facing secure message</h2>
-          <textarea rows="15" readonly="readonly">${esc(data.message)}</textarea>
+          <form class="stack-form">
+            <label>Copy for client outreach
+              <textarea rows="15" readonly="readonly">${esc(data.message)}</textarea>
+            </label>
+          </form>
           <p class="status limited">Taxpayer files remain validation-only until malware scanning, schema checks, duplicate detection, and human approval pass.</p>
-        </article>
-      </section>`;
+        </section>
+      </div>`;
   }
 };
