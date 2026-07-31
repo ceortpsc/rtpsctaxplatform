@@ -39,9 +39,7 @@ function jsonLd(canonical) {
 }
 
 function accessMarkup(page) {
-  if (page.session?.ok) {
-    return `<a class="cta-btn" href="/account">Open workspace</a>`;
-  }
+  if (page.session?.ok) return `<a class="cta-btn" href="/account">Open workspace</a>`;
   if (page.auth?.enabled) {
     if (!page.auth.configured) return `<span class="status blocked">Identity configuration required</span>`;
     return `<a class="cta-btn" href="/auth/login?next=%2Faccount">Secure sign in</a>`;
@@ -68,6 +66,7 @@ export function renderDocument(page, config = {}) {
     <link rel="stylesheet" href="/rtp-design/theme.css" />
     <link rel="stylesheet" href="/rtp-design/components.css" />
     <link rel="stylesheet" href="/rtp-design/shell.css" />
+    <link rel="stylesheet" href="/rtp-design/cosmetics.css" />
     <link rel="stylesheet" href="/static/styles.css" />
     <link rel="alternate" type="application/atom+xml" title="RTPSC updates" href="/feed.xml" />
     ${jsonLd(canonical)}
