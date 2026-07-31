@@ -78,6 +78,9 @@ const modules = [
   '../engines/ai-persona-runtime/src/index.mjs',
   '../engines/analytics-center/src/index.mjs',
   '../engines/tc-code-engine/src/index.mjs',
+  '../engines/pdf-fill-engine/src/index.mjs',
+  '../packages/platform-core/src/registry.mjs',
+  '../packages/platform-core/src/release-channels.mjs',
   '../tools/aol/src/index.mjs',
   '../tools/rossco/src/index.mjs'
 ];

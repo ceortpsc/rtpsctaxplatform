@@ -42,11 +42,19 @@ test('SERVICE_ENDPOINTS lists every HTTP service with a distinct port', () => {
   assert.ok(names.includes('modules-dashboard'));
   assert.ok(names.includes('invoice-service'));
   assert.ok(names.includes('pos-crm-service'));
+  assert.ok(names.includes('irs-gateway'));
+  assert.ok(names.includes('ai-workforce-hub'));
+  assert.ok(names.includes('web-portal'));
+  assert.ok(names.includes('staff-portal'));
   const ports = SERVICE_ENDPOINTS.map((e) => e.port);
   assert.equal(new Set(ports).size, ports.length, 'ports must be unique');
   assert.ok(SERVICE_ENDPOINTS.find((e) => e.name === 'api-gateway').port === 3000);
   assert.equal(SERVICE_ENDPOINTS.find((e) => e.name === 'invoice-service').port, 3005);
   assert.equal(SERVICE_ENDPOINTS.find((e) => e.name === 'pos-crm-service').port, 3006);
+  assert.equal(SERVICE_ENDPOINTS.find((e) => e.name === 'irs-gateway').port, 8820);
+  assert.equal(SERVICE_ENDPOINTS.find((e) => e.name === 'ai-workforce-hub').port, 8860);
+  assert.equal(SERVICE_ENDPOINTS.find((e) => e.name === 'web-portal').port, 3011);
+  assert.equal(SERVICE_ENDPOINTS.find((e) => e.name === 'staff-portal').port, 3012);
 });
 
 test('every catalog entry has name, summary and tags', () => {

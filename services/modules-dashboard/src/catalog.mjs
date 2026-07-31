@@ -1,4 +1,4 @@
-import { createServiceDescriptor } from '../../../packages/platform-core/src/index.mjs';
+import { createServiceDescriptor, listPlatformRoutes, PLATFORM_SERVICES } from '../../../packages/platform-core/src/index.mjs';
 import { describeWorkflow } from '../../../packages/workflow-engine/src/index.mjs';
 import { clientIdentityPlaceholders } from '../../../packages/client-config/src/index.mjs';
 import { createSecureTunnelAdapter } from '../../../packages/secure-tunnel/src/index.mjs';
@@ -9,6 +9,10 @@ import { analyticsDescriptor } from '../../../services/analytics-service/src/ind
 import { enrollmentDescriptor } from '../../../services/enrollment-service/src/index.mjs';
 import { invoiceDescriptor } from '../../../services/invoice-service/src/index.mjs';
 import { posCrmDescriptor } from '../../../services/pos-crm-service/src/index.mjs';
+import { irsGatewayDescriptor } from '../../../services/irs-gateway/src/index.mjs';
+import { aiWorkforceHubDescriptor } from '../../../services/ai-workforce-hub/src/index.mjs';
+import { webPortalDescriptor } from '../../../services/web-portal/src/index.mjs';
+import { staffPortalDescriptor } from '../../../services/staff-portal/src/index.mjs';
 import { TAX_DATA_NOTICE } from '../../../packages/tax-data/src/index.mjs';
 import { listServiceCatalog } from '../../../packages/invoice-core/src/index.mjs';
 import { listPhraseTemplates } from '../../../packages/ero-ops/src/index.mjs';
@@ -16,12 +20,16 @@ import { tdsWorkerDescriptor } from '../../../workers/tds-worker/src/index.mjs';
 import { transcriptPullWorkerDescriptor } from '../../../workers/transcript-pull-worker/src/index.mjs';
 import { liveSourceFetcherDescriptor } from '../../../workers/live-source-fetcher/src/index.mjs';
 import { dataSyncWorkerDescriptor } from '../../../workers/data-sync-worker/src/index.mjs';
+import { aiPersonaWorkerDescriptor } from '../../../workers/ai-persona-worker/src/index.mjs';
 import { transmissionPipeline } from '../../../pipelines/transmission-pipeline/src/index.mjs';
 import { masterfilePipeline } from '../../../pipelines/masterfile-pipeline/src/index.mjs';
 import { refundStatusPipeline } from '../../../pipelines/refund-status-pipeline/src/index.mjs';
 import { refundIntelligenceEngine } from '../../../engines/refund-intelligence-engine/src/index.mjs';
+import { refundOptimizationEngine } from '../../../engines/refund-optimization-engine/src/index.mjs';
+import { aiPersonaRuntime } from '../../../engines/ai-persona-runtime/src/index.mjs';
 import { analyticsCenter } from '../../../engines/analytics-center/src/index.mjs';
 import { tcCodeEngine } from '../../../engines/tc-code-engine/src/index.mjs';
+import { pdfFillEngine } from '../../../engines/pdf-fill-engine/src/index.mjs';
 import { refundStatusWorkflow } from '../../../workflows/refund-status-workflow/src/index.mjs';
 import { transcriptIntakeWorkflow } from '../../../workflows/transcript-intake-workflow/src/index.mjs';
 import { transmissionWorkflow } from '../../../workflows/transmission-workflow/src/index.mjs';
@@ -44,21 +52,12 @@ export const modulesDashboardDescriptor = createServiceDescriptor({
   responsibilities: [
     'Serve a read-only catalog of every platform module.',
     'Surface module category, metadata, and relationships.',
-    'Provide module inventory to operators (workflows run in the background).'
+    'Provide module inventory and live route registry to operators.'
   ],
   dependencies: []
 });
 
-const SERVICE_PORTS = {
-  'api-gateway': 3000,
-  'refund-status-service': 3001,
-  'transcript-service': 3002,
-  'analytics-service': 3003,
-  'enrollment-service': 3004,
-  'invoice-service': 3005,
-  'pos-crm-service': 3006,
-  'modules-dashboard': 3010
-};
+const SERVICE_PORTS = Object.fromEntries(PLATFORM_SERVICES.map((service) => [service.name, service.port]));
 
 /** Service name/port pairs used for live status checks. */
 export const SERVICE_ENDPOINTS = Object.entries(SERVICE_PORTS).map(([name, port]) => ({ name, port }));
@@ -129,9 +128,11 @@ export function buildModuleCatalog() {
       modules: [
         {
           name: '@rtp/platform-core',
-          summary: 'Runtime config, HTTP/worker helpers, and descriptor factories.',
-          tags: ['runtime', 'shared'],
-          detail: { helpers: ['loadRuntimeConfig', 'startHttpService', 'runWorker'] }
+          summary: 'Runtime config, HTTP/worker helpers, route registry, and descriptor factories.',
+          tags: ['runtime', 'shared', 'registry'],
+          detail: {
+            helpers: ['loadRuntimeConfig', 'startHttpService', 'runWorker', 'listPlatformRoutes', 'PLATFORM_SERVICES']
+          }
         },
         {
           name: '@rtp/client-config',
@@ -214,6 +215,30 @@ export function buildModuleCatalog() {
           detail: { phrases: listPhraseTemplates().map((t) => t.code) }
         },
         {
+          name: '@rtp/ero-governance',
+          summary: 'RTP-AI-001 persona governance, HOLD gates, and paid hire catalog.',
+          tags: ['governance', 'ai', 'hold'],
+          detail: { policy: 'RTP-AI-001' }
+        },
+        {
+          name: '@rtp/ai-assist',
+          summary: 'Local heuristic AI assist for invoice and operator workflows (no external LLM).',
+          tags: ['ai', 'assist'],
+          detail: { mode: 'local-heuristic' }
+        },
+        {
+          name: '@rtp/module-advisor',
+          summary: 'Local module insights, dependency graph, and assistant heuristics for the dashboard.',
+          tags: ['advisor', 'dashboard'],
+          detail: { apis: ['buildInsights', 'buildDependencyGraph', 'answerQuery'] }
+        },
+        {
+          name: '@rtp/production-compliance',
+          summary: 'Live production checklist, compliance report, and gate runner.',
+          tags: ['compliance', 'production'],
+          detail: { commands: ['./scripts/aol run compliance'] }
+        },
+        {
           name: '@rtp/canvas-core',
           summary: 'Cursor Canvas creation — generate .canvas.tsx artifacts from live platform state.',
           tags: ['canvas', 'cursor', 'devtools'],
@@ -232,6 +257,30 @@ export function buildModuleCatalog() {
             commands: ['./rtpsc sync status', './rtpsc sync run', './rtpsc sync import clients data/sync/clients.csv'],
             directory: 'data/sync'
           }
+        },
+        {
+          name: '@rtp/agent-build-team',
+          summary: 'Agent Build Engineering Team inventory and assessment runner.',
+          tags: ['team', 'build'],
+          detail: { commands: ['./scripts/aol run team'] }
+        },
+        {
+          name: '@rtp/rtp-datastore',
+          summary: 'Local JSON datastore helpers for portal accounts and operator records.',
+          tags: ['datastore', 'portal'],
+          detail: { package: '@rtp/rtp-datastore' }
+        },
+        {
+          name: '@rtp/sri-efin',
+          summary: 'SRI / EFIN identity and enrollment reference helpers for the client portal.',
+          tags: ['identity', 'efin', 'portal'],
+          detail: { package: '@rtp/sri-efin' }
+        },
+        {
+          name: '@rtp/ui-design-system',
+          summary: 'Signal Era shared enterprise UI theme, shell, and design assets (/rtp-design).',
+          tags: ['design', 'ui', 'signal-era'],
+          detail: { mount: '/rtp-design', theme: 'Signal Era' }
         },
         {
           name: '@rtp/production-activation',
@@ -267,7 +316,11 @@ export function buildModuleCatalog() {
         serviceEntry(enrollmentDescriptor),
         serviceEntry(invoiceDescriptor),
         serviceEntry(posCrmDescriptor),
-        serviceEntry(modulesDashboardDescriptor)
+        serviceEntry(modulesDashboardDescriptor),
+        serviceEntry(webPortalDescriptor),
+        serviceEntry(staffPortalDescriptor),
+        serviceEntry(irsGatewayDescriptor),
+        serviceEntry(aiWorkforceHubDescriptor)
       ]
     },
     {
@@ -278,6 +331,7 @@ export function buildModuleCatalog() {
         workerEntry(transcriptPullWorkerDescriptor),
         workerEntry(liveSourceFetcherDescriptor),
         workerEntry(dataSyncWorkerDescriptor),
+        workerEntry(aiPersonaWorkerDescriptor),
         {
           name: 'workflow-runner',
           summary: 'Runs all modular workflows in the background (schedules + events).',
@@ -306,7 +360,14 @@ export function buildModuleCatalog() {
     {
       category: 'engines',
       description: 'Analytical and intelligence engines.',
-      modules: [engineEntry(refundIntelligenceEngine), engineEntry(analyticsCenter), engineEntry(tcCodeEngine)]
+      modules: [
+        engineEntry(refundIntelligenceEngine),
+        engineEntry(refundOptimizationEngine),
+        engineEntry(aiPersonaRuntime),
+        engineEntry(analyticsCenter),
+        engineEntry(tcCodeEngine),
+        engineEntry(pdfFillEngine)
+      ]
     },
     {
       category: 'workflows',
@@ -330,5 +391,12 @@ export function catalogSummary(catalog = buildModuleCatalog()) {
   return {
     totalModules: catalog.reduce((sum, group) => sum + group.modules.length, 0),
     categories: catalog.map((group) => ({ category: group.category, count: group.modules.length }))
+  };
+}
+
+export function buildRouteRegistry() {
+  return {
+    generatedAt: new Date().toISOString(),
+    services: listPlatformRoutes()
   };
 }

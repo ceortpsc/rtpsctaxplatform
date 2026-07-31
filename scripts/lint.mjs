@@ -26,6 +26,7 @@ const requiredPaths = [
   'docs/rossco-itr-package-manager.md',
   'docs/rossco-intellectual-property.md',
   'docs/refund-optimization-intelligence.md',
+  'docs/release-channels.md',
   'docs/ai-persona-workforce.md',
   'docs/ross-ai-runtime-platform.md',
   'ross.py',

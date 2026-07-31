@@ -38,6 +38,8 @@ test('start resolves services and rejects unknown ones', () => {
   assert.match(planCommand(['start', 'invoice']).args.join(' '), /invoice-service\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'pos-crm']).args.join(' '), /pos-crm-service\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'crm']).args.join(' '), /pos-crm-service\/src\/index\.mjs$/);
+  assert.match(planCommand(['start', 'irs']).args.join(' '), /irs-gateway\/src\/index\.mjs$/);
+  assert.match(planCommand(['start', 'ai-workforce']).args.join(' '), /ai-workforce-hub\/src\/index\.mjs$/);
   assert.match(planCommand(['start']).args.join(' '), /api-gateway\/src\/index\.mjs$/);
   assert.match(planCommand(['start', 'nope']).error, /Unknown service/);
 });
@@ -64,10 +66,17 @@ test('usage lists the commands', () => {
     'cloud',
     'workflow',
     'clients',
-    'sync'
+    'sync',
+    'release'
   ]) {
     assert.ok(usage.includes(name), `usage should mention ${name}`);
   }
+});
+
+test('release command resolves to scripts/release.mjs', () => {
+  assert.match(planCommand(['release']).args.join(' '), /scripts\/release\.mjs/);
+  assert.match(planCommand(['release', 'build', 'all']).args.join(' '), /build all$/);
+  assert.match(planCommand(['release', 'activate', 'enterprise']).args.join(' '), /activate enterprise$/);
 });
 
 test('activate command resolves to production-activation CLI', () => {

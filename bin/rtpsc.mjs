@@ -6,6 +6,7 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildServiceCliMap } from '../packages/platform-core/src/registry.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -19,36 +20,20 @@ function nodeRaw(args) {
   return { command: process.execPath, args };
 }
 
-const SERVICE_ENTRIES = {
-  gateway: 'services/api-gateway/src/index.mjs',
-  'api-gateway': 'services/api-gateway/src/index.mjs',
-  'refund-status': 'services/refund-status-service/src/index.mjs',
-  transcript: 'services/transcript-service/src/index.mjs',
-  analytics: 'services/analytics-service/src/index.mjs',
-  enrollment: 'services/enrollment-service/src/index.mjs',
-  invoice: 'services/invoice-service/src/index.mjs',
-  'pos-crm': 'services/pos-crm-service/src/index.mjs',
-  pos: 'services/pos-crm-service/src/index.mjs',
-  crm: 'services/pos-crm-service/src/index.mjs',
-  dashboard: 'services/modules-dashboard/src/index.mjs',
-  'staff-portal': 'services/staff-portal/src/index.mjs',
-  staff: 'services/staff-portal/src/index.mjs',
-  'web-portal': 'services/web-portal/src/index.mjs',
-  portal: 'services/web-portal/src/index.mjs',
-  web: 'services/web-portal/src/index.mjs'
-};
+const SERVICE_ENTRIES = buildServiceCliMap();
+const SERVICE_OPTIONS = [...new Set(Object.keys(SERVICE_ENTRIES))].sort().join(', ');
 
 export const COMMANDS = {
   lint: { usage: 'lint', desc: 'Run scaffold lint checks', plan: () => node('scripts/lint.mjs') },
   test: { usage: 'test', desc: 'Run the automated test suite', plan: () => nodeRaw(['--test']) },
   build: { usage: 'build', desc: 'Build the platform manifest', plan: () => node('scripts/build.mjs') },
   start: {
-    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard|staff-portal|web-portal]',
-    desc: 'Start a service (defaults to the api-gateway)',
+    usage: 'start [service]',
+    desc: `Start a service (defaults to api-gateway). Options: ${SERVICE_OPTIONS}`,
     plan: (rest) => {
       const target = rest[0] ?? 'gateway';
       const entry = SERVICE_ENTRIES[target];
-      if (!entry) return { error: `Unknown service "${target}". Options: ${Object.keys(SERVICE_ENTRIES).join(', ')}` };
+      if (!entry) return { error: `Unknown service "${target}". Options: ${SERVICE_OPTIONS}` };
       return node(entry);
     }
   },
@@ -115,12 +100,18 @@ export const COMMANDS = {
     desc: 'Data & table synchronization (CSV/JSON → CRM/refund tables)',
     plan: (rest) => node('scripts/sync.mjs', rest.length ? rest : ['status'])
   },
-  env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') }
+  env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') },
+  release: {
+    usage: 'release [list|describe|build|activate|status|path]',
+    desc: 'Build and activate RTPSC 02.0V release channels (alpha…enterprise/hotfix)',
+    plan: (rest) => node('scripts/release.mjs', rest.length ? rest : ['list'])
+  }
 };
 
 export function buildUsage() {
   const lines = [
-    'RTPSC — Ross Tax Pro Software Co · Efile Transmission Software',
+    'RTPSC — Ross Tax Pro Software Co 02.0V · Efile Transmission Software',
+    'The hierarchy of enterprise-grade tax pro software.',
     '',
     'Usage: ./rtpsc <command> [args]',
     '',
