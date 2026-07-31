@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { unlinkSync } from 'node:fs';
 import {
   RELEASE_CHANNELS,
   RELEASE_LINE,
@@ -81,6 +82,13 @@ test('runtime config and env protection expose release channel', () => {
 });
 
 test('release CLI builds every channel and activates enterprise', () => {
+  // Match CI: no pre-existing platform manifest — release must not leak build logs onto stdout.
+  try {
+    unlinkSync(path.join(repoRoot, 'build', 'platform-manifest.json'));
+  } catch {
+    // absent is fine
+  }
+
   const result = spawnSync(process.execPath, ['scripts/release.mjs', 'build', 'all'], {
     cwd: repoRoot,
     encoding: 'utf8'

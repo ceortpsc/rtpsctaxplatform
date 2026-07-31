@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const modules = [
   '../packages/platform-core/src/index.mjs',
@@ -96,4 +97,9 @@ await writeFile(
   path.join(process.cwd(), 'build/platform-manifest.json'),
   `${JSON.stringify(manifest, null, 2)}\n`
 );
-console.log('Build scaffold verification passed.');
+
+const isMain =
+  process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (isMain) {
+  console.log('Build scaffold verification passed.');
+}

@@ -36,8 +36,15 @@ async function ensurePlatformManifest() {
     await access(platformManifest);
     return platformManifest;
   } catch {
-    const buildUrl = pathToFileURL(path.join(root, 'scripts', 'build.mjs')).href;
-    await import(buildUrl);
+    // Importing build.mjs as a module must not pollute stdout (release CLI emits JSON).
+    const previousLog = console.log;
+    console.log = (...args) => console.error(...args);
+    try {
+      const buildUrl = pathToFileURL(path.join(root, 'scripts', 'build.mjs')).href;
+      await import(buildUrl);
+    } finally {
+      console.log = previousLog;
+    }
     return platformManifest;
   }
 }
