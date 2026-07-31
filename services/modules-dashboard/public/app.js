@@ -101,7 +101,7 @@ const VIEW_META = {
   insights: { title: "Insights", kicker: "AI-assisted analysis & recommendations" },
   assistant: { title: "AI Assistant", kicker: "Ask the platform about its modules" },
   graph: { title: "Dependency Graph", kicker: "How the modules connect" },
-  design: { title: "Design System", kicker: "The Sovereign Ledger visual language" }
+  design: { title: "Design System", kicker: "The Signal Era visual language" }
 };
 
 function setView(view) {
@@ -421,13 +421,13 @@ async function ask(query) {
 
 /* ---------- Dependency Graph ---------- */
 const CATEGORY_COLORS = {
-  packages: "#14213d",
-  services: "#b8860b",
-  workers: "#6b7280",
-  pipelines: "#9c7a1e",
-  engines: "#22345f",
-  workflows: "#d4af37",
-  external: "#9aa1ac"
+  packages: "#0b1220",
+  services: "#0a7ea4",
+  workers: "#5b6b7c",
+  pipelines: "#064f6a",
+  engines: "#243044",
+  workflows: "#1a9bc7",
+  external: "#8b9aab"
 };
 
 async function renderGraph(view) {
@@ -537,15 +537,15 @@ function openModule(name) {
 
 /* ---------- Design System ---------- */
 const PALETTE_SWATCHES = [
-  { name: "Cream (base)", hex: "#f1e8d2", ink: "#14213d" },
-  { name: "Cream 100", hex: "#f8f2e2", ink: "#14213d" },
-  { name: "Gold", hex: "#b8860b", ink: "#ffffff" },
-  { name: "Gold bright", hex: "#d4af37", ink: "#14213d" },
-  { name: "Navy (ink)", hex: "#14213d", ink: "#ffffff" },
-  { name: "Navy 500", hex: "#22345f", ink: "#ffffff" },
-  { name: "Black trim", hex: "#16181d", ink: "#ffffff" },
-  { name: "White", hex: "#ffffff", ink: "#14213d" },
-  { name: "Silver", hex: "#9aa1ac", ink: "#14213d" }
+  { name: "Mist (base)", hex: "#e4ecf4", ink: "#0b1220" },
+  { name: "Mist 100", hex: "#eef3f8", ink: "#0b1220" },
+  { name: "Signal", hex: "#0a7ea4", ink: "#ffffff" },
+  { name: "Signal bright", hex: "#1a9bc7", ink: "#0b1220" },
+  { name: "Graphite (ink)", hex: "#0b1220", ink: "#ffffff" },
+  { name: "Graphite 600", hex: "#243044", ink: "#ffffff" },
+  { name: "Steel", hex: "#5b6b7c", ink: "#ffffff" },
+  { name: "White", hex: "#ffffff", ink: "#0b1220" },
+  { name: "Mist 50", hex: "#f7fafc", ink: "#0b1220" }
 ];
 
 function dsPanel(title, note, children) {
@@ -560,13 +560,13 @@ function renderDesign(view) {
   const hero = el("div", { class: "ds-hero reveal" }, [
     el("img", { class: "ds-hero-rosette", src: "/assets/guilloche.svg", alt: "" }),
     el("p", { class: "ds-hero-eyebrow", text: "Ross Tax Pro Software Co · Design Language" }),
-    el("h1", { class: "ds-hero-title", html: 'The <span class="grad">Sovereign Ledger</span> System' }),
+    el("h1", { class: "ds-hero-title", html: 'The <span class="grad">Signal Era</span> System' }),
     el("p", {
       class: "ds-hero-sub",
       text:
-        "A treasury-grade visual language — engraved guilloché artwork, an embossed seal, " +
-        "a cream-and-navy canvas, and gold that behaves like light on metal. Every token, " +
-        "curve, and motion cue is tuned to feel considered, official, and unmistakably premium."
+        "A new-era tech visual language — cool mist fields, graphite ink, electric signal azure, " +
+        "and geometric brand marks. Built for precision e-file infrastructure, not engraved certificates. " +
+        "Every token and motion cue is tuned for clarity, speed, and modern trust."
     }),
     el("div", { class: "ds-hero-rule" })
   ]);
@@ -585,11 +585,11 @@ function renderDesign(view) {
       ])
     );
   });
-  view.appendChild(dsPanel("Color", "Cream base · gold · navy blue · black trim · white · silver.", swatchGrid));
+  view.appendChild(dsPanel("Color", "Mist base · signal azure · graphite ink · steel · white.", swatchGrid));
 
   // Typography
   const typeRows = [
-    ["Display / 46", "display", "Sovereign Ledger", "font-family: var(--font-display); font-size: 46px;"],
+    ["Display / 46", "display", "Signal Era", "font-family: var(--font-display); font-size: 46px;"],
     ["Display / 26", "display", "Platform Modules", "font-size: 26px;"],
     ["Body / 16", "", "Every module is an executable, compliant stub.", "font-size: 16px;"],
     ["Body / 14", "", "Read-only inventory of the platform surface.", "font-size: 14px;"],
@@ -600,7 +600,7 @@ function renderDesign(view) {
       el("span", { class: `type-sample ${cls}`, style, text: sample })
     ])
   );
-  view.appendChild(dsPanel("Typography", "Serif display for authority, humanist sans for clarity, mono for identifiers.", typeRows));
+  view.appendChild(dsPanel("Typography", "Syne for brand display, DM Sans for UI clarity, IBM Plex Mono for identifiers.", typeRows));
 
   // Components
   const gallery = el("div", { class: "gallery" }, [
@@ -615,27 +615,27 @@ function renderDesign(view) {
     el("div", { class: "bar-track" }, [el("div", { class: "bar-fill", style: "width:72%" })]),
     el("span", { class: "bar-value", text: "72" })
   ]);
-  view.appendChild(dsPanel("Components", "Buttons, filters, tags, chips, and data bars share one gold→navy accent system.", [gallery, barDemo]));
+  view.appendChild(dsPanel("Components", "Buttons, filters, tags, chips, and data bars share one signal→graphite accent system.", [gallery, barDemo]));
 
   // Motion
   const motion = el("div", { class: "motion-grid" }, [
     motionCard("Float", el("div", { class: "demo-coin u-float" })),
-    motionCard("Gold shimmer", el("div", { class: "demo-shimmer" })),
+    motionCard("Signal shimmer", el("div", { class: "demo-shimmer" })),
     motionCard("Bar reveal", el("div", { class: "demo-bar-track" }, [el("div", { class: "demo-bar-fill" })])),
-    motionCard("Rosette spin", el("img", { src: "/assets/guilloche.svg", alt: "", style: "width:52px;animation:rtp-spin-slow 14s linear infinite" }))
+    motionCard("Orbit motif", el("img", { src: "/assets/guilloche.svg", alt: "", style: "width:52px;animation:rtp-float 6s ease-in-out infinite" }))
   ]);
-  view.appendChild(dsPanel("Motion", "Calm, purposeful motion: fade-rise entrances, staggered reveals, metallic shimmer, and slow engraving spins. Honors prefers-reduced-motion.", motion));
+  view.appendChild(dsPanel("Motion", "Purposeful motion: fade-rise entrances, staggered reveals, signal shimmer, and soft orbit drift. Honors prefers-reduced-motion.", motion));
 
   // Artwork
   const art = el("div", { class: "ds-art" }, [
-    el("img", { src: "/assets/emblem.svg", alt: "RTPSC seal", width: "128", height: "128" }),
-    el("img", { src: "/assets/guilloche.svg", alt: "Guilloché rosette", width: "180", height: "180" }),
+    el("img", { src: "/assets/emblem.svg", alt: "RTPSC signal emblem", width: "128", height: "128" }),
+    el("img", { src: "/assets/guilloche.svg", alt: "Signal orbit motif", width: "180", height: "180" }),
     el("p", {
       class: "ds-note",
       style: "max-width:34ch",
       text:
-        "The seal fuses a ledger crest, ascending bars, and a milled coin edge. The guilloché rosette " +
-        "echoes currency-grade security engraving — hand-tuned overlapping ellipses."
+        "The emblem is a rounded chassis with a rising signal constellation. The orbit motif " +
+        "replaces currency guilloché with lattice rings and node points for a tech-forward atmosphere."
     })
   ]);
   view.appendChild(dsPanel("Concept artwork", "Original, dependency-free SVG graphics — no external assets.", art));

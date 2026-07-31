@@ -25,7 +25,10 @@ test('workflow modules are listed as background modules with trigger tags', () =
     'transmission-cycle',
     'agent-assignment-dispatch',
     'agent-task-requested',
-    'agent-assignment-cycle'
+    'agent-assignment-cycle',
+    'production-activation-dispatch',
+    'production-activation-requested',
+    'production-activation-cycle'
   ]);
   const refund = workflows.modules.find((m) => m.name === 'refund-status-update');
   assert.ok(refund.tags.some((tag) => tag.startsWith('event:')));

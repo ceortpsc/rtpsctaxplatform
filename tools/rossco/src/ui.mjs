@@ -27,6 +27,8 @@ Commands
   rossco test|validate|verify
   rossco register|copyright Register product + show IP seal
   rossco presence|seo       Online presence + SEO emit
+  rossco seo plan|generate|prevalidate|google|indexnow
+                          ROSS.CO Infinite SEO ownership control plane
   rossco doctor|version|help|commands
 
 Flags

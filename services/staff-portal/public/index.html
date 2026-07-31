@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Staff Portal · RTPSC</title>
+    <link rel="icon" href="/rtp-design/assets/emblem.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/rtp-design/theme.css" />
+    <link rel="stylesheet" href="/rtp-design/components.css" />
+    <link rel="stylesheet" href="/rtp-design/shell.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="rtp-skip-link" href="#main-content">Skip to main content</a>
+    <div class="bg-decor" aria-hidden="true">
+      <img class="decor-rosette decor-rosette--tr" src="/rtp-design/assets/guilloche.svg" alt="" />
+      <img class="decor-rosette decor-rosette--bl" src="/rtp-design/assets/guilloche.svg" alt="" />
+    </div>
+
+    <div class="rtp-app app">
+      <aside class="rtp-sidebar sidebar" id="sidebar" aria-label="Primary navigation">
+        <div class="rtp-brand brand">
+          <img class="rtp-brand__emblem brand-emblem u-float" src="/rtp-design/assets/emblem.svg" alt="" />
+          <div class="rtp-brand__text brand-text">
+            <span class="rtp-brand__mark brand-mark">RTPSC</span>
+            <span class="rtp-brand__sub brand-sub">Staff Portal</span>
+            <span class="rtp-brand__co brand-co">Ross Tax Pro Software Co</span>
+          </div>
+        </div>
+        <div class="rtp-env-badge env-badge protected" id="env-badge">
+          <span class="env-shield" aria-hidden="true">🛡</span>
+          <span class="env-env" id="env-label">LOCAL</span>
+          <span class="env-state">Transmission protected</span>
+        </div>
+        <nav class="rtp-nav nav" id="main-nav" aria-label="Application modules"></nav>
+        <div class="rtp-sidebar__foot sidebar-foot">
+          Unified enterprise shell · Role-aware navigation ·
+          <a href="/design-system">Design System</a>
+        </div>
+      </aside>
+
+      <main class="rtp-main main" id="main-content">
+        <header class="rtp-topbar topbar">
+          <div class="rtp-topbar__lead topbar-lead">
+            <p class="rtp-page-category">Overview</p>
+            <h1 class="rtp-topbar__title view-title">Operations Dashboard</h1>
+            <p class="rtp-topbar__kicker view-kicker">Revenue, approvals, filings, and client activity at a glance</p>
+          </div>
+          <div class="rtp-topbar__actions topbar-right">
+            <button class="rtp-icon-btn icon-btn" id="rtp-theme-toggle" type="button" title="Toggle dark theme" aria-pressed="false">◐</button>
+            <button class="rtp-icon-btn icon-btn" id="rtp-sidebar-collapse" type="button" title="Collapse sidebar">◧</button>
+          </div>
+        </header>
+
+        <div class="rtp-workspace rtp-workspace--wide view">
+          <section class="rtp-banner banner">
+            Production e-file transmission remains <strong>blocked</strong> until external IRS authorization,
+            certificates, and ATS evidence are configured. This dashboard shows operational modules that are
+            implemented in the current environment.
+          </section>
+
+          <div class="dashboard-grid" id="dashboard-grid">
+            <p class="rtp-skeleton rtp-skeleton--title"></p>
+            <p class="rtp-skeleton rtp-skeleton--text"></p>
+          </div>
+
+          <section class="quick-links" id="quick-links">
+            <h2>Quick actions</h2>
+            <div class="rtp-page-actions">
+              <a class="rtp-btn rtp-btn--primary" href="http://localhost:3005">Create invoice</a>
+              <a class="rtp-btn rtp-btn--secondary" href="http://localhost:3006">Open POS + CRM</a>
+              <a class="rtp-btn rtp-btn--secondary" href="http://localhost:3001">Refund Center</a>
+              <a class="rtp-btn rtp-btn--secondary" href="http://localhost:3010">Module catalog</a>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <button class="rtp-mobile-toggle" id="rtp-mobile-toggle" type="button" aria-expanded="false" aria-controls="sidebar">☰</button>
+    <div class="rtp-mobile-nav-overlay" id="rtp-mobile-overlay"></div>
+
+    <script src="/rtp-design/shell.js" defer></script>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

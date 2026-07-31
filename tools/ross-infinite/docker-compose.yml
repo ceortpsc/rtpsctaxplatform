@@ -1,0 +1,15 @@
+services:
+  registry:
+    build: .
+    environment:
+      PORT: 4873
+      ROSS_REGISTRY_DATA: /data
+    ports:
+      - "4873:4873"
+    volumes:
+      - registry-data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+volumes:
+  registry-data:

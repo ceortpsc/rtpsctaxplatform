@@ -1,0 +1,57 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-8);
+}
+
+.metric-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--r-md);
+  padding: var(--sp-5);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+
+.metric-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--grad-gold);
+}
+
+.metric-value {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  color: var(--color-gold);
+  margin: var(--sp-2) 0;
+}
+
+.metric-label {
+  font-size: var(--fs-sm);
+  color: var(--color-muted);
+}
+
+.metric-card a.metric-link {
+  display: inline-block;
+  margin-top: var(--sp-3);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-navy);
+  text-decoration: none;
+}
+
+.metric-card a.metric-link:hover {
+  color: var(--color-gold);
+}
+
+.quick-links h2 {
+  margin-top: 0;
+}

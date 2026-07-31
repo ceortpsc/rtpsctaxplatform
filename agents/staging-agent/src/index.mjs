@@ -8,7 +8,7 @@ export const stagingAgent = defineAgent({
   name: 'staging-agent',
   title: 'Staging Agent',
   description: 'Produces a staged rollout/promotion pipeline with gates, ending at environment-protected go-live.',
-  capabilities: ['staged-rollout', 'promotion', 'gates'],
+  capabilities: ['staged-rollout', 'promotion', 'gates', 'production-activation'],
   run: (context) => {
     const stages = [
       { name: 'Stage 0 — Build', components: ['pnpm install', 'pnpm run lint', 'pnpm test', 'pnpm run build'], gate: 'All quality gates green' },
@@ -19,14 +19,33 @@ export const stagingAgent = defineAgent({
       { name: 'Stage 5 — Promotion', components: ['local', 'dev', 'stage', 'prod'], gate: 'Environment protection satisfied before prod e-file transmission' }
     ];
 
+    const activationFocus = context.assignment?.id === 'activate-production';
+    const activationSection = {
+      heading: 'Automated production activation',
+      bullets: [
+        'CLI: ./rtpsc activate [--skip-gates] [--json]',
+        'Event: production.activation.requested → production-activation-requested workflow',
+        'Schedule: production-activation-cycle heartbeat every 180s',
+        'Honest ceiling without live evidence: AUTOMATICALLY_TESTED / STAGING_VERIFIED',
+        'PRODUCTION_VERIFIED requires CloudFormation, TLS, DNS, attestation, and owner approval'
+      ],
+      code: {
+        text: "./rtpsc workflow emit production.activation.requested '{\"mode\":\"automated\",\"skipGates\":false}'",
+        lang: 'bash'
+      }
+    };
+
     return {
-      summary: `A ${stages.length}-stage promotion pipeline; live transmission is gated (currently: ${context.environment.protected ? 'PROTECTED' : 'LIVE'}).`,
+      summary: activationFocus
+        ? `Automated production activation pipeline ready; live PRODUCTION_VERIFIED remains evidence-gated (env: ${context.environment.protected ? 'PROTECTED' : 'LIVE'}).`
+        : `A ${stages.length}-stage promotion pipeline; live transmission is gated (currently: ${context.environment.protected ? 'PROTECTED' : 'LIVE'}).`,
       sections: [
         { heading: 'Staging pipeline', table: { columns: ['Stage', 'Components', 'Gate'], rows: stages.map((s) => [s.name, String(s.components.length), s.gate]) } },
         ...stages.map((stage) => ({ heading: stage.name, bullets: [`Components: ${stage.components.join(', ')}`, `Gate: ${stage.gate}`] })),
+        activationSection,
         { heading: 'Deploy command', code: { text: 'pnpm run deploy:all   # health-checks every service + background worker', lang: 'bash' } }
       ],
-      data: { stages }
+      data: { stages, activationAutomated: true, assignmentId: context.assignment?.id || null }
     };
   }
 });

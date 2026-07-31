@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ross.co/schemas/taskfile.schema.json",
+  "title": "ROSS.CO Infinite Taskfile",
+  "type": "object",
+  "required": ["schemaVersion", "tasks"],
+  "properties": {
+    "schemaVersion": { "type": "integer" },
+    "engineVersion": { "type": "string" },
+    "jobs": { "type": "integer", "minimum": 1 },
+    "defaultTimeoutMs": { "type": "integer" },
+    "cacheDir": { "type": "string" },
+    "env": { "type": "object" },
+    "tasks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "description": { "type": "string" },
+          "command": { "type": "string" },
+          "dependsOn": { "type": "array", "items": { "type": "string" } },
+          "inputs": { "type": "array", "items": { "type": "string" } },
+          "outputs": { "type": "array", "items": { "type": "string" } },
+          "timeoutMs": { "type": "integer" },
+          "retries": { "type": "integer" },
+          "cache": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

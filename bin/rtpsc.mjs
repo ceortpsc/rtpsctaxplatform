@@ -30,7 +30,12 @@ const SERVICE_ENTRIES = {
   'pos-crm': 'services/pos-crm-service/src/index.mjs',
   pos: 'services/pos-crm-service/src/index.mjs',
   crm: 'services/pos-crm-service/src/index.mjs',
-  dashboard: 'services/modules-dashboard/src/index.mjs'
+  dashboard: 'services/modules-dashboard/src/index.mjs',
+  'staff-portal': 'services/staff-portal/src/index.mjs',
+  staff: 'services/staff-portal/src/index.mjs',
+  'web-portal': 'services/web-portal/src/index.mjs',
+  portal: 'services/web-portal/src/index.mjs',
+  web: 'services/web-portal/src/index.mjs'
 };
 
 export const COMMANDS = {
@@ -38,7 +43,7 @@ export const COMMANDS = {
   test: { usage: 'test', desc: 'Run the automated test suite', plan: () => nodeRaw(['--test']) },
   build: { usage: 'build', desc: 'Build the platform manifest', plan: () => node('scripts/build.mjs') },
   start: {
-    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard]',
+    usage: 'start [gateway|refund-status|transcript|analytics|enrollment|invoice|pos-crm|dashboard|staff-portal|web-portal]',
     desc: 'Start a service (defaults to the api-gateway)',
     plan: (rest) => {
       const target = rest[0] ?? 'gateway';
@@ -47,7 +52,29 @@ export const COMMANDS = {
       return node(entry);
     }
   },
-  deploy: { usage: 'deploy [--smoke]', desc: 'Deploy all services + background worker', plan: (rest) => node('scripts/deploy-all.mjs', rest) },
+  deploy: {
+    usage: 'deploy [--smoke] [--full|--platform] [--skip-gates]',
+    desc: 'Deploy platform services (add --full for RTPSC + ROSS.CO Infinite + SEO provisions)',
+    plan: (rest) => {
+      if (rest.includes('--full') || rest.includes('--platform')) {
+        return node(
+          'scripts/deploy-platform.mjs',
+          rest.filter((arg) => arg !== '--full' && arg !== '--platform')
+        );
+      }
+      return node('scripts/deploy-all.mjs', rest);
+    }
+  },
+  'deploy-full': {
+    usage: 'deploy-full [--smoke] [--skip-gates] [--skip-workers]',
+    desc: 'Full deploy: gates, SEO/DNS artifacts, ROSS.CO Infinite, all services, workers, smoke',
+    plan: (rest) => node('scripts/deploy-platform.mjs', rest)
+  },
+  activate: {
+    usage: 'activate [--smoke|--skip-gates|--status|--heartbeat|--json] [--evidence-<flag>]',
+    desc: 'Fully automated production activation (gates, receipts, workflow triggers)',
+    plan: (rest) => node('packages/production-activation/bin/activate.mjs', rest)
+  },
   workflows: { usage: 'workflows', desc: 'List background workflows', plan: () => node('workers/workflow-runner/src/cli.mjs', ['list']) },
   workflow: {
     usage: "workflow run <name> '<json>'  |  workflow emit <event> '<json>'",
