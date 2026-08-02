@@ -1,0 +1,4 @@
+caseId,taxpayerRef,filingStage,status,amount,source,returnId,ackCode
+CASE-77,TP-77,approved,status-available,3200,fixture,11111111-2222-3333-4444-555555555551,A
+CASE-88,TP-88,processing,status-unavailable,2100,fixture,11111111-2222-3333-4444-555555555552,R
+CASE-101,TP-101,received,status-unavailable,1800,fixture,,

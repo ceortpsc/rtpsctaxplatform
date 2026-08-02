@@ -1,0 +1,4 @@
+taxpayerRef,name,email,phone,state,locality,tags,notes,source
+TP-77,Jordan Ellis,jordan@example.com,5045550100,LA,ORLEANS,demo|efile,Synthetic CRM sync fixture,fixture
+TP-88,Alex Rivera,alex@example.com,5045550199,LA,JEFFERSON,demo,Synthetic CRM sync fixture,fixture
+TP-101,Sam Nguyen,sam@example.com,7135550142,TX,HARRIS,demo|pos,Synthetic CRM sync fixture,fixture

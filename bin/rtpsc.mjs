@@ -100,6 +100,11 @@ export const COMMANDS = {
     desc: 'Issue/list full API and TDS client ids (secrets gitignored)',
     plan: (rest) => node('scripts/clients.mjs', rest.length ? rest : ['status'])
   },
+  sync: {
+    usage: 'sync [status|tables|run|import <table> <file>|project]',
+    desc: 'Data & table synchronization (CSV/JSON → CRM/refund tables)',
+    plan: (rest) => node('scripts/sync.mjs', rest.length ? rest : ['status'])
+  },
   env: { usage: 'env', desc: 'Print environment protection status', plan: () => node('scripts/env.mjs') },
   'worker:security': {
     usage: 'worker:security',

@@ -66,6 +66,7 @@ test('usage lists the commands', () => {
     'cloud',
     'workflow',
     'clients',
+    'sync',
     'release'
   ]) {
     assert.ok(usage.includes(name), `usage should mention ${name}`);
@@ -85,6 +86,12 @@ test('activate command resolves to production-activation CLI', () => {
 test('clients command resolves to scripts/clients.mjs', () => {
   assert.match(planCommand(['clients']).args.join(' '), /scripts\/clients\.mjs/);
   assert.match(planCommand(['clients', 'issue', 'api']).args.join(' '), /issue api$/);
+});
+
+test('sync command resolves to scripts/sync.mjs', () => {
+  assert.match(planCommand(['sync']).args.join(' '), /scripts\/sync\.mjs/);
+  assert.match(planCommand(['sync', 'run']).args.join(' '), /run$/);
+  assert.match(planCommand(['sync', 'import', 'clients', 'data/sync/clients.csv']).args.join(' '), /import clients/);
 });
 
 test('canvas command resolves to scripts/canvas.mjs', () => {

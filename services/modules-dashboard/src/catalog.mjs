@@ -22,6 +22,7 @@ import { listPhraseTemplates } from '../../../packages/ero-ops/src/index.mjs';
 import { tdsWorkerDescriptor } from '../../../workers/tds-worker/src/index.mjs';
 import { transcriptPullWorkerDescriptor } from '../../../workers/transcript-pull-worker/src/index.mjs';
 import { liveSourceFetcherDescriptor } from '../../../workers/live-source-fetcher/src/index.mjs';
+import { dataSyncWorkerDescriptor } from '../../../workers/data-sync-worker/src/index.mjs';
 import { securityScannerDescriptor } from '../../../workers/security-scanner-worker/src/index.mjs';
 import { aiPersonaWorkerDescriptor } from '../../../workers/ai-persona-worker/src/index.mjs';
 import { transmissionPipeline } from '../../../pipelines/transmission-pipeline/src/index.mjs';
@@ -267,6 +268,16 @@ export function buildModuleCatalog() {
           }
         },
         {
+          name: '@rtp/data-sync',
+          summary: 'Shared table contracts, CSV/JSON import, and CRM/refund projection for platform data sync.',
+          tags: ['data', 'tables', 'sync', 'csv'],
+          detail: {
+            tables: ['clients', 'refund_cases', 'invoices', 'tax_rates', 'interactions', 'federal_ledger'],
+            commands: ['./rtpsc sync status', './rtpsc sync run', './rtpsc sync import clients data/sync/clients.csv'],
+            directory: 'data/sync'
+          }
+        },
+        {
           name: '@rtp/agent-build-team',
           summary: 'Agent Build Engineering Team inventory and assessment runner.',
           tags: ['team', 'build'],
@@ -339,6 +350,7 @@ export function buildModuleCatalog() {
         workerEntry(tdsWorkerDescriptor),
         workerEntry(transcriptPullWorkerDescriptor),
         workerEntry(liveSourceFetcherDescriptor),
+        workerEntry(dataSyncWorkerDescriptor),
         workerEntry(securityScannerDescriptor),
         workerEntry(aiPersonaWorkerDescriptor),
         {

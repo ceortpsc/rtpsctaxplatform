@@ -18,10 +18,13 @@ import {
   scoreRefundIntelligence
 } from '../../../packages/ero-ops/src/index.mjs';
 import { taxLookups } from '../../../packages/invoice-core/src/index.mjs';
+import { createSyncEngine } from '../../../packages/data-sync/src/index.mjs';
 import { serveDesignSystemAsset } from '../../../packages/ui-design-system/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3006;
+const SYNC_DIR = process.env.DATA_SYNC_DIR ?? path.resolve(process.cwd(), 'data', 'sync');
+const SYNC_STORE = process.env.DATA_SYNC_STORE ?? path.join(SYNC_DIR, 'store.json');
 
 export const posCrmDescriptor = createServiceDescriptor({
   name: 'pos-crm-service',
@@ -29,9 +32,18 @@ export const posCrmDescriptor = createServiceDescriptor({
   responsibilities: [
     'Operate the CRM for tax-prep clients (contacts, accounts, interactions).',
     'Run the Point of Sale register fully linked to CRM and the invoicing machine.',
-    'Track SBTPG report traces, automate ERO phrasing, and surface refund intelligence.'
+    'Track SBTPG report traces, automate ERO phrasing, and surface refund intelligence.',
+    'Apply synchronized client/interaction tables from @rtp/data-sync into the live CRM store.'
   ],
-  dependencies: ['@rtp/crm-core', '@rtp/pos-core', '@rtp/ero-ops', '@rtp/invoice-core', '@rtp/tax-data', '@rtp/bank-products']
+  dependencies: [
+    '@rtp/crm-core',
+    '@rtp/pos-core',
+    '@rtp/ero-ops',
+    '@rtp/invoice-core',
+    '@rtp/tax-data',
+    '@rtp/bank-products',
+    '@rtp/data-sync'
+  ]
 });
 
 const CONTENT_TYPES = {
@@ -108,6 +120,7 @@ export function createPosCrmServer() {
   const crm = createCrmStore();
   const pos = createPosStore(crm);
   const traces = createSbtpgTraceStore();
+  const sync = createSyncEngine({ persistPath: SYNC_STORE });
 
   // Seed a demo contact for operator onboarding (idempotent per process).
   const seed = crm.createContact({
@@ -141,8 +154,35 @@ export function createPosCrmServer() {
             crm: crm.snapshot(),
             pos: pos.snapshot(),
             traces: traces.listTraces({ limit: 1 }).length,
-            seedContactId: seed.id
+            seedContactId: seed.id,
+            dataSync: sync.store.count()
           }
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/api/sync') {
+        await sync.store.loadPersisted();
+        return sendJson(response, 200, { ...sync.status(), directory: SYNC_DIR, crm: crm.snapshot() });
+      }
+
+      if (request.method === 'POST' && pathname === '/api/sync/project') {
+        await sync.store.loadPersisted();
+        const body = await readBody(request);
+        if (body.csv && body.table) {
+          sync.importCsvText(body.table, body.csv, { source: 'pos-crm-sync' });
+        } else if (Array.isArray(body.rows) && body.table) {
+          sync.importRows(body.table, body.rows, { source: 'pos-crm-sync' });
+        } else if (body.runDirectory !== false) {
+          await sync.syncDirectory(body.directory ?? SYNC_DIR);
+        }
+        const projection = await sync.project({ crmStore: crm, includeTaxSeed: true });
+        await sync.store.persist();
+        return sendJson(response, 200, {
+          crm: crm.snapshot(),
+          projections: Object.fromEntries(
+            Object.entries(projection.projections).map(([k, v]) => [k, v.summary ?? v])
+          ),
+          counts: sync.store.count()
         });
       }
 
