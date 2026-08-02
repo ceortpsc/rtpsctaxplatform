@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Start the RTPSC Tax Platform in entirety:
- * - HTTP services: api-gateway :3000, refund-status :3001, transcript :3002, analytics :3003
- * - Workers (one-shot): tds, transcript-pull, live-source
+ * Start the RTPSC Tax Platform in entirety from the canonical service registry:
+ * - All HTTP services in PLATFORM_SERVICES
+ * - Workers (one-shot): tds, transcript-pull, live-source, ai-persona
  * - Optional: --no-workers, --services-only, --check-only
  *
  * Long-running supervisor — run under tmux. Ctrl+C stops all services.
@@ -11,21 +11,22 @@ import { spawn } from 'node:child_process';
 import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PLATFORM_SERVICES } from '../packages/platform-core/src/registry.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const aol = path.join(root, 'tools/aol/bin/aol.mjs');
 
-const SERVICES = [
-  { id: 'api-gateway', workspace: '@rtp/api-gateway', port: 3000 },
-  { id: 'refund-status', workspace: '@rtp/refund-status-service', port: 3001 },
-  { id: 'transcript', workspace: '@rtp/transcript-service', port: 3002 },
-  { id: 'analytics', workspace: '@rtp/analytics-service', port: 3003 }
-];
+const SERVICES = PLATFORM_SERVICES.map((service) => ({
+  id: service.id,
+  name: service.name,
+  entry: service.entry,
+  port: service.port
+}));
 
 const WORKERS = [
-  { id: 'tds-worker', workspace: '@rtp/tds-worker' },
-  { id: 'transcript-pull-worker', workspace: '@rtp/transcript-pull-worker' },
-  { id: 'live-source-fetcher', workspace: '@rtp/live-source-fetcher' }
+  { id: 'tds-worker', entry: 'workers/tds-worker/src/index.mjs' },
+  { id: 'transcript-pull-worker', entry: 'workers/transcript-pull-worker/src/index.mjs' },
+  { id: 'live-source-fetcher', entry: 'workers/live-source-fetcher/src/index.mjs' },
+  { id: 'ai-persona-worker', entry: 'workers/ai-persona-worker/src/index.mjs' }
 ];
 
 const args = new Set(process.argv.slice(2));
@@ -57,11 +58,10 @@ async function waitForHealth(port, id, attempts = 40) {
 }
 
 function startService(service) {
-  // Unset SERVICE_PORT so each service's defaultPort override wins.
   const env = { ...process.env };
   delete env.SERVICE_PORT;
 
-  const child = spawn(process.execPath, [aol, 'run', '-w', service.workspace, 'start'], {
+  const child = spawn(process.execPath, [path.join(root, service.entry)], {
     cwd: root,
     env,
     stdio: ['ignore', 'pipe', 'pipe']
@@ -82,11 +82,11 @@ function startService(service) {
 
 async function runWorker(worker) {
   return new Promise((resolve) => {
-    const child = spawn(
-      process.execPath,
-      [aol, 'run', '-w', worker.workspace, 'start', '--', '--once'],
-      { cwd: root, env: process.env, stdio: ['ignore', 'pipe', 'pipe'] }
-    );
+    const child = spawn(process.execPath, [path.join(root, worker.entry), '--once'], {
+      cwd: root,
+      env: process.env,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (c) => {
@@ -119,7 +119,7 @@ async function main() {
     return;
   }
 
-  log('Starting RTPSC Tax Platform (entirety)');
+  log(`Starting RTPSC Tax Platform (entirety) APP_ENV=${process.env.APP_ENV || 'local'}`);
   log(`root=${root}`);
 
   const children = [];
@@ -152,6 +152,7 @@ async function main() {
   const status = {
     startedAt: new Date().toISOString(),
     mode: 'entirety',
+    appEnv: process.env.APP_ENV || 'local',
     services: health,
     workers,
     endpoints: SERVICES.map((s) => ({
@@ -190,7 +191,6 @@ async function main() {
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
 
-  // Keep alive while children run
   await new Promise(() => {});
 }
 

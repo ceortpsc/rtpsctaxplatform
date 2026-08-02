@@ -1,0 +1,21 @@
+{
+  "Comment": "ROSS.CO Infinite SEO ownership Google domain verification TXT",
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "ross.co",
+        "Type": "TXT",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "\"v=spf1 -all\""
+          },
+          {
+            "Value": "\"google-site-verification=PENDING_REPLACE_WITH_PROVIDER_ISSUED_TOKEN\""
+          }
+        ]
+      }
+    }
+  ]
+}

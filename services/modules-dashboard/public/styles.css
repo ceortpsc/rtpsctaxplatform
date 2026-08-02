@@ -1,6 +1,6 @@
 /* =============================================================================
-   RTPSC "Sovereign Ledger" — Application styles
-   Consumes tokens from theme.css. Palette: cream · gold · navy · black · white · silver.
+   RTPSC "Signal Era" — Application styles
+   Consumes tokens from theme.css / /rtp-design/. Palette: mist · signal · graphite · steel · white.
    ========================================================================== */
 
 * {
@@ -508,8 +508,8 @@ code {
 .tag {
   font-size: var(--fs-xs);
   color: var(--gold-700);
-  background: rgba(184, 134, 11, 0.12);
-  border: 1px solid rgba(184, 134, 11, 0.4);
+  background: rgba(10, 126, 164, 0.12);
+  border: 1px solid rgba(10, 126, 164, 0.4);
   border-radius: var(--r-sm);
   padding: 2px 8px;
 }
@@ -671,7 +671,7 @@ code {
 
 .rec.warning .rec-sev {
   color: var(--gold-700);
-  background: rgba(184, 134, 11, 0.14);
+  background: rgba(10, 126, 164, 0.14);
 }
 .rec.info .rec-sev {
   color: var(--color-navy);
@@ -792,8 +792,8 @@ code {
   font-size: var(--fs-xs);
   font-family: var(--font-mono);
   color: var(--gold-700);
-  background: rgba(184, 134, 11, 0.12);
-  border: 1px solid rgba(184, 134, 11, 0.4);
+  background: rgba(10, 126, 164, 0.12);
+  border: 1px solid rgba(10, 126, 164, 0.4);
   border-radius: var(--r-sm);
   padding: 2px 8px;
 }
@@ -1273,8 +1273,8 @@ code {
   font-size: 10.5px;
   font-weight: 700;
   color: var(--color-gold-bright);
-  background: rgba(184, 134, 11, 0.16);
-  border: 1px solid rgba(184, 134, 11, 0.4);
+  background: rgba(10, 126, 164, 0.16);
+  border: 1px solid rgba(10, 126, 164, 0.4);
   border-radius: var(--r-pill);
   padding: 0 7px;
   min-width: 18px;
@@ -1525,8 +1525,8 @@ code {
   font-size: var(--fs-xs);
   font-family: var(--font-mono);
   color: var(--gold-700);
-  background: rgba(184, 134, 11, 0.12);
-  border: 1px solid rgba(184, 134, 11, 0.4);
+  background: rgba(10, 126, 164, 0.12);
+  border: 1px solid rgba(10, 126, 164, 0.4);
   border-radius: var(--r-sm);
   padding: 3px 9px;
   margin: 0 6px 6px 0;

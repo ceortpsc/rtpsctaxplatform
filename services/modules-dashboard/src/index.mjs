@@ -6,12 +6,17 @@ import {
   evaluateEnvironmentProtection,
   loadRuntimeConfig,
   PLATFORM_IDENTITY,
-  redactConfig
+  redactConfig,
+  listReleaseChannels,
+  describeReleaseChannel,
+  resolveChannelFromEnv
 } from '../../../packages/platform-core/src/index.mjs';
 import { answerQuery, buildDependencyGraph, buildInsights } from '../../../packages/module-advisor/src/index.mjs';
-import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor, SERVICE_ENDPOINTS } from './catalog.mjs';
+import { buildModuleCatalog, catalogSummary, modulesDashboardDescriptor, SERVICE_ENDPOINTS, buildRouteRegistry } from './catalog.mjs';
+import { serveDesignSystemAsset } from '../../../packages/ui-design-system/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const DEFAULT_PORT = 3010;
 
 export const dashboardDescriptor = modulesDashboardDescriptor;
@@ -21,7 +26,13 @@ const CONTENT_TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml'
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon'
 };
 
 function sendJson(response, statusCode, body) {
@@ -154,6 +165,28 @@ export function createDashboardServer() {
       return;
     }
 
+    if (request.method === 'GET' && pathname === '/api/routes') {
+      sendJson(response, 200, buildRouteRegistry());
+      return;
+    }
+
+    if (request.method === 'GET' && pathname === '/api/release') {
+      const channel = resolveChannelFromEnv();
+      let active = null;
+      try {
+        active = JSON.parse(await readFile(path.join(repoRoot, 'build/active-release.json'), 'utf8'));
+      } catch {
+        active = null;
+      }
+      sendJson(response, 200, {
+        identity: PLATFORM_IDENTITY,
+        active,
+        env: describeReleaseChannel(channel.id),
+        channels: listReleaseChannels()
+      });
+      return;
+    }
+
     if (request.method === 'POST' && pathname === '/api/assistant') {
       try {
         const body = await readRequestBody(request);
@@ -165,6 +198,7 @@ export function createDashboardServer() {
     }
 
     if (request.method === 'GET') {
+      if (serveDesignSystemAsset(response, request.url || pathname)) return;
       await serveStatic(response, pathname);
       return;
     }

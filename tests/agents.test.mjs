@@ -8,17 +8,26 @@ import { testingAgent } from '../agents/testing-agent/src/index.mjs';
 import { mappingAgent } from '../agents/mapping-agent/src/index.mjs';
 import { stagingAgent } from '../agents/staging-agent/src/index.mjs';
 import { assessmentAgent } from '../agents/assessment-agent/src/index.mjs';
+import { seoOwnershipAgent } from '../agents/seo-ownership-agent/src/index.mjs';
 import { markdownAgent } from '../agents/markdown-agent/src/index.mjs';
 
-test('development team roster has all seven roles', () => {
-  assert.equal(DEVELOPMENT_TEAM.length, 7);
-  assert.equal(platformAgents.length, 7);
-  assert.equal(analysisAgents.length, 6);
+test('development team roster has all eight roles', () => {
+  assert.equal(DEVELOPMENT_TEAM.length, 8);
+  assert.equal(platformAgents.length, 8);
+  assert.equal(analysisAgents.length, 7);
 });
 
 test('every agent produces a structured report with sections', async () => {
   const context = buildAgentContext();
-  for (const agent of [planningAgent, scopingAgent, testingAgent, mappingAgent, stagingAgent, assessmentAgent]) {
+  for (const agent of [
+    planningAgent,
+    scopingAgent,
+    testingAgent,
+    mappingAgent,
+    stagingAgent,
+    assessmentAgent,
+    seoOwnershipAgent
+  ]) {
     const report = await runAgent(agent, context);
     assert.equal(report.status, 'ok', `${agent.name} should run cleanly`);
     assert.ok(report.sections.length > 0, `${agent.name} should emit sections`);
@@ -41,7 +50,7 @@ test('planning agent yields five phases and milestones', async () => {
 
 test('markdown engine generates a document per report plus an index', async () => {
   const { reports, documents } = await runPlatformAgents();
-  assert.equal(reports.length, 7);
+  assert.equal(reports.length, 8);
   // one index + one per analysis report (6)
   assert.equal(documents.length, analysisAgents.length + 1);
   assert.ok(documents.some((d) => d.path === 'docs/agents/README.md'));

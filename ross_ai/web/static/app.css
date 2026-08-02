@@ -1,16 +1,20 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap");
+
 :root {
-  --ink: #07120e;
-  --paper: #e7f1eb;
-  --muted: #9db5a8;
-  --accent: #1f6f54;
-  --gold: #c4a35a;
-  --line: rgba(183, 207, 196, 0.28);
-  --panel: rgba(8, 18, 14, 0.78);
+  /* Signal Era — replaces rejected Sovereign Ledger (forest · gold · serif) */
+  --ink: #04080f;
+  --paper: #e8eef6;
+  --muted: #8b9aab;
+  --accent: #0a7ea4;
+  --gold: #1a9bc7; /* legacy name → signal bright */
+  --signal: #0a7ea4;
+  --line: rgba(184, 199, 214, 0.28);
+  --panel: rgba(15, 23, 36, 0.82);
   --danger: #d97862;
   --ok: #6fbf95;
-  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --font-ui: "Segoe UI", "Helvetica Neue", ui-sans-serif, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-display: "Syne", "Bahnschrift", "Avenir Next Condensed", "Segoe UI", sans-serif;
+  --font-ui: "DM Sans", "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -18,7 +22,7 @@ html, body { margin: 0; min-height: 100%; }
 body {
   color: var(--paper);
   font-family: var(--font-ui);
-  background: #07120e;
+  background: #060b14;
   position: relative;
   overflow-x: hidden;
 }
@@ -28,15 +32,25 @@ body {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(1100px 620px at 8% -8%, #2a5a46 0%, transparent 55%),
-    radial-gradient(900px 520px at 100% 0%, #3a4528 0%, transparent 52%),
-    linear-gradient(165deg, #06110d 0%, #12241d 48%, #0a1612 100%);
+    radial-gradient(1100px 620px at 8% -8%, rgba(26, 155, 199, 0.22) 0%, transparent 55%),
+    radial-gradient(900px 520px at 100% 0%, rgba(10, 126, 164, 0.16) 0%, transparent 52%),
+    linear-gradient(165deg, #060b14 0%, #0f1724 48%, #0b1220 100%);
   animation: drift 18s ease-in-out infinite alternate;
+}
+.atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(232, 238, 246, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 238, 246, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
 }
 
 @keyframes drift {
-  from { filter: hue-rotate(0deg) saturate(1); }
-  to { filter: hue-rotate(-8deg) saturate(1.08); }
+  from { filter: saturate(1); }
+  to { filter: saturate(1.08); }
 }
 
 .topbar {
@@ -50,7 +64,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(7, 18, 14, 0.72);
+  background: rgba(6, 11, 20, 0.78);
 }
 .mark strong { color: var(--paper); font-weight: 700; letter-spacing: 0.04em; }
 .mark em { color: var(--gold); font-style: normal; font-size: 0.72em; margin-left: 0.35rem; font-family: var(--font-ui); letter-spacing: 0.02em; }
@@ -167,7 +181,7 @@ body {
   border-top: 1px solid var(--line);
 }
 .strip > div {
-  background: rgba(8, 18, 14, 0.92);
+  background: rgba(15, 23, 36, 0.92);
   padding: 1.2rem 1.1rem;
   display: flex;
   flex-direction: column;
@@ -327,9 +341,9 @@ body {
 .flash {
   margin: 0.75rem 1.2rem 0;
   padding: 0.65rem 0.85rem;
-  border: 1px solid rgba(196, 163, 90, 0.45);
+  border: 1px solid rgba(26, 155, 199, 0.45);
   color: var(--gold);
-  background: rgba(196, 163, 90, 0.08);
+  background: rgba(26, 155, 199, 0.08);
 }
 
 .animate-in {
@@ -368,7 +382,7 @@ body {
   display: grid;
   gap: 0.65rem;
 }
-.tier.highlight { border-color: rgba(196, 163, 90, 0.65); box-shadow: inset 0 0 0 1px rgba(196, 163, 90, 0.25); }
+.tier.highlight { border-color: rgba(26, 155, 199, 0.65); box-shadow: inset 0 0 0 1px rgba(26, 155, 199, 0.25); }
 .tier h3 { font-family: var(--font-display); margin: 0; font-size: 1.35rem; }
 .tier .price { margin: 0; font-family: var(--font-display); }
 .tier .price strong { font-size: 1.8rem; }
@@ -386,7 +400,7 @@ body {
   padding: 0.75rem;
   cursor: pointer;
 }
-.tier-option.highlight { border-color: rgba(196, 163, 90, 0.55); }
+.tier-option.highlight { border-color: rgba(26, 155, 199, 0.55); }
 .tier-option strong { display: block; font-family: var(--font-display); }
 .tier-option em { display: block; color: var(--gold); font-style: normal; font-size: 0.85rem; margin: 0.2rem 0; }
 .tier-option small { display: block; color: var(--muted); line-height: 1.35; }
@@ -424,9 +438,9 @@ table.data th { color: var(--muted); font-weight: 600; }
 
 .dev-code {
   margin-bottom: 1rem;
-  border: 1px dashed rgba(196, 163, 90, 0.5);
+  border: 1px dashed rgba(26, 155, 199, 0.5);
   padding: 0.9rem 1rem;
-  background: rgba(196, 163, 90, 0.08);
+  background: rgba(26, 155, 199, 0.08);
 }
 .panel-inline { margin-bottom: 1rem; }
 .code-xl {

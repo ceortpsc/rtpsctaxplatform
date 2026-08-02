@@ -24,9 +24,13 @@ import {
   createMasterfileStore,
   describeClientMasterfile
 } from '../../../packages/client-masterfile/src/index.mjs';
+import { createSyncEngine } from '../../../packages/data-sync/src/index.mjs';
+import { serveDesignSystemAsset } from '../../../packages/ui-design-system/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3006;
+const SYNC_DIR = process.env.DATA_SYNC_DIR ?? path.resolve(process.cwd(), 'data', 'sync');
+const SYNC_STORE = process.env.DATA_SYNC_STORE ?? path.join(SYNC_DIR, 'store.json');
 
 export const posCrmDescriptor = createServiceDescriptor({
   name: 'pos-crm-service',
@@ -35,7 +39,8 @@ export const posCrmDescriptor = createServiceDescriptor({
     'Operate the CRM for tax-prep clients (contacts, accounts, interactions).',
     'Run the Point of Sale register fully linked to CRM and the invoicing machine.',
     'Track SBTPG report traces, automate ERO phrasing, and surface refund intelligence.',
-    'Manage the alphabetical client master file and Full ERO Client Status matrix.'
+    'Manage the alphabetical client master file and Full ERO Client Status matrix.',
+    'Apply synchronized client/interaction tables from @rtp/data-sync into the live CRM store.'
   ],
   dependencies: [
     '@rtp/crm-core',
@@ -45,7 +50,8 @@ export const posCrmDescriptor = createServiceDescriptor({
     '@rtp/tax-data',
     '@rtp/bank-products',
     '@rtp/client-masterfile',
-    '@rtp/refund-core'
+    '@rtp/refund-core',
+    '@rtp/data-sync'
   ]
 });
 
@@ -55,8 +61,14 @@ const CONTENT_TYPES = {
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
-  '.pdf': 'application/pdf',
-  '.txt': 'text/plain; charset=utf-8'
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.txt': 'text/plain; charset=utf-8',
+  '.pdf': 'application/pdf'
 };
 
 function sendJson(response, statusCode, body) {
@@ -119,6 +131,7 @@ export function createPosCrmServer() {
   const traces = createSbtpgTraceStore();
   const refunds = createRefundStore();
   const masterfile = createMasterfileStore();
+  const sync = createSyncEngine({ persistPath: SYNC_STORE });
 
   const demoClients = [
     {
@@ -236,8 +249,36 @@ export function createPosCrmServer() {
             masterfile: masterfile.snapshot(),
             refundCases: refunds.listCases({ limit: 1000 }).length,
             seedContactId: seed.id,
-            clientMasterfile: describeClientMasterfile()
+            clientMasterfile: describeClientMasterfile(),
+            seedContactId: seed.id,
+            dataSync: sync.store.count()
           }
+        });
+      }
+
+      if (request.method === 'GET' && pathname === '/api/sync') {
+        await sync.store.loadPersisted();
+        return sendJson(response, 200, { ...sync.status(), directory: SYNC_DIR, crm: crm.snapshot() });
+      }
+
+      if (request.method === 'POST' && pathname === '/api/sync/project') {
+        await sync.store.loadPersisted();
+        const body = await readBody(request);
+        if (body.csv && body.table) {
+          sync.importCsvText(body.table, body.csv, { source: 'pos-crm-sync' });
+        } else if (Array.isArray(body.rows) && body.table) {
+          sync.importRows(body.table, body.rows, { source: 'pos-crm-sync' });
+        } else if (body.runDirectory !== false) {
+          await sync.syncDirectory(body.directory ?? SYNC_DIR);
+        }
+        const projection = await sync.project({ crmStore: crm, includeTaxSeed: true });
+        await sync.store.persist();
+        return sendJson(response, 200, {
+          crm: crm.snapshot(),
+          projections: Object.fromEntries(
+            Object.entries(projection.projections).map(([k, v]) => [k, v.summary ?? v])
+          ),
+          counts: sync.store.count()
         });
       }
 
@@ -608,6 +649,8 @@ export function createPosCrmServer() {
         return sendJson(response, 200, matrix);
       }
 
+      if (serveDesignSystemAsset(response, request.url || pathname)) return;
+
       if (request.method === 'GET') return serveStatic(response, pathname);
       sendJson(response, 405, { error: 'method_not_allowed', method: request.method, path: pathname });
     } catch (error) {
@@ -615,7 +658,7 @@ export function createPosCrmServer() {
     }
   });
 
-  return { server, config, crm, pos, traces, refunds, masterfile, seed };
+  return { server, config, crm, pos, traces, refunds, masterfile, sync, seed };
 }
 
 export function start() {

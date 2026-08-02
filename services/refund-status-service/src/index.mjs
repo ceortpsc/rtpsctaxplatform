@@ -11,6 +11,7 @@ import {
 } from '../../../packages/platform-core/src/index.mjs';
 import { createRefundStore } from '../../../packages/refund-core/src/index.mjs';
 import { createClientRegistry, extractClientCredentials } from '../../../packages/client-identity/src/index.mjs';
+import { serveDesignSystemAsset } from '../../../packages/ui-design-system/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3001;
@@ -30,7 +31,14 @@ const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8'
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon'
 };
 
 function sendJson(response, statusCode, body) {
@@ -212,6 +220,8 @@ export function createRefundStatusServer({ registry, store } = {}) {
       if (request.method === 'GET' && pathname === '/api/events') {
         return sendJson(response, 200, { events: refunds.listEvents() });
       }
+
+      if (serveDesignSystemAsset(response, request.url || pathname)) return;
 
       if (request.method === 'GET') return serveStatic(response, pathname);
       sendJson(response, 405, { error: 'method_not_allowed', method: request.method, path: pathname });

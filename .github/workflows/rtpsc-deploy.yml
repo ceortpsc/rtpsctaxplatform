@@ -6,17 +6,38 @@ on:
       - main
       - staging
       - development
+  workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
+
+concurrency:
+  group: rtpsc-deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.environment.outputs.name }}
+      artifact_name: ${{ steps.artifact.outputs.name }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Resolve environment
+        id: environment
+        shell: bash
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            development) environment="development" ;;
+            staging) environment="staging" ;;
+            main) environment="production" ;;
+            *) echo "Unsupported deployment branch: ${GITHUB_REF_NAME}" >&2; exit 1 ;;
+          esac
+          echo "name=${environment}" >> "${GITHUB_OUTPUT}"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -45,41 +66,111 @@ jobs:
       - name: PDF engine smoke
         run: python3 engines/pdf-fill-engine/src/fill.py --json
 
-      - name: Upload build manifest
+      - name: Generate deployment manifest
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ steps.environment.outputs.name }}
+        run: |
+          mkdir -p build/deployment
+          node <<'NODE'
+          const fs = require('node:fs');
+          const manifest = {
+            schemaVersion: '1.0',
+            application: 'Ross Tax Pro Software Co Tax Platform',
+            repository: process.env.GITHUB_REPOSITORY,
+            branch: process.env.GITHUB_REF_NAME,
+            environment: process.env.DEPLOYMENT_ENVIRONMENT,
+            commitSha: process.env.GITHUB_SHA,
+            workflowRunId: process.env.GITHUB_RUN_ID,
+            workflowRunNumber: process.env.GITHUB_RUN_NUMBER,
+            generatedAt: new Date().toISOString(),
+            buildStatus: 'VERIFIED',
+            artifactStatus: 'READY_FOR_ENVIRONMENT_PROMOTION',
+            externalRuntimeStatus: 'BLOCKED_EXTERNAL_CONFIGURATION'
+          };
+          fs.writeFileSync('build/deployment/manifest.json', JSON.stringify(manifest, null, 2) + '\n');
+          NODE
+
+      - name: Resolve artifact name
+        id: artifact
+        shell: bash
+        run: echo "name=rtpsc-build-${GITHUB_REF_NAME}-${GITHUB_SHA}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload verified build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rtpsc-build
+          name: ${{ steps.artifact.outputs.name }}
+          retention-days: 30
+          if-no-files-found: error
           path: |
             build/platform-manifest.json
+            build/deployment/manifest.json
             requirements.txt
             Dockerfile
             .cursor/environment.json
 
-  deploy:
+  deploy-artifacts:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/development'
+    environment:
+      name: ${{ needs.build.outputs.environment }}
 
     steps:
-      - name: Download Build
+      - name: Download verified build artifact
         uses: actions/download-artifact@v4
         with:
-          name: rtpsc-build
+          name: ${{ needs.build.outputs.artifact_name }}
+          path: deployment-package
 
-      - name: Deploy to Environment
+      - name: Verify deployment package
+        shell: bash
         run: |
-          branch="${GITHUB_REF##*/}"
-          case "$branch" in
-            development)
-              echo "Deploying to DEV (scaffold placeholder)..."
-              ;;
-            staging)
-              echo "Deploying to STAGING (scaffold placeholder)..."
-              ;;
-            main)
-              echo "Deploying to PRODUCTION (scaffold placeholder)..."
-              ;;
-            *)
-              echo "No deploy mapping for branch: $branch"
-              ;;
-          esac
+          test -f deployment-package/build/platform-manifest.json
+          test -f deployment-package/build/deployment/manifest.json
+          test -f deployment-package/Dockerfile
+
+      - name: Record environment artifact deployment
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ needs.build.outputs.environment }}
+          BUILD_ARTIFACT_NAME: ${{ needs.build.outputs.artifact_name }}
+        run: |
+          mkdir -p deployment-evidence
+          node <<'NODE'
+          const fs = require('node:fs');
+          const record = {
+            schemaVersion: '1.0',
+            application: 'Ross Tax Pro Software Co Tax Platform',
+            repository: process.env.GITHUB_REPOSITORY,
+            branch: process.env.GITHUB_REF_NAME,
+            environment: process.env.DEPLOYMENT_ENVIRONMENT,
+            commitSha: process.env.GITHUB_SHA,
+            workflowRunId: process.env.GITHUB_RUN_ID,
+            buildArtifact: process.env.BUILD_ARTIFACT_NAME,
+            recordedAt: new Date().toISOString(),
+            artifactDeploymentStatus: 'DEPLOYED_TO_GITHUB_ENVIRONMENT',
+            externalRuntimeDeploymentStatus: 'BLOCKED_EXTERNAL_CONFIGURATION',
+            statement: 'Verified artifacts were promoted to the named GitHub environment. No AWS, Cloudflare, Amplify, ECS, Elastic Beanstalk or other external runtime deployment is claimed.'
+          };
+          fs.writeFileSync('deployment-evidence/environment-deployment.json', JSON.stringify(record, null, 2) + '\n');
+          NODE
+
+      - name: Upload deployment evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: rtpsc-deployment-evidence-${{ github.ref_name }}-${{ github.sha }}
+          retention-days: 90
+          if-no-files-found: error
+          path: deployment-evidence/environment-deployment.json
+
+      - name: Write deployment summary
+        shell: bash
+        run: |
+          {
+            echo "## RTPSC artifact deployment"
+            echo ""
+            echo "- Branch: \`${GITHUB_REF_NAME}\`"
+            echo "- Environment: \`${{ needs.build.outputs.environment }}\`"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Build artifact: \`${{ needs.build.outputs.artifact_name }}\`"
+            echo "- Artifact promotion: **COMPLETE**"
+            echo "- External runtime deployment: **BLOCKED_EXTERNAL_CONFIGURATION**"
+          } >> "${GITHUB_STEP_SUMMARY}"

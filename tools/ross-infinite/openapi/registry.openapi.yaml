@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: ROSS.CO Infinite Registry
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      summary: Health
+      responses:
+        '200':
+          description: OK
+  /metadata:
+    get:
+      summary: Service metadata
+      responses:
+        '200':
+          description: OK
+  /-/ping:
+    get:
+      summary: Ping
+      responses:
+        '200':
+          description: OK
+  /-/publish:
+    post:
+      summary: Publish package metadata
+      responses:
+        '201':
+          description: Created

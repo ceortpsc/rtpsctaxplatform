@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ross.co/schemas/lockfile.schema.json",
+  "title": "ROSS.CO Infinite Lockfile",
+  "type": "object",
+  "required": ["lockfileVersion", "name", "version", "packages"],
+  "properties": {
+    "lockfileVersion": { "type": "integer" },
+    "name": { "type": "string" },
+    "version": { "type": "string" },
+    "packages": { "type": "object" },
+    "edges": { "type": "array" }
+  }
+}

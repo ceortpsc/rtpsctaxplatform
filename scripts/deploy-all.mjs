@@ -1,4 +1,4 @@
-// Deploy-all orchestrator for the RTPSC platform (development mode).
+// Deploy-all orchestrator for the RTPSC platform.
 //
 // Launches every HTTP service plus the background workflow-runner as child
 // processes, prefixes their logs, and health-checks each service. Runs until
@@ -7,22 +7,24 @@
 
 import { spawn } from 'node:child_process';
 import process from 'node:process';
+import { PLATFORM_SERVICES } from '../packages/platform-core/src/registry.mjs';
+import { resolveChannelFromEnv } from '../packages/platform-core/src/release-channels.mjs';
 
 const root = process.cwd();
 const smoke = process.argv.includes('--smoke');
+const appEnv = process.env.APP_ENV || 'local';
+const releaseChannel = resolveChannelFromEnv();
 
-const services = [
-  { name: 'api-gateway', entry: 'services/api-gateway/src/index.mjs', port: 3000 },
-  { name: 'refund-status-service', entry: 'services/refund-status-service/src/index.mjs', port: 3001 },
-  { name: 'transcript-service', entry: 'services/transcript-service/src/index.mjs', port: 3002 },
-  { name: 'analytics-service', entry: 'services/analytics-service/src/index.mjs', port: 3003 },
-  { name: 'enrollment-service', entry: 'services/enrollment-service/src/index.mjs', port: 3004 },
-  { name: 'invoice-service', entry: 'services/invoice-service/src/index.mjs', port: 3005 },
-  { name: 'pos-crm-service', entry: 'services/pos-crm-service/src/index.mjs', port: 3006 },
-  { name: 'modules-dashboard', entry: 'services/modules-dashboard/src/index.mjs', port: 3010 }
+const services = PLATFORM_SERVICES.map((service) => ({
+  name: service.name,
+  entry: service.entry,
+  port: service.port
+}));
+
+const workers = [
+  { name: 'workflow-runner', entry: 'workers/workflow-runner/src/index.mjs' },
+  { name: 'ai-persona-worker', entry: 'workers/ai-persona-worker/src/index.mjs' }
 ];
-
-const workers = [{ name: 'workflow-runner', entry: 'workers/workflow-runner/src/index.mjs' }];
 
 const children = [];
 
@@ -38,7 +40,9 @@ function prefixLines(prefix, buffer) {
 }
 
 function launch(component) {
-  const child = spawn(process.execPath, [component.entry], { cwd: root, env: process.env });
+  const env = { ...process.env };
+  delete env.SERVICE_PORT;
+  const child = spawn(process.execPath, [component.entry], { cwd: root, env });
   const prefix = `[${component.name}]`;
   child.stdout.on('data', (data) => process.stdout.write(prefixLines(prefix, data)));
   child.stderr.on('data', (data) => process.stderr.write(prefixLines(prefix, data)));
@@ -74,7 +78,9 @@ function shutdown(code) {
 }
 
 async function main() {
-  console.log('▶ Deploying all RTPSC platform components (development mode)…\n');
+  console.log(
+    `▶ Deploying all RTPSC platform components (APP_ENV=${appEnv}, channel=${releaseChannel.tag})…\n`
+  );
   [...services, ...workers].forEach(launch);
 
   const results = await Promise.all(services.map(async (service) => ({ service, healthy: await waitHealthy(service) })));
@@ -93,7 +99,7 @@ async function main() {
   const allHealthy = results.every((result) => result.healthy);
   console.log(
     allHealthy
-      ? `\n✓ All ${services.length} services deployed and healthy; ${workers.length} background worker running.`
+      ? `\n✓ All ${services.length} services deployed and healthy; ${workers.length} background workers running.`
       : '\n✗ One or more services failed to become healthy.'
   );
 

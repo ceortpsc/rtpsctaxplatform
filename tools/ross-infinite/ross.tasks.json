@@ -1,0 +1,61 @@
+{
+  "$schema": "./schemas/taskfile.schema.json",
+  "schemaVersion": 1,
+  "engineVersion": "1.0.0",
+  "root": ".",
+  "jobs": 4,
+  "defaultTimeoutMs": 120000,
+  "cacheDir": ".ross/cache/tasks",
+  "env": {
+    "NODE_ENV": "test",
+    "ROSS_RELEASE_CHANNEL": "production-candidate"
+  },
+  "tasks": {
+    "schema:verify": {
+      "description": "Parse package and ownership JSON",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('package.json','utf8')); JSON.parse(require('fs').readFileSync('config/seo/ross.co.ownership.json','utf8')); require('fs').mkdirSync('release-evidence/v1',{recursive:true}); require('fs').writeFileSync('release-evidence/v1/schema-verification.json', JSON.stringify({ok:true,at:new Date().toISOString()},null,2));\"",
+      "inputs": ["package.json", "config/seo/ross.co.ownership.json"],
+      "outputs": ["release-evidence/v1/schema-verification.json"]
+    },
+    "test:unit": {
+      "description": "Run ross-infinite unit tests",
+      "command": "node --test tests/*.test.mjs",
+      "inputs": ["src", "tests", "package.json"],
+      "outputs": [],
+      "timeoutMs": 120000
+    },
+    "test:smoke": {
+      "description": "CLI/transfer/registry/MCP/SEO smoke",
+      "dependsOn": ["test:unit"],
+      "command": "bash scripts/smoke-test.sh",
+      "inputs": ["src", "scripts/smoke-test.sh", "tests/registry-fixture.json"],
+      "outputs": [],
+      "timeoutMs": 120000
+    },
+    "seo:generate": {
+      "description": "Generate SEO ownership assets",
+      "command": "node src/cli.mjs seo generate config/seo/ross.co.ownership.json --json > release-evidence/v1/seo-generate.json",
+      "inputs": ["config/seo/ross.co.ownership.json", "src/seo"],
+      "outputs": ["seo/generated/public/sitemap.xml", "release-evidence/v1/seo-generate.json"]
+    },
+    "advanced:verify": {
+      "description": "Doctor + policy + task analysis",
+      "command": "node scripts/verify-advanced.mjs",
+      "inputs": ["src", "package.json", "config/production-policy.json", "ross.tasks.json"],
+      "outputs": ["release-evidence/v1/advanced-verification.json"]
+    },
+    "build:evidence": {
+      "description": "Write build evidence stub",
+      "dependsOn": ["schema:verify", "test:smoke", "seo:generate", "advanced:verify"],
+      "command": "bash scripts/build-v1-evidence.sh",
+      "inputs": ["src", "package.json"],
+      "outputs": ["release-evidence/v1/SHA256SUMS", "release-evidence/v1/build.json"]
+    },
+    "default": {
+      "description": "Local production-candidate verification gate",
+      "dependsOn": ["build:evidence"],
+      "command": "node -e \"console.log('ROSS.CO Infinite v1.0 verification gate passed')\"",
+      "cache": false
+    }
+  }
+}

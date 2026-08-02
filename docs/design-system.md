@@ -1,62 +1,61 @@
-# RTPSC "Sovereign Ledger" Design System
+# RTPSC "Signal Era" Design System
 
-A treasury-grade visual language for the RTPSC Tax Platform modules dashboard. The
-concept: make a compliance-heavy tax platform *feel* authoritative, premium, and
-trustworthy — like an engraved certificate or a national mint's ledger.
+A new-era tech visual language for the RTPSC Tax Platform. The concept: make a
+compliance-heavy tax platform feel precise, modern, and signal-clear — like a
+next-generation transmission control surface, not an engraved certificate.
 
 ## Concept
 
-- **Metaphor:** the *Sovereign Ledger* — an official, embossed financial register.
-- **Feeling:** considered, official, unmistakably premium; "a great idea, executed with care."
-- **Motifs:** guilloché security engraving (currency/certificates), an embossed seal/crest,
-  ascending ledger bars (growth), and gold that behaves like light on metal.
+- **Metaphor:** the *Signal Era* — precision e-file infrastructure with clear
+  status, geometry, and motion.
+- **Feeling:** technical craftsmanship, institutional trust without nostalgia;
+  "built for the next transmission era."
+- **Motifs:** constellation/node charts, soft orbit rings, cool mist fields,
+  electric signal azure on graphite ink.
+- **Rejected:** Sovereign Ledger cream · gold · serif look (not approved).
 
 ## Palette
 
 | Token | Hex | Role |
 |-------|-----|------|
-| Cream (base) | `#f1e8d2` | Page background |
-| Cream 100 | `#f8f2e2` | Secondary surfaces |
-| White | `#ffffff` | Cards / panels |
-| Gold | `#b8860b` | Primary accent (dark goldenrod) |
-| Gold bright | `#d4af37` | Highlights / metallic sheen |
-| Navy (ink) | `#14213d` | Primary text |
-| Navy 500 | `#22345f` | Secondary ink / edges |
-| Black trim | `#16181d` | Crisp element outlines |
-| Silver | `#9aa1ac` | Muted / secondary text |
+| Mist (base) | `#e4ecf4` | Page background |
+| Mist 100 | `#eef3f8` | Secondary surfaces |
+| White | `#ffffff` | Panels |
+| Signal | `#0a7ea4` | Primary accent |
+| Signal bright | `#1a9bc7` | Highlights |
+| Graphite (ink) | `#0b1220` | Primary text |
+| Graphite 600 | `#243044` | Secondary ink |
+| Steel | `#5b6b7c` | Muted / secondary text |
 
 ## Architecture / layout
 
-- **App shell:** fixed 264px sidebar (emblem + navigation + command-palette hint) beside a
-  fluid main column with a sticky, titled topbar and per-view kicker.
-- **Background:** a `--grad-hero` radial wash over cream, plus two slowly rotating guilloché
-  rosettes anchored to opposite corners (decorative, `pointer-events:none`).
-- **Views:** Catalog, Insights, AI Assistant, Dependency Graph, and a Design System showcase.
-- **Command palette:** `Ctrl/⌘+K` overlay with keyboard navigation.
+- **App shell:** fixed 264px sidebar (emblem + navigation) beside a fluid main
+  column with a sticky titled topbar.
+- **Background:** `--grad-hero` cool mist wash + soft orbit motifs + drifting
+  lattice grid.
+- **Public hero:** full-bleed brand plane (RTPSC first), one headline, one
+  supporting sentence, CTA group — no cards in the first viewport.
+- **Views:** Catalog, Insights, AI Assistant, Dependency Graph, Design System.
 
 ## Tokens
 
-All tokens live in `public/theme.css`: color primitives + semantic surfaces, gradients/sheens,
-a serif/sans/mono type stack with a modular type scale, a 4px spacing scale, radii, three
-elevation shadows plus a gold glow, and motion tokens (durations + easings). Application styles
-in `public/styles.css` consume only these tokens.
+All tokens live in `packages/ui-design-system/public/theme.css`. Legacy
+`--cream-*` / `--gold-*` / `--color-gold` / `--color-navy` names are remapped to
+Signal Era values so existing surfaces inherit the new look.
+
+Typography: **Syne** (display) · **DM Sans** (UI) · **IBM Plex Mono** (code).
 
 ## Motion
 
-- Entrances: `fade-rise`; lists use staggered reveals via a small JS orchestrator.
-- Metallic: gold **shimmer** sweeps on primary buttons and skeleton bars.
-- Data: bars grow to value; stat numbers **count up**.
-- Ambient: guilloché rosettes **spin** very slowly; the emblem **floats**.
-- Graph: `drives` edges have a flowing dashed stroke.
-- Accessibility: everything collapses under `prefers-reduced-motion: reduce`.
+- Entrances: `fade-rise`; lists use staggered reveals.
+- Signal shimmer sweeps on primary surfaces.
+- Soft float on brand marks; lattice grid drift.
+- Accessibility: collapses under `prefers-reduced-motion: reduce`.
 
 ## Concept artwork
 
-Original, dependency-free SVGs in `public/assets/`:
+- `emblem.svg` — rounded chassis with rising signal constellation + RTPSC mark.
+- `guilloche.svg` — orbit/lattice motif (replaces currency-style rosette).
 
-- `emblem.svg` — a seal crest: navy field, milled coin edge (dashed ring), a shield with
-  ascending ledger bars, an ascent chevron, a crown star, and curved seal text via `textPath`.
-- `guilloche.svg` — a currency-style rosette of overlapping, rotated ellipses with a radial
-  gold fade; used as the decorative background and design-artwork motif.
-
-Explore it live: `pnpm run start:dashboard` → open `http://localhost:3010` → **Design System**.
+Explore live: `./rtpsc start dashboard` → **Design System**, or staff portal
+`/design-system`.

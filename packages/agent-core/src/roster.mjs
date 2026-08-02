@@ -6,10 +6,19 @@ import { testingAgent } from '../../../agents/testing-agent/src/index.mjs';
 import { mappingAgent } from '../../../agents/mapping-agent/src/index.mjs';
 import { stagingAgent } from '../../../agents/staging-agent/src/index.mjs';
 import { assessmentAgent } from '../../../agents/assessment-agent/src/index.mjs';
+import { seoOwnershipAgent } from '../../../agents/seo-ownership-agent/src/index.mjs';
 import { markdownAgent } from '../../../agents/markdown-agent/src/index.mjs';
 
 // Analysis agents run first; the markdown engine renders their reports last.
-export const analysisAgents = [planningAgent, scopingAgent, testingAgent, mappingAgent, stagingAgent, assessmentAgent];
+export const analysisAgents = [
+  planningAgent,
+  scopingAgent,
+  testingAgent,
+  mappingAgent,
+  stagingAgent,
+  assessmentAgent,
+  seoOwnershipAgent
+];
 export const platformAgents = [...analysisAgents, markdownAgent];
 
 export function createPlatformAgentRegistry() {

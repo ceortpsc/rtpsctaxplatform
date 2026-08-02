@@ -1,0 +1,11 @@
+{
+  "name": "@rtp/secrets-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.mjs",
+  "description": "RTPSC secrets catalog, readiness evaluation, and redacted status reports",
+  "scripts": {
+    "test": "node --test"
+  }
+}

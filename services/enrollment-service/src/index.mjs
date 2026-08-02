@@ -17,6 +17,7 @@ import {
   SBTPG_PROVIDER,
   createSbtpgAdapter
 } from '../../../packages/bank-products/src/index.mjs';
+import { serveDesignSystemAsset } from '../../../packages/ui-design-system/src/index.mjs';
 
 const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const DEFAULT_PORT = 3004;
@@ -38,7 +39,13 @@ const CONTENT_TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml'
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon'
 };
 
 function sendJson(response, statusCode, body) {
@@ -212,6 +219,8 @@ export function createEnrollmentServer() {
           return sendJson(response, 400, { error: 'invalid_enrollment', message: error.message });
         }
       }
+
+      if (serveDesignSystemAsset(response, request.url || pathname)) return;
 
       if (request.method === 'GET') return serveStatic(response, pathname);
 
