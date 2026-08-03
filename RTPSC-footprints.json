@@ -168,6 +168,16 @@
       "status": "sealed"
     },
     {
+      "name": "@rtp/client-masterfile",
+      "version": "0.1.0",
+      "location": "packages/client-masterfile",
+      "sector": "packages",
+      "footprint": "9775840b81cd0ca4",
+      "fingerprint": "9775840b81cd0ca4",
+      "integrity": "sha256-9775840b81cd0ca4f07a116da99a5aed7441b47372ebffa1fd439e229faa6a46",
+      "status": "sealed"
+    },
+    {
       "name": "@rtp/crm-core",
       "version": "0.1.0",
       "location": "packages/crm-core",

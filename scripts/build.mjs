@@ -23,6 +23,7 @@ const modules = [
   '../packages/crm-core/src/index.mjs',
   '../packages/pos-core/src/index.mjs',
   '../packages/ero-ops/src/index.mjs',
+  '../packages/client-masterfile/src/index.mjs',
   '../packages/data-sync/src/index.mjs',
   '../packages/agent-core/src/index.mjs',
   '../packages/agent-core/src/roster.mjs',

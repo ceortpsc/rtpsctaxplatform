@@ -5,6 +5,11 @@ let taxData = { states: [], localitiesByState: {} };
 let contacts = [];
 let session = null;
 let selectedContactId = null;
+let crmLetter = "";
+let mfLetter = "";
+let mxLetter = "";
+let masterRows = [];
+let matrixData = null;
 
 function toast(msg) {
   const el = $("toast");
@@ -37,9 +42,32 @@ function escapeHtml(s) {
 
 function switchTab(name) {
   document.querySelectorAll(".tabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
-  ["crm", "pos", "ero"].forEach((t) => {
-    $(`tab-${t}`).hidden = t !== name;
+  ["crm", "master", "matrix", "pos", "ero"].forEach((t) => {
+    const el = $(`tab-${t}`);
+    if (el) el.hidden = t !== name;
   });
+  if (name === "master") refreshMasterfile().catch((e) => toast(e.message));
+  if (name === "matrix") refreshMatrix().catch((e) => toast(e.message));
+}
+
+function renderAlphaBar(el, letters, active, onPick) {
+  if (!el) return;
+  const set = ["ALL", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), "#"];
+  el.innerHTML = set
+    .map((L) => {
+      const available = L === "ALL" || (letters || []).includes(L) || L === "#";
+      const isActive = (active || "ALL") === L || (!active && L === "ALL");
+      return `<button type="button" data-letter="${L}" class="${isActive ? "active" : ""}" ${available ? "" : "disabled"}>${L}</button>`;
+    })
+    .join("");
+  el.querySelectorAll("button").forEach((btn) => {
+    btn.onclick = () => onPick(btn.dataset.letter === "ALL" ? "" : btn.dataset.letter);
+  });
+}
+
+function statusChip(value) {
+  const v = String(value || "none");
+  return `<span class="status ${escapeHtml(v)}">${escapeHtml(v.replace(/_/g, " "))}</span>`;
 }
 
 function fillStates(selId, locId, labelId, preferred = "LA") {
@@ -102,8 +130,129 @@ async function showContact(id) {
 
 async function refreshContacts() {
   const q = $("cSearch").value.trim();
-  const data = await api(`/api/contacts${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+  const params = new URLSearchParams({ sort: "alpha" });
+  if (q) params.set("q", q);
+  if (crmLetter) params.set("letter", crmLetter);
+  const data = await api(`/api/contacts?${params}`);
   renderContacts(data.contacts);
+  renderAlphaBar($("crmLetters"), data.letters || [], crmLetter || "ALL", (L) => {
+    crmLetter = L;
+    refreshContacts().catch((e) => toast(e.message));
+  });
+}
+
+async function refreshMasterfile() {
+  const q = $("mfSearch").value.trim();
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (mfLetter) params.set("letter", mfLetter);
+  const data = await api(`/api/masterfile?${params}`);
+  masterRows = data.rows || [];
+  renderAlphaBar($("mfLetters"), data.letters || [], mfLetter || "ALL", (L) => {
+    mfLetter = L;
+    refreshMasterfile().catch((e) => toast(e.message));
+  });
+  const wrap = $("mfList");
+  if (!masterRows.length) {
+    wrap.textContent = "No master-file rows.";
+    return;
+  }
+  wrap.innerHTML = masterRows
+    .map(
+      (r) =>
+        `<div class="item" data-id="${escapeHtml(r.id)}"><strong>${escapeHtml(r.name)}</strong> ${statusChip(r.crmStatus)}
+        <div class="meta">${escapeHtml(r.taxpayerRef || "no TP ref")} · ${escapeHtml(r.locality || "")} ${escapeHtml(r.state || "")} · ${escapeHtml(r.letter)}</div></div>`
+    )
+    .join("");
+  wrap.querySelectorAll(".item").forEach((el) => {
+    el.onclick = () => showMasterRecord(el.dataset.id);
+  });
+}
+
+function showMasterRecord(id) {
+  const r = masterRows.find((row) => row.id === id);
+  if (!r) return;
+  $("mfDetail").hidden = false;
+  $("mfDetail").textContent =
+    `${r.name}\n${r.email || "—"} · ${r.phone || "—"}\nTaxpayer: ${r.taxpayerRef || "—"}\n` +
+    `Jurisdiction: ${r.locality || ""} ${r.state || ""}\nCRM status: ${r.crmStatus}\n` +
+    `Contact id: ${r.contactId || "—"} · Source: ${r.source}\nNotes: ${r.notes || "—"}`;
+}
+
+async function masterLookupByName() {
+  const name = $("mfLookup").value.trim();
+  const data = await api(`/api/masterfile/lookup?name=${encodeURIComponent(name)}`);
+  const wrap = $("mfLookupResults");
+  if (!data.matches.length) {
+    wrap.textContent = name ? "No name matches." : "Type a name to look up.";
+    return;
+  }
+  wrap.innerHTML = data.matches
+    .map(
+      (r) =>
+        `<div class="item"><strong>${escapeHtml(r.name)}</strong>
+        <div class="meta">${escapeHtml(r.taxpayerRef || "—")} · ${escapeHtml(r.email || "—")}</div></div>`
+    )
+    .join("");
+}
+
+async function masterLookupByRef() {
+  const ref = $("mfRefLookup").value.trim();
+  if (!ref) throw new Error("Enter a taxpayer ref.");
+  const data = await api(`/api/masterfile/lookup?taxpayerRef=${encodeURIComponent(ref)}`);
+  if (!data.matches.length) {
+    toast("No master-file match");
+    $("mfDetail").hidden = false;
+    $("mfDetail").textContent = `No record for ${ref}`;
+    return;
+  }
+  masterRows = data.matches;
+  showMasterRecord(data.matches[0].id);
+  toast(`Found ${data.matches[0].name}`);
+}
+
+async function syncMasterFromCrm() {
+  await api("/api/masterfile", { method: "POST", body: JSON.stringify({ syncFromCrm: true }) });
+  toast("Master file resynced from CRM");
+  await refreshMasterfile();
+}
+
+async function refreshMatrix() {
+  const q = $("mxSearch").value.trim();
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (mxLetter) params.set("letter", mxLetter);
+  matrixData = await api(`/api/ero/matrix?${params}`);
+  renderAlphaBar($("mxLetters"), matrixData.letters || [], mxLetter || "ALL", (L) => {
+    mxLetter = L;
+    refreshMatrix().catch((e) => toast(e.message));
+  });
+  const body = $("mxBody");
+  if (!matrixData.rows.length) {
+    body.innerHTML = `<tr><td colspan="8">No clients match.</td></tr>`;
+  } else {
+    body.innerHTML = matrixData.rows
+      .map((row) => {
+        const ch = row.channels;
+        return `<tr>
+          <td><div class="client-name">${escapeHtml(row.name)}</div>
+            <div class="sub">${escapeHtml(row.locality || "")} ${escapeHtml(row.state || "")}</div></td>
+          <td>${escapeHtml(row.taxpayerRef || "—")}</td>
+          <td>${statusChip(ch.crm.status)}</td>
+          <td>${statusChip(ch.refund.filingStage || ch.refund.status)}
+            <div class="sub">${ch.refund.amount != null ? "$" + money(ch.refund.amount) : "—"}</div></td>
+          <td>${statusChip(ch.sbtpg.stage)}
+            <div class="sub">${escapeHtml(ch.sbtpg.productCode || "—")}</div></td>
+          <td>${statusChip(ch.efile.stage)}
+            <div class="sub">${escapeHtml(ch.efile.label || "")}</div></td>
+          <td>${statusChip(ch.overall)}</td>
+          <td><strong>${row.intelligence.score}</strong> ${escapeHtml(row.intelligence.band)}
+            <div class="sub">${escapeHtml(row.intelligence.recommendation)}</div></td>
+        </tr>`;
+      })
+      .join("");
+  }
+  $("mxMeta").textContent = `${matrixData.total} client(s) · sorted alphabetically · channels: ${(matrixData.channels || []).join(", ")}`;
 }
 
 async function createContact() {
@@ -327,6 +476,11 @@ async function boot() {
 
   $("createContact").onclick = () => createContact().catch((e) => toast(e.message));
   $("cSearch").oninput = () => refreshContacts().catch((e) => toast(e.message));
+  $("mfSearch").oninput = () => refreshMasterfile().catch((e) => toast(e.message));
+  $("mfLookup").oninput = () => masterLookupByName().catch((e) => toast(e.message));
+  $("mfRefBtn").onclick = () => masterLookupByRef().catch((e) => toast(e.message));
+  $("mfSyncBtn").onclick = () => syncMasterFromCrm().catch((e) => toast(e.message));
+  $("mxSearch").oninput = () => refreshMatrix().catch((e) => toast(e.message));
   $("openSession").onclick = () => openSession().catch((e) => toast(e.message));
   $("addItem").onclick = () => addItem().catch((e) => toast(e.message));
   $("checkout").onclick = () => checkout().catch((e) => toast(e.message));
