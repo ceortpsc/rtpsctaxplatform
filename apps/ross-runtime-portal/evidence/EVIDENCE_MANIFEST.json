@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "application": "Ross Runtime Portal",
+  "publisher": "Ross Tax Pro Software Co.",
+  "candidate": "3.2.0-rc.1",
+  "generated_at": "2026-08-05T04:25:52.077844+00:00",
+  "validation": {
+    "policy_documents": 24,
+    "policy_validation": "passed",
+    "diagnostics": "passed",
+    "pytest": "passed",
+    "route_smoke_tests": "passed",
+    "worker_execution": "passed"
+  },
+  "github_actions": [
+    {"name": "Ross Runtime Integration CI", "run_id": 30974534277, "conclusion": "success"},
+    {"name": "compliance-scaffold", "run_id": 30974534325, "conclusion": "success"},
+    {"name": "ci", "run_id": 30974534258, "conclusion": "success"},
+    {"name": "Ross Runtime Policy Validation", "run_id": 30974534281, "conclusion": "success"}
+  ],
+  "artifact_sha256": {
+    "PRODUCTION_READINESS.json": "40c51341787bb0d807828141e42e658c97d6eb306b0c1f8842b7ee2e2002bbe4",
+    "VALIDATION_REPORT.md": "2cc0dbc56196b5bf697e129c08a7b1e40b3fc6cd82f401b759de973e30bfbb32",
+    "EXTERNAL_PRODUCTION_PREREQUISITES.md": "c717de3c969a79f2319cdb87ed26b31bea47a9e55bdf0d083ef7e2d286c9bd1d",
+    "ROUTE_MANIFEST.json": "2f5f015b9d58a064abdcd8553f40203b5cf610bec00d623c64699a2ff361a62d",
+    "ARTIFACT_HASHES.json": "335f7dab003b673568048151f5c2edc74572ee7b35dfcfb56ea87e30dfd0d3e4",
+    "SBOM.python-packages.json": "96f0a0326648113708d84b63c93da8672e747f17b2631ed36e69958920c08ef4",
+    "diagnostic-report.json": "b4fd997d054b721d9c431264c4686ff4e636a87fa7e87ce616621687f65a8c4b",
+    "RELEASE_MANIFEST.json": "47eb21170d1ce7c9ea573f43a4610ba4f9b779ab9f5655e52cc6649048267f68"
+  },
+  "release_status": "production_candidate",
+  "deployment_authorization": "pending_external_controls_and_authorized_approval"
+}
