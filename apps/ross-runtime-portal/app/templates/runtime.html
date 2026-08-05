@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "shell.html" import shell_start, shell_end %}
+{% block body %}
+{{ shell_start(active) }}
+<section class="page-heading">
+  <div><p class="eyebrow">SELF-HEALING CONTROL PLANE</p><h1>Runtime operations</h1><p>Workers, jobs, incidents, traces, metrics, and generated reports.</p></div>
+  <div class="heading-actions"><button id="enqueueHealth" class="button secondary">Queue health snapshot</button><button id="generateReport" class="button primary shine">Generate report</button></div>
+</section>
+<section class="metric-grid">
+  <article class="metric-card glow-red"><span>Runtime mode</span><strong id="runtimeMode">—</strong><small>Worker execution strategy</small></article>
+  <article class="metric-card"><span>Queued jobs</span><strong id="queuedJobs">0</strong><small>Durable SQLite queue</small></article>
+  <article class="metric-card"><span>Open incidents</span><strong id="openIncidents">0</strong><small>Self-healing events</small></article>
+  <article class="metric-card"><span>HTTP requests</span><strong id="httpRequests">0</strong><small>Current process telemetry</small></article>
+</section>
+<section class="runtime-grid">
+  <article class="panel span-2"><div class="panel-head"><div><p class="panel-kicker">WORKER FLEET</p><h2>Background workers</h2></div><span class="live-indicator"><i></i>MONITORED</span></div><div id="workerGrid" class="worker-grid"></div></article>
+  <article class="panel"><div class="panel-head"><div><p class="panel-kicker">HEALTH</p><h2>Readiness</h2></div><span id="readinessChip" class="status-chip neutral">CHECKING</span></div><pre id="healthOutput" class="compact-pre">Loading…</pre></article>
+  <article class="panel span-2"><div class="panel-head"><div><p class="panel-kicker">DURABLE QUEUE</p><h2>Recent jobs</h2></div><button id="refreshRuntime" class="button ghost compact">Refresh</button></div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Type</th><th>Queue</th><th>Status</th><th>Attempts</th><th>Updated</th></tr></thead><tbody id="jobTable"></tbody></table></div></article>
+  <article class="panel"><div class="panel-head"><div><p class="panel-kicker">INCIDENTS</p><h2>Recovery log</h2></div></div><div id="incidentList" class="incident-list"></div></article>
+</section>
+<div id="toast" class="toast" hidden></div>
+{{ shell_end() }}
+{% endblock %}
+{% block scripts %}<script src="/static/js/runtime.js"></script>{% endblock %}

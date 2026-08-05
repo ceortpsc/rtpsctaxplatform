@@ -1,0 +1,84 @@
+th self.connection() as conn:
++            rows = conn.execute("SELECT status,COUNT(*) AS count FROM jobs GROUP BY status").fetchall()
++        counts = {row["status"]: int(row["count"]) for row in rows}
++        for name in ("queued", "retry", "running", "completed", "dead"):
++            counts.setdefault(name, 0)
++        return counts
++
++    def _job_row(self, row: sqlite3.Row | None) -> dict[str, Any]:
++        if row is None:
++            return {}
++        data = dict(row)
++        data["payload"] = json.loads(data.pop("payload_json") or "{}")
++        result_json = data.pop("result_json")
++        data["result"] = json.loads(result_json) if result_json else None
++        return data
++
++    # Workers
++    def upsert_worker_heartbeat(
++        self, worker_name: str, state: str, current_job_id: str | None, metadata: dict[str, Any]
++    ) -> None:
++        now = time.time()
++        with self.connection() as conn:
++            conn.execute(
++                "INSERT INTO worker_heartbeats(worker_name,state,current_job_id,metadata_json,last_heartbeat,updated_at) "
++                "VALUES(?,?,?,?,?,?) ON CONFLICT(worker_name) DO UPDATE SET state=excluded.state,current_job_id=excluded.current_job_id," 
++                "metadata_json=excluded.metadata_json,last_heartbeat=excluded.last_heartbeat,updated_at=excluded.updated_at",
++                (worker_name, state, current_job_id, self._json(metadata), now, self.now_iso()),
++            )
++
++    def record_worker_restart(self, worker_name: str) -> None:
++        with self.connection() as conn:
++            conn.execute(
++                "UPDATE worker_heartbeats SET restart_count=restart_count+1, updated_at=? WHERE worker_name=?",
++                (self.now_iso(), worker_name),
++            )
++
++    def list_workers(self) -> list[dict[str, Any]]:
++        with self.connection() as conn:
++            rows = conn.execute("SELECT * FROM worker_heartbeats ORDER BY worker_name").fetchall()
++        output = []
++        for row in rows:
++            item = dict(row)
++            item["metadata"] = json.loads(item.pop("metadata_json") or "{}")
++            item["age_seconds"] = round(max(0, time.time() - float(item["last_heartbeat"])), 3)
++            output.append(item)
++        return output
++
++    def worker_is_fresh(self, worker_name: str, stale_seconds: float) -> bool:
++        with self.connection() as conn:
++            row = conn.execute(
++                "SELECT last_heartbeat FROM worker_heartbeats WHERE worker_name=?", (worker_name,)
++            ).fetchone()
++        return bool(row and time.time() - float(row["last_heartbeat"]) <= stale_seconds)
++
++    # Incidents and reports
++    def create_incident(
++        self, severity: str, category: str, message: str, detail: dict[str, Any] | None = None
++    ) -> str:
++        incident_id = "inc-" + secrets.token_hex(7)
++        with self.connection() as conn:
++            conn.execute(
++                "INSERT INTO incidents(id,severity,category,message,detail_json,status,created_at) VALUES(?,?,?,?,?,'open',?)",
++                (incident_id, severity, category, message, self._json(detail or {}), self.now_iso()),
++            )
++        return incident_id
++
++    def list_incidents(self, limit: int = 50, status: str | None = None) -> list[dict[str, Any]]:
++        with self.connection() as conn:
++            if status:
++                rows = conn.execute(
++                    "SELECT * FROM incidents WHERE status=? ORDER BY created_at DESC LIMIT ?", (status, limit)
++                ).fetchall()
++            else:
++                rows = conn.execute("SELECT * FROM incidents ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
++        output = []
++        for row in rows:
++            item = dict(row)
++            item["detail"] = json.loads(item.pop("detail_json") or "{}")
++            output.append(item)
++        return output
++
++    def count_open_incidents(self) -> int:
++        with self.connection() as conn:
++        

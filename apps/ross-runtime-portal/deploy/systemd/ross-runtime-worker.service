@@ -1,0 +1,15 @@
+[Unit]
+Description=Ross Runtime Portal Background Workers
+After=ross-runtime.service
+
+[Service]
+Type=simple
+User=rossruntime
+WorkingDirectory=/opt/ross-runtime-portal
+EnvironmentFile=/etc/ross-runtime.env
+ExecStart=/opt/ross-runtime-portal/.venv/bin/python -m app.runtime.worker --workers all --scheduler
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,23 @@
+{
+  "application": "Ross Runtime Portal",
+  "sub_name": "Portal, Vision & Workflow Command Center",
+  "publisher": "Ross Tax Pro Software Co.",
+  "version": "3.1.0",
+  "release_type": "full-runtime-build",
+  "runtime": {
+    "durable_queue": "SQLite WAL",
+    "worker_lanes": ["default", "reports", "maintenance"],
+    "self_healing": true,
+    "structured_logging": true,
+    "request_and_trace_ids": true,
+    "prometheus_metrics": true,
+    "operational_reports": true
+  },
+  "validation": {
+    "diagnostics": "passed",
+    "pytest": "3 passed",
+    "public_routes": "passed",
+    "authenticated_routes": "passed",
+    "live_uvicorn_smoke_test": "passed"
+  }
+}

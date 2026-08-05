@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RossRuntimeWorkflowDefinition",
+  "type": "object",
+  "required": ["name", "trigger", "tasks"],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string", "minLength": 3, "maxLength": 120},
+    "trigger": {"type": "string", "minLength": 3},
+    "status": {"enum": ["enabled", "disabled", "draft"]},
+    "conditions": {"type": "object"},
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {"type": "string"},
+          "config": {"type": "object"},
+          "retries": {"type": "integer", "minimum": 0, "maximum": 10},
+          "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 300}
+        }
+      }
+    }
+  }
+}
