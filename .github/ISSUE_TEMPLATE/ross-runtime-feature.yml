@@ -1,0 +1,23 @@
+name: Ross Runtime feature request
+description: Propose a controlled portal, runtime, worker, or policy enhancement
+title: "[Ross Runtime Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Intended outcome
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: User and operational workflow
+  - type: textarea
+    id: controls
+    attributes:
+      label: Security, privacy, accessibility, and compliance controls
+  - type: textarea
+    id: rollout
+    attributes:
+      label: Deployment and rollback considerations
