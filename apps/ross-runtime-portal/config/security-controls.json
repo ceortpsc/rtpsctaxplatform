@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "system": "Ross Runtime Portal",
+  "controls": {
+    "identity": ["oidc-or-saml", "mfa", "rbac", "least-privilege", "quarterly-privileged-review"],
+    "application": ["input-validation", "authorization", "csrf-protection", "safe-file-handling", "rate-limiting"],
+    "data": ["classification", "encryption-in-transit", "encryption-at-rest", "retention", "redaction"],
+    "delivery": ["peer-review", "ci-validation", "dependency-review", "immutable-artifacts", "rollback"],
+    "runtime": ["liveness", "readiness", "worker-heartbeats", "dead-letter-queue", "incident-creation"],
+    "observability": ["request-id", "trace-id", "structured-logs", "audit-events", "alerting"],
+    "supply_chain": ["pinned-dependencies", "dependabot", "artifact-checksum", "provenance", "sbom-target"],
+    "ai": ["human-review", "purpose-limitation", "evaluation", "override", "no-high-impact-autonomy"]
+  }
+}
