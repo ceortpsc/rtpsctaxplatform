@@ -1,0 +1,34 @@
+name: Ross Runtime Integration CI
+on:
+  pull_request:
+    paths:
+      - "apps/ross-runtime-portal/**"
+      - ".github/workflows/ross-runtime-*.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/ross-runtime-portal/**"
+permissions:
+  contents: read
+jobs:
+  validate-runtime-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate patch bundle
+        run: python apps/ross-runtime-portal/patches/validate_patch_bundle.py
+      - name: Compile runtime modules
+        run: python -m py_compile apps/ross-runtime-portal/app/runtime/*.py
+      - name: Validate JSON contracts
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('apps/ross-runtime-portal')
+          for path in [root/'app/contracts/workflow.schema.json', root/'app/contracts/connector.schema.json', root/'RELEASE_MANIFEST.json']:
+              json.loads(path.read_text(encoding='utf-8'))
+              print('validated', path)
+          PY

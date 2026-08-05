@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "system": "Ross Runtime Portal",
+  "publisher": "Ross Tax Pro Software Co.",
+  "effective_date": "2026-08-04",
+  "review_frequency": "annual-or-material-change",
+  "validation_command": "python scripts/validate_policies.py",
+  "policies": [
+    {"id":"governance","path":"GOVERNANCE.md","status":"adopted","owner":"Ross Tax Pro Software Co. executive management","review_due":"2027-08-04"},
+    {"id":"security","path":"SECURITY.md","status":"adopted","owner":"Ross Tax Pro Software Co. executive management","review_due":"2027-08-04"},
+    {"id":"contributing","path":"CONTRIBUTING.md","status":"adopted","owner":"Ross Tax Pro Software Co. executive management","review_due":"2027-08-04"},
+    {"id":"code-of-conduct","path":"CODE_OF_CONDUCT.md","status":"adopted","owner":"Ross Tax Pro Software Co. executive management","review_due":"2027-08-04"},
+    {"id":"support","path":"SUPPORT.md","status":"adopted","owner":"Ross Tax Pro Software Co. executive management","review_due":"2027-08-04"},
+    {"id":"policy-manual","path":"docs/policies/POLICY_MANUAL.md","status":"adopted","owner":"Ross Tax Pro Software Co. executive management","review_due":"2027-08-04"}
+  ]
+}

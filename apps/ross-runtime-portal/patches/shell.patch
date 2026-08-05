@@ -1,0 +1,18 @@
+--- /mnt/data/ross_runtime_portal/app/templates/shell.html	2026-08-05 03:08:58.903848753 +0000
++++ /mnt/data/ross_runtime_portal_full_build/app/templates/shell.html	2026-08-05 03:26:59.282122521 +0000
+@@ -24,6 +24,7 @@
+       <a class="{{ 'active' if active == 'scanner' }}" href="/scanner"><span>▣</span>Scan Lab</a>
+       <a class="{{ 'active' if active == 'workflows' }}" href="/workflows"><span>↯</span>Workflow Studio</a>
+       <a class="{{ 'active' if active == 'integrations' }}" href="/integrations"><span>⌁</span>Connector Hub</a>
++      <a class="{{ 'active' if active == 'runtime' }}" href="/runtime-operations"><span>◫</span>Runtime Operations</a>
+       <p class="nav-label">ENGINEERING</p>
+       <a class="{{ 'active' if active == 'api-console' }}" href="/api-console"><span>{ }</span>API Console</a>
+       <a class="{{ 'active' if active == 'ai-assist' }}" href="/ai-assist"><span>✦</span>AI Assist</a>
+@@ -48,6 +49,7 @@
+       <a href="/scanner">Open scan lab <kbd>S</kbd></a>
+       <a href="/workflows">Open workflow studio <kbd>W</kbd></a>
+       <a href="/integrations">Open connector hub <kbd>I</kbd></a>
++      <a href="/runtime-operations">Open runtime operations <kbd>R</kbd></a>
+       <a href="/api-console">Open API console <kbd>A</kbd></a>
+       <a href="/ai-assist">Open AI operator assist <kbd>G</kbd></a>
+     </div>

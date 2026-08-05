@@ -1,0 +1,50 @@
+services:
+  web:
+    build: .
+    command: ["uvicorn","app.main:app","--host","0.0.0.0","--port","8000","--proxy-headers","--forwarded-allow-ips=*"]
+    ports:
+      - "8000:8000"
+    environment:
+      ROSS_RUNTIME_PUBLIC_URL: http://127.0.0.1:8000
+      ROSS_RUNTIME_ACCESS_CODE: change-this-code
+      ROSS_RUNTIME_SESSION_SECRET: replace-with-a-long-random-session-secret
+      ROSS_RUNTIME_HTTPS_ONLY: "false"
+      ROSS_RUNTIME_IN_PROCESS_WORKERS: "false"
+      ROSS_RUNTIME_SCHEDULER_ENABLED: "false"
+    volumes:
+      - ross_runtime_data:/app/data
+      - ross_runtime_logs:/app/logs
+      - ross_runtime_reports:/app/reports
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health/live"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: always
+
+  workers:
+    build: .
+    command: ["python","-m","app.runtime.worker","--workers","all","--scheduler"]
+    environment:
+      ROSS_RUNTIME_IN_PROCESS_WORKERS: "false"
+      ROSS_RUNTIME_SCHEDULER_ENABLED: "true"
+    volumes:
+      - ross_runtime_data:/app/data
+      - ross_runtime_logs:/app/logs
+      - ross_runtime_reports:/app/reports
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.runtime.healthcheck", "--worker", "default-1", "--stale-seconds", "60"]
+      interval: 25s
+      timeout: 8s
+      retries: 3
+      start_period: 20s
+    restart: always
+    depends_on:
+      web:
+        condition: service_healthy
+
+volumes:
+  ross_runtime_data:
+  ross_runtime_logs:
+  ross_runtime_reports:

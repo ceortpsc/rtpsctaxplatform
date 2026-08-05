@@ -1,0 +1,297 @@
+--- /mnt/data/ross_runtime_portal/app/main.py	2026-08-05 03:09:23.137032694 +0000
++++ /mnt/data/ross_runtime_portal_full_build/app/main.py	2026-08-05 03:31:03.859005585 +0000
+@@ -2,8 +2,10 @@
+ 
+ import io
+ import json
++import logging
+ import os
+ import secrets
++from contextlib import asynccontextmanager
+ from datetime import datetime, timezone
+ from pathlib import Path
+ from typing import Any, Literal
+@@ -31,6 +33,10 @@
+ from fastapi.templating import Jinja2Templates
+ from PIL import Image
+ from app.runtime_store import RuntimeStore
++from app.runtime.config import RuntimeConfig
++from app.runtime.logging_config import configure_logging
++from app.runtime.supervisor import RuntimeSupervisor
++from app.runtime.telemetry import RuntimeTelemetryMiddleware, metrics
+ from pydantic import BaseModel, Field
+ from starlette.middleware.sessions import SessionMiddleware
+ 
+@@ -38,13 +44,22 @@
+ MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+ ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
+ APP_NAME = "Ross Runtime Portal"
+-APP_VERSION = "3.0.0"
++APP_VERSION = "3.1.0"
+ PUBLIC_BASE_URL = os.getenv("ROSS_RUNTIME_PUBLIC_URL", os.getenv("VERIFRAME_PUBLIC_URL", "http://127.0.0.1:8000")).rstrip("/")
+ ACCESS_CODE = os.getenv("ROSS_RUNTIME_ACCESS_CODE", os.getenv("VERIFRAME_ACCESS_CODE", "ross-demo"))
+ GOOGLE_VERIFICATION = os.getenv("GOOGLE_SITE_VERIFICATION", "")
+ BING_VERIFICATION = os.getenv("BING_SITE_VERIFICATION", "")
+ SESSION_SECRET = os.getenv("ROSS_RUNTIME_SESSION_SECRET", os.getenv("VERIFRAME_SESSION_SECRET", "replace-this-development-secret"))
+ 
++@asynccontextmanager
++async def application_lifespan(_: FastAPI):
++    await RUNTIME_SUPERVISOR.start()
++    try:
++        yield
++    finally:
++        await RUNTIME_SUPERVISOR.stop()
++
++
+ app = FastAPI(
+     title=APP_NAME,
+     version=APP_VERSION,
+@@ -56,6 +71,7 @@
+     docs_url="/developer/docs",
+     redoc_url="/developer/redoc",
+     openapi_url="/developer/openapi.json",
++    lifespan=application_lifespan,
+ )
+ app.add_middleware(
+     SessionMiddleware,
+@@ -74,6 +90,11 @@
+     "announcements, SEO delivery, and operator assistance."
+ )
+ RUNTIME_STORE = RuntimeStore(BASE_DIR.parent / "data" / "ross_runtime.db")
++RUNTIME_CONFIG = RuntimeConfig.from_env(BASE_DIR.parent)
++configure_logging(RUNTIME_CONFIG.log_dir, RUNTIME_CONFIG.log_level)
++logger = logging.getLogger("ross.runtime.app")
++RUNTIME_SUPERVISOR = RuntimeSupervisor(RUNTIME_STORE, RUNTIME_CONFIG)
++app.add_middleware(RuntimeTelemetryMiddleware)
+ 
+ 
+ def render(request: Request, template_name: str, context: dict[str, Any] | None = None, *, status_code: int = 200):
+@@ -158,6 +179,21 @@
+     is_pinned: bool = False
+ 
+ 
++class RuntimeJobCreateRequest(BaseModel):
++    type: Literal[
++        "audit.write",
++        "health.snapshot",
++        "report.operational",
++        "maintenance.cleanup",
++        "release.check",
++        "notification.dispatch",
++    ]
++    queue: Literal["default", "reports", "maintenance"] = "default"
++    payload: dict[str, Any] = Field(default_factory=dict)
++    max_attempts: int = Field(default=3, ge=1, le=10)
++    delay_seconds: float = Field(default=0, ge=0, le=86400)
++
++
+ # -----------------------------
+ # In-memory demo stores
+ # Replace with PostgreSQL/Redis in production.
+@@ -533,6 +569,41 @@
+     }
+ 
+ 
++
++
++@app.exception_handler(Exception)
++async def unhandled_exception_handler(request: Request, exc: Exception):
++    trace_id = getattr(request.state, "trace_id", secrets.token_hex(16))
++    request_id = getattr(request.state, "request_id", secrets.token_hex(10))
++    incident_id = RUNTIME_STORE.create_incident(
++        "critical",
++        "http.unhandled_exception",
++        f"Unhandled exception on {request.method} {request.url.path}",
++        {"error": repr(exc), "trace_id": trace_id, "request_id": request_id},
++    )
++    logger.exception(
++        "http.unhandled_exception",
++        extra={
++            "trace_id": trace_id,
++            "request_id": request_id,
++            "incident_id": incident_id,
++            "path": request.url.path,
++        },
++    )
++    if request.url.path.startswith("/api/") or request.headers.get("accept", "").startswith("application/json"):
++        return JSONResponse(
++            {
++                "error": "internal_server_error",
++                "message": "The runtime recorded the failure and started recovery handling.",
++                "incident_id": incident_id,
++                "trace_id": trace_id,
++            },
++            status_code=500,
++            headers={"X-Incident-ID": incident_id, "X-Trace-ID": trace_id},
++        )
++    html = f"""<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>Runtime recovery</title><style>body{{margin:0;background:#050607;color:#edf0f3;font-family:Segoe UI,Arial,sans-serif;display:grid;place-items:center;min-height:100vh}}main{{max-width:720px;padding:38px;border:1px solid #2a313b;border-left:4px solid #f10c22;border-radius:16px;background:#0e1217;box-shadow:0 25px 80px #0008}}h1{{margin-top:0}}code{{color:#ff6874}}a{{color:#fff}}</style></head><body><main><p>ROSS RUNTIME RECOVERY</p><h1>The request could not be completed.</h1><p>The failure was logged, traced, and assigned to the self-healing runtime. Refresh after a moment or review Runtime Operations.</p><p>Incident: <code>{incident_id}</code><br>Trace: <code>{trace_id}</code></p><a href='/runtime-operations'>Open Runtime Operations</a></main></body></html>"""
++    return HTMLResponse(html, status_code=500, headers={"X-Incident-ID": incident_id, "X-Trace-ID": trace_id})
++
+ # -----------------------------
+ # Public routes and access gate
+ # -----------------------------
+@@ -630,6 +701,14 @@
+     )
+ 
+ 
++@app.get("/runtime-operations", response_class=HTMLResponse)
++async def runtime_operations_page(request: Request):
++    guard = require_session(request)
++    if guard:
++        return guard
++    return render(request, "runtime.html", page_context(request, "Runtime Operations", "runtime"))
++
++
+ @app.get("/api-console", response_class=HTMLResponse)
+ async def api_console(request: Request):
+     guard = require_session(request)
+@@ -750,7 +829,18 @@
+ @app.get("/favicon.ico", include_in_schema=False)
+ async def favicon():
+     favicon_path = BASE_DIR / "static" / "assets" / "favicon.ico"
+-    return Response(favicon_path.read_bytes(), media_type="image/x-icon", headers={"Cache-Control": "public, max-age=86400"})
++    if favicon_path.exists():
++        return Response(
++            favicon_path.read_bytes(),
++            media_type="image/x-icon",
++            headers={"Cache-Control": "public, max-age=86400"},
++        )
++    svg_path = BASE_DIR / "static" / "assets" / "mark.svg"
++    return Response(
++        svg_path.read_bytes(),
++        media_type="image/svg+xml",
++        headers={"Cache-Control": "public, max-age=86400"},
++    )
+ 
+ 
+ @app.get("/api/v1/runtime")
+@@ -1042,6 +1132,7 @@
+         "Disallow: /api-console\n"
+         "Disallow: /ai-assist\n"
+         "Disallow: /settings\n"
++        "Disallow: /runtime-operations\n"
+         "Disallow: /api/\n"
+         f"Sitemap: {PUBLIC_BASE_URL}/sitemap.xml\n"
+     )
+@@ -1091,4 +1182,121 @@
+         "status": "operational",
+         "version": APP_VERSION,
+         "time": now_iso(),
++        "runtime": RUNTIME_SUPERVISOR.status(),
++        "database": RUNTIME_STORE.database_health(),
+     }
++
++
++@app.get("/health/live")
++async def health_live():
++    return {"status": "live", "service": APP_NAME, "time": now_iso()}
++
++
++@app.get("/health/startup")
++async def health_startup():
++    started = RUNTIME_SUPERVISOR.started_at is not None
++    return JSONResponse(
++        {"status": "started" if started else "starting", "runtime": RUNTIME_SUPERVISOR.status()},
++        status_code=200 if started else 503,
++    )
++
++
++@app.get("/health/ready")
++async def health_ready():
++    database = RUNTIME_STORE.database_health()
++    workers = RUNTIME_STORE.list_workers()
++    if RUNTIME_CONFIG.in_process_workers:
++        worker_ready = bool(workers) and all(
++            item["age_seconds"] <= RUNTIME_CONFIG.stale_worker_seconds for item in workers
++        )
++    else:
++        worker_ready = bool(workers) and any(
++            item["age_seconds"] <= RUNTIME_CONFIG.stale_worker_seconds for item in workers
++        )
++    ready = bool(database["ok"] and worker_ready)
++    return JSONResponse(
++        {
++            "status": "ready" if ready else "not_ready",
++            "database": database,
++            "worker_ready": worker_ready,
++            "workers": workers,
++            "job_counts": RUNTIME_STORE.job_counts(),
++            "open_incidents": RUNTIME_STORE.count_open_incidents(),
++        },
++        status_code=200 if ready else 503,
++    )
++
++
++@app.get("/metrics", response_class=PlainTextResponse)
++async def prometheus_metrics():
++    counts = RUNTIME_STORE.job_counts()
++    body = metrics.prometheus()
++    body += "# HELP ross_runtime_jobs Current durable job counts by status.\n"
++    body += "# TYPE ross_runtime_jobs gauge\n"
++    for status, value in counts.items():
++        body += f'ross_runtime_jobs{{status="{status}"}} {value}\n'
++    body += f"ross_runtime_incidents_open {RUNTIME_STORE.count_open_incidents()}\n"
++    return PlainTextResponse(body, media_type="text/plain; version=0.0.4")
++
++
++@app.get("/api/v1/runtime/status")
++async def runtime_status():
++    return {"data": RUNTIME_SUPERVISOR.status(), "generated_at": now_iso()}
++
++
++@app.get("/api/v1/runtime/metrics")
++async def runtime_metrics():
++    return {
++        "data": {
++            "http": metrics.snapshot(),
++            "persistent": RUNTIME_STORE.metrics_snapshot(),
++            "jobs": RUNTIME_STORE.job_counts(),
++        },
++        "generated_at": now_iso(),
++    }
++
++
++@app.get("/api/v1/runtime/jobs")
++async def runtime_jobs(limit: int = 50, status: str | None = None):
++    return {"data": RUNTIME_STORE.list_jobs(limit=max(1, min(limit, 200)), status=status)}
++
++
++@app.post("/api/v1/runtime/jobs", status_code=201)
++async def create_runtime_job(payload: RuntimeJobCreateRequest):
++    job = RUNTIME_STORE.enqueue_job(
++        payload.type,
++        payload.queue,
++        payload.payload,
++        max_attempts=payload.max_attempts,
++        delay_seconds=payload.delay_seconds,
++    )
++    return {"data": job}
++
++
++@app.post("/api/v1/runtime/workers/{worker_name}/restart")
++async def restart_runtime_worker(worker_name: str):
++    if not RUNTIME_CONFIG.in_process_workers:
++        raise HTTPException(
++            status_code=409,
++            detail="Workers are managed by an external service in this deployment mode.",
++        )
++    restarted = await RUNTIME_SUPERVISOR.restart_worker(worker_name)
++    if not restarted:
++        raise HTTPException(status_code=404, detail="Worker not found.")
++    return {"data": {"worker": worker_name, "restart_requested": True}}
++
++
++@app.get("/api/v1/runtime/incidents")
++async def runtime_incidents(limit: int = 50, status: str | None = None):
++    return {"data": RUNTIME_STORE.list_incidents(limit=max(1, min(limit, 200)), status=status)}
++
++
++@app.get("/api/v1/runtime/reports")
++async def runtime_reports(limit: int = 30):
++    return {"data": RUNTIME_STORE.list_reports(limit=max(1, min(limit, 100)))}
++
++
++@app.post("/api/v1/runtime/reports/generate", status_code=202)
++async def generate_runtime_report():
++    job = RUNTIME_STORE.enqueue_job("report.operational", "reports", {}, max_attempts=3)
++    return {"data": job}
