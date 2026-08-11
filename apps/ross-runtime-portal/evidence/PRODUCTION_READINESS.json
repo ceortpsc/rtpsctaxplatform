@@ -1,0 +1,32 @@
+{
+  "application": "Ross Runtime Portal",
+  "publisher": "Ross Tax Pro Software Co.",
+  "release_candidate": "3.2.0-rc.1",
+  "generated_at": "2026-08-05T04:25:52.077844+00:00",
+  "code_readiness": {
+    "policy_validation": "passed",
+    "diagnostics": "passed",
+    "pytest": "passed",
+    "route_smoke_tests": "passed",
+    "worker_execution": "passed",
+    "health_endpoints": "passed",
+    "favicon_rendering": "passed",
+    "structured_logging": "implemented",
+    "tracing": "implemented",
+    "self_healing_workers": "implemented",
+    "docker_topology": "implemented",
+    "windows_supervision": "implemented"
+  },
+  "external_production_prerequisites": {
+    "production_sso_and_mfa": "pending_external_configuration",
+    "managed_secrets": "pending_external_configuration",
+    "production_domain_and_tls": "pending_external_configuration",
+    "managed_database_or_approved_single_node_volume": "pending_deployment_decision",
+    "cloud_waf_rate_limits_and_malware_scanning": "pending_external_configuration",
+    "protected_github_environment_and_approvals": "pending_repository_configuration",
+    "google_and_bing_verification_tokens": "pending_domain_ownership",
+    "formal_legal_and_compliance_review": "pending_authorized_review"
+  },
+  "deployment_authorization": "not_granted_by_build_process",
+  "statement": "Code-level production controls are implemented and validated. External infrastructure, credentials, ownership verification, and organizational approvals remain deployment prerequisites."
+}

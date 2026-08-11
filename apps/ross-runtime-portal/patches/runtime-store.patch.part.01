@@ -1,0 +1,89 @@
+ed_at TEXT NOT NULL
++                );
++                CREATE TABLE IF NOT EXISTS runtime_metrics (
++                    key TEXT PRIMARY KEY,
++                    value_json TEXT NOT NULL,
++                    updated_at TEXT NOT NULL
++                );
+                 """
+             )
+             if conn.execute("SELECT COUNT(*) FROM announcements").fetchone()[0] == 0:
+@@ -67,8 +132,8 @@
+                             self.now_iso(),
+                         ),
+                         (
+-                            "Deployment controls",
+-                            "Use the included diagnostics before local, Windows service, Docker, or cloud rollout.",
++                            "Self-healing runtime enabled",
++                            "Durable queues, worker heartbeats, runtime reports, tracing, and incident recovery are active.",
+                             "Engineering",
+                             1,
+                             self.now_iso(),
+@@ -89,27 +154,28 @@
+                         (
+                             "Ross Runtime",
+                             "Welcome to the command portal",
+-                            "Your modules, workflows, connectors, and documentation are staged for local rollout.",
++                            "Your modules, workers, workflows, connectors, and documentation are staged for rollout.",
+                             0,
+                             self.now_iso(),
+                         ),
+                         (
+                             "Platform Engineering",
+                             "Run diagnostics before production",
+-                            "Execute python diagnose.py and review the generated readiness report.",
++                            "Execute python diagnose.py and python -m pytest -q before deployment.",
+                             0,
+                             self.now_iso(),
+                         ),
+                         (
+-                            "SEO Control",
+-                            "Configure canonical production URL",
+-                            "Set ROSS_RUNTIME_PUBLIC_URL before submitting the sitemap to search consoles.",
++                            "Runtime Supervisor",
++                            "Background workers monitored",
++                            "Worker crashes are recorded and restarted with bounded backoff.",
+                             1,
+                             self.now_iso(),
+                         ),
+                     ],
+                 )
+ 
++    # Portal content
+     def announcements(self, limit: int = 20) -> list[dict[str, Any]]:
+         with self.connection() as conn:
+             rows = conn.execute(
+@@ -117,6 +183,14 @@
+             ).fetchall()
+         return [dict(row) for row in rows]
+ 
++    def create_announcement(self, title: str, body: str, category: str, is_pinned: bool) -> int:
++        with self.connection() as conn:
++            cursor = conn.execute(
++                "INSERT INTO announcements(title, body, category, is_pinned, created_at) VALUES(?,?,?,?,?)",
++                (title, body, category, int(is_pinned), self.now_iso()),
++            )
++            return int(cursor.lastrowid)
++
+     def messages(self, limit: int = 30) -> list[dict[str, Any]]:
+         with self.connection() as conn:
+             rows = conn.execute("SELECT * FROM messages ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+@@ -168,3 +242,257 @@
+             item.update({"type": "message", "title": item.pop("subject"), "summary": item.pop("preview")})
+             results.append(item)
+         return results[:limit]
++
++    # Durable jobs
++    def enqueue_job(
++        self,
++        job_type: str,
++        queue: str,
++        payload: dict[str, Any],
++        *,
++        max_attempts: int = 3,
++        delay_seconds: float = 0,
++        dedupe_key: str | None = None,
++    ) -> dict[str, Any]:
++        now = time.time()
++        created = self.now_iso()
++        with self.connection() 

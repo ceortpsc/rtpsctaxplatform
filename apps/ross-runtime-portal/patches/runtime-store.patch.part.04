@@ -1,0 +1,74 @@
+    return int(conn.execute("SELECT COUNT(*) FROM incidents WHERE status='open'").fetchone()[0])
++
++    def create_report(self, report_type: str, path: str, summary: dict[str, Any]) -> str:
++        report_id = "rep-" + secrets.token_hex(7)
++        with self.connection() as conn:
++            conn.execute(
++                "INSERT INTO reports(id,report_type,path,summary_json,created_at) VALUES(?,?,?,?,?)",
++                (report_id, report_type, path, self._json(summary), self.now_iso()),
++            )
++        return report_id
++
++    def list_reports(self, limit: int = 30) -> list[dict[str, Any]]:
++        with self.connection() as conn:
++            rows = conn.execute("SELECT * FROM reports ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
++        output = []
++        for row in rows:
++            item = dict(row)
++            item["summary"] = json.loads(item.pop("summary_json") or "{}")
++            output.append(item)
++        return output
++
++    # Metrics and maintenance
++    def set_metric(self, key: str, value: Any) -> None:
++        with self.connection() as conn:
++            conn.execute(
++                "INSERT INTO runtime_metrics(key,value_json,updated_at) VALUES(?,?,?) "
++                "ON CONFLICT(key) DO UPDATE SET value_json=excluded.value_json,updated_at=excluded.updated_at",
++                (key, self._json(value), self.now_iso()),
++            )
++
++    def metrics_snapshot(self) -> dict[str, Any]:
++        with self.connection() as conn:
++            rows = conn.execute("SELECT * FROM runtime_metrics ORDER BY key").fetchall()
++        return {
++            row["key"]: {"value": json.loads(row["value_json"]), "updated_at": row["updated_at"]}
++            for row in rows
++        }
++
++    def database_health(self) -> dict[str, Any]:
++        started = time.perf_counter()
++        try:
++            with self.connection() as conn:
++                conn.execute("SELECT 1").fetchone()
++                journal = conn.execute("PRAGMA journal_mode").fetchone()[0]
++            return {
++                "ok": True,
++                "journal_mode": journal,
++                "latency_ms": round((time.perf_counter() - started) * 1000, 3),
++                "path": str(self.path),
++            }
++        except Exception as exc:
++            return {
++                "ok": False,
++                "error": repr(exc),
++                "latency_ms": round((time.perf_counter() - started) * 1000, 3),
++                "path": str(self.path),
++            }
++
++    def cleanup_runtime(self, retention_days: int = 30) -> dict[str, Any]:
++        cutoff = (datetime.now(timezone.utc) - timedelta(days=max(1, retention_days))).isoformat()
++        with self.connection() as conn:
++            event_count = conn.execute("DELETE FROM runtime_events WHERE created_at<?", (cutoff,)).rowcount
++            job_count = conn.execute(
++                "DELETE FROM jobs WHERE status IN ('completed','dead') AND updated_at<?", (cutoff,)
++            ).rowcount
++            incident_count = conn.execute(
++                "DELETE FROM incidents WHERE status='resolved' AND resolved_at<?", (cutoff,)
++            ).rowcount
++        return {
++            "events_deleted": event_count,
++            "jobs_deleted": job_count,
++            "incidents_deleted": incident_count,
++            "retention_days": retention_days,
++        }

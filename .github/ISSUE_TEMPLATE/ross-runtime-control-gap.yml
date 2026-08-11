@@ -1,0 +1,26 @@
+name: Ross Runtime control gap
+description: Report a non-secret security, privacy, governance, or operational control weakness
+title: "[Ross Runtime Control Gap]: "
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: "Do not disclose an exploitable vulnerability here. Use the designated private security reporting channel."
+  - type: textarea
+    id: gap
+    attributes:
+      label: Control gap
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: Risk and affected assets
+  - type: textarea
+    id: compensating
+    attributes:
+      label: Existing compensating controls
+  - type: textarea
+    id: remediation
+    attributes:
+      label: Recommended remediation

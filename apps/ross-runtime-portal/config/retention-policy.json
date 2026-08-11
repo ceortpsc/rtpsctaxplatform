@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "default_disposition": "delete-after-purpose",
+  "legal_hold_overrides_deletion": true,
+  "classes": [
+    {"class":"transient-upload","default_days":0,"action":"delete-after-processing"},
+    {"class":"application-log","default_days":30,"maximum_days_without_exception":90},
+    {"class":"workflow-run","default_days":90},
+    {"class":"security-incident","default_days":2555},
+    {"class":"release-evidence","default_days":2555},
+    {"class":"access-review","default_days":2555},
+    {"class":"backup","default_days":35,"action":"rotate-and-expire"}
+  ]
+}

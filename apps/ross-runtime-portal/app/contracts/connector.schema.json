@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RossRuntimeConnectorDefinition",
+  "type": "object",
+  "required": ["name", "category"],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string", "minLength": 2},
+    "category": {"enum": ["storage", "webhook", "identity", "notifications", "analytics"]},
+    "endpoint": {"type": ["string", "null"]},
+    "enabled": {"type": "boolean"},
+    "secret_reference": {"type": ["string", "null"]}
+  }
+}

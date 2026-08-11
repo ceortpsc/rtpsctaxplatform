@@ -1,0 +1,18 @@
+[Unit]
+Description=Ross Runtime Portal Web Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rossruntime
+WorkingDirectory=/opt/ross-runtime-portal
+EnvironmentFile=/etc/ross-runtime.env
+ExecStart=/opt/ross-runtime-portal/.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

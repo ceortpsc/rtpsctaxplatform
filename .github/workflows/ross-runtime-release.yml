@@ -1,0 +1,23 @@
+name: Ross Runtime Integration Package
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Integration package version
+        required: true
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python apps/ross-runtime-portal/patches/validate_patch_bundle.py
+      - run: zip -r ross-runtime-integration-${{ inputs.version }}.zip apps/ross-runtime-portal
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ross-runtime-integration-${{ inputs.version }}
+          path: ross-runtime-integration-${{ inputs.version }}.zip

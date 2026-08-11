@@ -1,0 +1,39 @@
+name: Ross Runtime Policy Validation
+
+on:
+  pull_request:
+    paths:
+      - "apps/ross-runtime-portal/**/*.md"
+      - "apps/ross-runtime-portal/config/policy-manifest.json"
+      - "apps/ross-runtime-portal/config/retention-policy.json"
+      - "apps/ross-runtime-portal/config/security-controls.json"
+      - "apps/ross-runtime-portal/scripts/validate_policies.py"
+      - ".github/workflows/ross-runtime-policy-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/ross-runtime-portal/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate Ross Runtime policies
+        run: python apps/ross-runtime-portal/scripts/validate_policies.py
+      - name: Validate JSON control artifacts
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('apps/ross-runtime-portal/config')
+          for name in ['policy-manifest.json', 'retention-policy.json', 'security-controls.json']:
+              json.loads((root / name).read_text(encoding='utf-8'))
+              print('validated', name)
+          PY

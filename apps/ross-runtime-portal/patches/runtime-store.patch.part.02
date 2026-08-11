@@ -1,0 +1,84 @@
+as conn:
++            if dedupe_key:
++                existing = conn.execute(
++                    "SELECT * FROM jobs WHERE dedupe_key=? AND status IN ('queued','retry','running') ORDER BY created_at DESC LIMIT 1",
++                    (dedupe_key,),
++                ).fetchone()
++                if existing:
++                    return self._job_row(existing)
++            job_id = "job-" + secrets.token_hex(8)
++            conn.execute(
++                "INSERT INTO jobs(id,type,queue,payload_json,status,attempts,max_attempts,available_at,dedupe_key,created_at,updated_at) "
++                "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
++                (
++                    job_id,
++                    job_type,
++                    queue,
++                    self._json(payload),
++                    "queued",
++                    0,
++                    max_attempts,
++                    now + max(0, delay_seconds),
++                    dedupe_key,
++                    created,
++                    created,
++                ),
++            )
++            row = conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
++        return self._job_row(row)
++
++    def claim_job(self, worker_name: str, queues: Sequence[str]) -> dict[str, Any] | None:
++        if not queues:
++            return None
++        placeholders = ",".join("?" for _ in queues)
++        now = time.time()
++        with self.connection() as conn:
++            conn.execute("BEGIN IMMEDIATE")
++            row = conn.execute(
++                f"SELECT * FROM jobs WHERE status IN ('queued','retry') AND queue IN ({placeholders}) "
++                "AND available_at<=? AND attempts<max_attempts ORDER BY created_at ASC LIMIT 1",
++                (*queues, now),
++            ).fetchone()
++            if row is None:
++                return None
++            updated = self.now_iso()
++            conn.execute(
++                "UPDATE jobs SET status='running', attempts=attempts+1, locked_by=?, locked_at=?, updated_at=? WHERE id=?",
++                (worker_name, now, updated, row["id"]),
++            )
++            claimed = conn.execute("SELECT * FROM jobs WHERE id=?", (row["id"],)).fetchone()
++        return self._job_row(claimed)
++
++    def complete_job(self, job_id: str, result: dict[str, Any]) -> None:
++        with self.connection() as conn:
++            conn.execute(
++                "UPDATE jobs SET status='completed', result_json=?, locked_by=NULL, locked_at=NULL, updated_at=? WHERE id=?",
++                (self._json(result), self.now_iso(), job_id),
++            )
++
++    def fail_job(self, job_id: str, error: str, retry_delay_seconds: float = 2) -> str:
++        with self.connection() as conn:
++            row = conn.execute("SELECT attempts,max_attempts FROM jobs WHERE id=?", (job_id,)).fetchone()
++            if row is None:
++                return "missing"
++            status = "dead" if int(row["attempts"]) >= int(row["max_attempts"]) else "retry"
++            conn.execute(
++                "UPDATE jobs SET status=?, last_error=?, available_at=?, locked_by=NULL, locked_at=NULL, updated_at=? WHERE id=?",
++                (status, error[:4000], time.time() + retry_delay_seconds, self.now_iso(), job_id),
++            )
++        if status == "dead":
++            self.create_incident("critical", "job.dead_letter", f"Job {job_id} exhausted retries", {"error": error})
++        return status
++
++    def list_jobs(self, limit: int = 50, status: str | None = None) -> list[dict[str, Any]]:
++        with self.connection() as conn:
++            if status:
++                rows = conn.execute(
++                    "SELECT * FROM jobs WHERE status=? ORDER BY created_at DESC LIMIT ?", (status, limit)
++                ).fetchall()
++            else:
++                rows = conn.execute("SELECT * FROM jobs ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
++        return [self._job_row(row) for row in rows]
++
++    def job_counts(self) -> dict[str, int]:
++        wi

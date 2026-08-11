@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IDScanValidationResult",
+  "type": "object",
+  "required": ["scan_id", "side", "status", "metrics", "checks"],
+  "properties": {
+    "scan_id": {"type": "string"},
+    "side": {"enum": ["front", "back"]},
+    "status": {"enum": ["pass", "review", "fail"]},
+    "metrics": {"type": "object"},
+    "checks": {"type": "object"},
+    "recommendations": {"type": "array", "items": {"type": "string"}}
+  }
+}
