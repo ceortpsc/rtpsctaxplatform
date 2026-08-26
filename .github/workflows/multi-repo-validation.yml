@@ -1,0 +1,44 @@
+name: Multi-Repo Validation
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate deployment manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f config/multi-repo-deployment.json
+          test -f config/vercel-environments.json
+          node -e "JSON.parse(require('fs').readFileSync('config/multi-repo-deployment.json','utf8')); JSON.parse(require('fs').readFileSync('config/vercel-environments.json','utf8')); console.log('Deployment manifests valid')"
+
+      - name: Secret pattern scan
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,})' . --exclude-dir=.git; then
+            echo 'Potential secret pattern detected.'
+            exit 1
+          fi
+
+      - name: Route and repository architecture check
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('config/multi-repo-deployment.json','utf8'));
+          if (!data.repositories?.length) throw new Error('No repositories registered');
+          if (data.environments?.main !== 'vercel-production') throw new Error('Production mapping missing');
+          console.log(`Registered repositories: ${data.repositories.length}`);
+          NODE
