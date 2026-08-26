@@ -1,0 +1,20 @@
+{
+  "provider": "Vercel",
+  "team": "condrer-3533",
+  "project": "ross-tax-pro-software-co",
+  "branchEnvironmentMap": {
+    "feature/*": "preview",
+    "develop": "staging",
+    "release/*": "preview-release",
+    "main": "production"
+  },
+  "promotion": ["preview", "staging", "release-candidate", "production"],
+  "productionBranch": "main",
+  "rules": {
+    "preview": ["build", "unit-test", "route-check", "secret-scan"],
+    "staging": ["build", "unit-test", "integration-test", "smoke-test"],
+    "release-candidate": ["build", "integration-test", "security-check", "smoke-test"],
+    "production": ["approved-release", "build", "smoke-test", "rollback-ready"]
+  },
+  "secretPolicy": "Production secrets are Vercel environment variables and are never committed to Git."
+}
