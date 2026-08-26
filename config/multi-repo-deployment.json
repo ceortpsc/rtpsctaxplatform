@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "owner": "ROSS TAX PRO SOFTWARE CO",
+  "primaryRepository": "ceortpsc/rtpsctaxplatform",
+  "repositories": [
+    {"name":"ceortpsc/rtpsctaxplatform","role":"core-tax-platform","defaultBranch":"main"},
+    {"name":"ceortpsc/ross-primeweb-etrac","role":"etrac-runtime","defaultBranch":"main"},
+    {"name":"ceortpsc/rtpsc-backoffice-full-integration-module","role":"backoffice-integrations","defaultBranch":"main"},
+    {"name":"ceortpsc/IRSRUNTIME","role":"irs-runtime-boundary","defaultBranch":"main"},
+    {"name":"ceortpsc/ross-tax-pro-university","role":"university-lms","defaultBranch":"main","status":"planned-repository"}
+  ],
+  "branchModel": {"feature":"feature/*","bugfix":"bugfix/*","hotfix":"hotfix/*","release":"release/*","integration":"develop","production":"main"},
+  "environments": {"feature":"vercel-preview","develop":"vercel-staging","release":"vercel-release-candidate","main":"vercel-production"},
+  "integrationRules": ["Use versioned APIs/contracts between repositories.","Do not import source files directly across repositories.","Pin shared package versions.","Require CI before promotion.","Keep production secrets outside Git.","Audit sensitive mutations.","Use idempotent integration handlers."]
+}
