@@ -1,0 +1,85 @@
+{
+  "title": "RTPSC Enhanced RBAC / ABAC Governance & Accuracy Policy",
+  "version": "2.0.0",
+  "effective_date": "2026-08-30",
+  "goals": [
+    "Make authorization decisions explicit and testable.",
+    "Separate operational editing from approval, transmission, payout and governance.",
+    "Preserve financial and compliance evidence through non-destructive corrections.",
+    "Apply tenant, assignment, sensitivity, lifecycle and approval-state conditions to permissions.",
+    "Make analytics authoritative to recorded transactions rather than user-entered summaries."
+  ],
+  "authorization_model": {
+    "rbac": "Role grants baseline permissions.",
+    "abac": [
+      "workspace_id must match authenticated tenant context.",
+      "Assigned-user restrictions apply unless elevated operational role is present.",
+      "Sensitive client data requires an authorized business purpose.",
+      "Closed or locked tax cases become read-only except controlled correction workflows.",
+      "Financial records use void, reverse, refund, adjustment or archive events instead of hard deletion.",
+      "Approval of a record created or materially changed by the approver is denied where segregation-of-duties applies."
+    ],
+    "decision_order": [
+      "Authenticate user",
+      "Resolve tenant/workspace server-side",
+      "Evaluate role permission",
+      "Evaluate object ownership or assignment",
+      "Evaluate lifecycle/status lock",
+      "Evaluate approval segregation-of-duties",
+      "Record an audit event for material actions"
+    ]
+  },
+  "action_definitions": {
+    "read": "View authorized record or data.",
+    "create": "Create a new record.",
+    "update": "Edit mutable fields on an existing record.",
+    "delete": "Hard delete; default denied for compliance and financial records.",
+    "archive": "Remove from active operational views without destroying history.",
+    "void": "Invalidate a record while retaining evidence.",
+    "reverse": "Create a compensating transaction for a prior transaction.",
+    "approve": "Authorize a controlled state transition.",
+    "reject": "Reject a workflow item with a reason.",
+    "transmit": "Send an authorized tax or e-file transaction to an external gateway.",
+    "export": "Extract data in an approved format subject to privacy and data-loss controls.",
+    "assign": "Assign ownership or work queues.",
+    "admin": "Change configuration, role mappings or workspace-wide controls."
+  },
+  "roles": {
+    "owner": {"responsibility":"Enterprise governance, policy ownership, financial and security oversight","capabilities":["workspace_admin","role_admin","policy_admin","billing_admin","reporting","security_oversight","credential_approval"],"permission_boundary":"Full administrative control except actions prohibited by policy; audit history cannot be silently erased."},
+    "admin": {"responsibility":"Workspace and operational administration","capabilities":["user_admin","client_admin","workflow_admin","reporting","configuration"],"permission_boundary":"Can manage workspace operations; privileged self-approval is prohibited where segregation-of-duties applies."},
+    "ero": {"responsibility":"ERO supervision, e-file operations, return oversight and practitioner governance","capabilities":["return_review","efile_transmit","practitioner_assign","fee_governance","production_oversight","quality_control"],"permission_boundary":"Can review, approve and transmit authorized returns; cannot bypass audit or alter immutable payment history."},
+    "practitioner": {"responsibility":"Tax preparation, review, client communications and fee attribution","capabilities":["return_prepare","return_edit","document_review","client_service","fee_attribution","task_management"],"permission_boundary":"Can edit assigned tax work within authorization scope; cannot approve own privileged payout or erase financial history."},
+    "preparer": {"responsibility":"Preparation support, data entry and document indexing","capabilities":["data_entry","document_index","return_prepare_support","task_management"],"permission_boundary":"Assigned-work scope only; no e-file transmission, payout approval, role administration or destructive financial actions."},
+    "collector": {"responsibility":"Receivables, reminders, payment plans, collections and recovery","capabilities":["balance_monitoring","reminders","payment_plan","collections","recovery","case_notes"],"permission_boundary":"Can manage collection workflows and plans; cannot alter tax-return outcomes or independently write off balances above policy thresholds."},
+    "viewer": {"responsibility":"Read-only operational visibility","capabilities":["dashboard_view","client_view","report_view"],"permission_boundary":"Read-only unless an explicit additional grant exists."}
+  },
+  "segregation_of_duties": [
+    {"control":"role_admin","maker_roles":["admin"],"approver_roles":["owner"]},
+    {"control":"efile_transmission","maker_roles":["practitioner","ero"],"approver_roles":["ero"]},
+    {"control":"practitioner_payout","maker_roles":["admin"],"approver_roles":["owner","ero"]},
+    {"control":"high_value_writeoff","maker_roles":["collector","admin"],"approver_roles":["owner","ero"]},
+    {"control":"credential_revocation","maker_roles":["admin","ero"],"approver_roles":["owner"]}
+  ],
+  "financial_integrity": {
+    "immutable_tables":["crm_audit_log","credential_events"],
+    "non_destructive_tables":["crm_invoices","crm_payments","crm_practitioner_fees","crm_collections","crm_recovery_cases"],
+    "rules":[
+      "Never update a settled payment amount; use a reversal or refund event.",
+      "Never hard-delete audit records.",
+      "Never hard-delete an issued credential; revoke with an auditable reason.",
+      "Invoice balances must be reconciled from invoice lines and settled payment events.",
+      "Practitioner earnings are separate ledger records and must not be inferred from client balances.",
+      "Collection stages must be explainable from days past due and documented manual overrides."
+    ]
+  },
+  "accuracy_controls": {
+    "source_of_truth":{"balances":"Invoice/payment ledger","return_status":"Authorized tax/e-file subsystem","documents":"Document verification records","practitioner_earnings":"Practitioner fee ledger","training_completion":"Assessment results and enrollment records","credentials":"Credential event history"},
+    "analytics_rules":[
+      "Every dashboard metric declares its source view or query, time window and unit.",
+      "Percentages expose numerator and denominator.",
+      "AI-generated summaries reference underlying record IDs or source queries.",
+      "AI must never invent payment, refund, tax status, training completion or credential events.",
+      "Every KPI declares whether it is actual cash, accrual, pipeline or forecast."
+    ]
+  }
+}
