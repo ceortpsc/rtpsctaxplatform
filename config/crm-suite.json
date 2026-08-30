@@ -1,0 +1,10 @@
+{
+  "suite":"RTPSC CRM + Collections + Recovery",
+  "version":"1.0.0",
+  "modules":["dashboard","crm","clients","intake","documents","tax_preparation","efile","billing","invoices","payments","payment_plans","collections","recovery","ero_fees","practitioner_earnings","reports","analytics","audit"],
+  "lifecycle":["lead","intake","engaged","preparing","filed","billing","collections","recovery","retained","closed"],
+  "collection_policy":{"current":"No collection action; show due date and portal pay option","1_7":"Reminder + payment link","8_30":"Reminder sequence + payment plan offer","31_60":"Collector queue + escalation","61_90":"Recovery case + management review","90_plus":"Recovery escalation + write-off/legal review gate"},
+  "flow_codes":{"CLIENT_LIFECYCLE":"lead -> intake -> engaged -> preparing -> filed -> billing -> collections -> recovery -> retained/closed","DOCUMENTS":"requested -> uploaded -> verified/rejected -> complete","BILLING":"estimate -> invoice -> payment/plan -> paid or collections","COLLECTIONS":"due -> reminder -> overdue -> escalated -> recovery -> resolved","PRACTITIONER_FEES":"fee_charged -> earned -> pending_payout -> paid/disputed"},
+  "dashboards":{"executive":["total_clients","active_pipelines","amount_collected","outstanding_balance","ero_fees_earned","recovery_rate"],"collections":["aging_0_30","aging_31_60","aging_61_90","aging_90_plus","high_risk_accounts","next_actions","promise_to_pay"],"practitioner":["cases","fees_charged","paid_out","pending","average_fee","collection_rate"],"client":["timeline","documents","invoices","payments","plans","tasks","activities"]},
+  "security":{"tenant_scoped":true,"audit_log":true,"least_privilege_roles":true,"pii_minimization":true,"payment_tokens_only":true}
+}
