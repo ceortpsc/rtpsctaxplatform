@@ -1,0 +1,7 @@
+{
+  "buildCommand":"pnpm build",
+  "outputDirectory":"build",
+  "installCommand":"pnpm install --frozen-lockfile",
+  "framework":null,
+  "cleanUrls":true
+}
