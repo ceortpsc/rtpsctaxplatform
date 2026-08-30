@@ -9,6 +9,7 @@ const modules = [
   '../packages/client-config/src/index.mjs',
   '../packages/client-identity/src/index.mjs',
   '../packages/security-core/src/index.mjs',
+  '../packages/security-core/src/identity-governance.mjs',
   '../packages/secrets-config/src/index.mjs',
   '../packages/refund-core/src/index.mjs',
   '../packages/secure-tunnel/src/index.mjs',
@@ -108,8 +109,6 @@ export async function buildPlatform({ cwd = process.cwd(), quiet = false } = {})
 const isMain =
   Boolean(process.argv[1]) && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
 
-// Only auto-run when executed as a CLI entrypoint. Importers (e.g. release.mjs)
-// call buildPlatform({ quiet: true }) so their stdout can stay pure JSON for CI.
 if (isMain) {
   await buildPlatform({ quiet: false });
 }
