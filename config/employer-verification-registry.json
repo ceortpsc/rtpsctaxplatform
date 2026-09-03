@@ -1,0 +1,143 @@
+{
+  "schemaVersion": "1.0",
+  "organization": {
+    "legalName": "Ross Tax Pro Software Co.",
+    "entityType": "S Corporation",
+    "primaryOperatingState": "Texas",
+    "incorporationState": "Arkansas",
+    "adminEmail": "ceo@rosstaxsoftware.com"
+  },
+  "statusModel": [
+    "READY_TO_ENROLL",
+    "AUTHORIZED_SIGNER_REQUIRED",
+    "PAYROLL_INTEGRATION_REQUIRED",
+    "ACTIVE_ONLY_IF_APPLICABLE",
+    "ENROLLED_CONFIRMED",
+    "DO_NOT_ENROLL"
+  ],
+  "systems": [
+    {
+      "id": "uscis-e-verify",
+      "name": "USCIS E-Verify",
+      "category": "employment-eligibility",
+      "status": "AUTHORIZED_SIGNER_REQUIRED",
+      "capabilities": ["new-hire-employment-eligibility", "case-management", "corporate-administrator", "web-services-access-method"],
+      "requiredData": ["company-name", "ein", "physical-address", "mailing-address", "employee-count", "hiring-sites", "program-administrator", "signatory"],
+      "notes": "Employer enrollment requires electronic acceptance of E-Verify terms and conditions."
+    },
+    {
+      "id": "ssa-bso-ssnvs",
+      "name": "SSA Business Services Online / SSNVS",
+      "category": "wage-reporting-employee-identity",
+      "status": "AUTHORIZED_SIGNER_REQUIRED",
+      "capabilities": ["w2-w2c-filing", "wage-file-upload", "ssn-name-verification", "wage-report-status"],
+      "requiredData": ["login-gov-or-idme", "business-registration", "employer-authorization"],
+      "notes": "SSNVS is for current/former employees and W-2 wage reporting purposes, not applicant screening."
+    },
+    {
+      "id": "irs-tin-matching",
+      "name": "IRS e-Services TIN Matching",
+      "category": "payee-tax-id-verification",
+      "status": "AUTHORIZED_SIGNER_REQUIRED",
+      "capabilities": ["interactive-tin-match", "bulk-tin-match", "1099-payee-validation"],
+      "requiredData": ["irs-e-services-access", "authorized-user", "payer-eligibility"],
+      "notes": "Use for reportable payees before information return filing."
+    },
+    {
+      "id": "irs-iris",
+      "name": "IRS Information Returns Intake System (IRIS)",
+      "category": "information-return-filing",
+      "status": "AUTHORIZED_SIGNER_REQUIRED",
+      "capabilities": ["1099-e-file", "corrections", "extensions", "taxpayer-portal", "a2a"],
+      "requiredData": ["ein", "iris-tcc", "authorized-user"],
+      "notes": "IRIS is the strategic information-return filing platform; FIRE is retiring."
+    },
+    {
+      "id": "texas-unemployment-tax",
+      "name": "Texas Workforce Commission Unemployment Tax Registration",
+      "category": "state-employer-registration",
+      "status": "AUTHORIZED_SIGNER_REQUIRED",
+      "capabilities": ["ui-tax-registration", "quarterly-reporting", "employer-tax-account"],
+      "requiredData": ["authorized-user", "business-identity", "employment-start-data"],
+      "notes": "Required when Texas unemployment-tax liability applies."
+    },
+    {
+      "id": "texas-new-hire",
+      "name": "Texas Employer New Hire Reporting",
+      "category": "state-new-hire-reporting",
+      "status": "READY_TO_ENROLL",
+      "capabilities": ["new-hire-reporting", "rehire-reporting", "multi-state-employer-reporting"],
+      "requiredData": ["ein", "employer-name", "employer-address", "employee-ssn", "employee-name", "employee-address", "first-day-paid-work"],
+      "notes": "Texas employers generally report new hires within 20 days."
+    },
+    {
+      "id": "equifax-the-work-number",
+      "name": "Equifax The Work Number",
+      "category": "employment-income-verification-fulfillment",
+      "status": "PAYROLL_INTEGRATION_REQUIRED",
+      "capabilities": ["employment-verification", "income-verification", "employee-self-service", "employer-portal", "verification-fulfillment"],
+      "requiredData": ["employer-onboarding", "payroll-or-hris-data-feed", "data-governance-approval"],
+      "notes": "Employer-contributor onboarding is vendor-managed and normally tied to payroll/HRIS data contribution."
+    },
+    {
+      "id": "experian-verify",
+      "name": "Experian Verify / Employer Services Verification Fulfillment",
+      "category": "employment-income-verification-fulfillment",
+      "status": "PAYROLL_INTEGRATION_REQUIRED",
+      "capabilities": ["employment-verification", "income-verification", "employee-portal", "verifier-credentialing", "verification-fulfillment"],
+      "requiredData": ["employer-contact", "employee-count", "industry", "state", "vendor-onboarding"],
+      "notes": "Employer onboarding is handled through Experian Employer Services."
+    },
+    {
+      "id": "truework",
+      "name": "Truework",
+      "category": "employment-income-verification-network",
+      "status": "PAYROLL_INTEGRATION_REQUIRED",
+      "capabilities": ["voe", "voi", "reverification", "1099-gig-verification", "hris-payroll-integrations", "smart-outreach"],
+      "requiredData": ["employer-or-hris-integration", "employee-consent-where-required"],
+      "notes": "Supports employee and 1099/gig verification workflows; employer-network participation depends on integration/onboarding."
+    },
+    {
+      "id": "truv",
+      "name": "Truv",
+      "category": "permissioned-income-employment-data",
+      "status": "PAYROLL_INTEGRATION_REQUIRED",
+      "capabilities": ["voie", "payroll-connectivity", "gig-platform-connectivity", "employee-permissioned-access"],
+      "requiredData": ["payroll-or-hris-integration"],
+      "notes": "Best treated as a payroll/HRIS integration target rather than a mandatory employer registry."
+    },
+    {
+      "id": "vault-verify",
+      "name": "Vault Verify",
+      "category": "legacy-verification-platform",
+      "status": "DO_NOT_ENROLL",
+      "capabilities": [],
+      "requiredData": [],
+      "notes": "Platform is being retired into Equifax Workforce Solutions; do not start a new Ross enrollment."
+    }
+  ],
+  "rossCapabilities": [
+    "employment-verification-request-intake",
+    "income-verification-request-intake",
+    "employee-consent-capture",
+    "verification-letter-generation",
+    "paystub-and-w2-reference",
+    "1099-contractor-verification",
+    "provider-status-tracking",
+    "vendor-id-storage-by-reference",
+    "audit-log",
+    "api-adapter-status",
+    "new-hire-reporting-task-trigger",
+    "e-verify-case-task-trigger",
+    "ssnvs-wage-reporting-task-trigger",
+    "tin-matching-task-trigger",
+    "iris-filing-task-trigger"
+  ],
+  "security": {
+    "storeEinInPublicRegistry": false,
+    "storeEmployeeSsnInRegistry": false,
+    "storeProviderPasswords": false,
+    "credentialStorage": "secure-vault-reference-only",
+    "employeeConsentRequiredForIncomeDisclosure": true
+  }
+}
