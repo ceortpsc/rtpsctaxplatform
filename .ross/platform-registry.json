@@ -1,0 +1,12 @@
+{
+  "schemaVersion":"1.0.0",
+  "registryAuthority":"Ross Identity Command Engine",
+  "directoryUrl":"https://ross-identity-command-engine-rydwth.v2.appdeploy.ai/platform-directory/",
+  "repository":"ceortpsc/rtpsctaxplatform",
+  "defaultBranch":"main",
+  "classification":"CORE_PLATFORM_REPO",
+  "mappingStatus":"RELATED_REPO",
+  "applications":[],
+  "nativeSourceBinding":"NOT_EXPOSED_BY_APPDEPLOY_CONNECTOR",
+  "notes":"Core Ross tax/e-file monorepo indexed in the master estate. No native AppDeploy Git source binding is asserted."
+}
