@@ -7,7 +7,7 @@ This repository participates in the Ross Tax Pro Software Co. master platform re
 - Identity authority: **Ross Identity Command Engine**
 - Protected directory: https://ross-identity-command-engine-rydwth.v2.appdeploy.ai/platform-directory/
 - GitHub account indexed: `ceortpsc`
-- GitHub repositories discovered: **22**
+- GitHub repositories discovered: **21**
 - AppDeploy applications discovered: **16**
 
 ## Registry model
